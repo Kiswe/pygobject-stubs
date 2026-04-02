@@ -132,6 +132,13 @@ class Section:
     def get_pmt(self) -> PMT | None:
         """Parses the Program Map Table contained in the section."""
 
+    @staticmethod
+    def new(pid: int, data: bytes) -> Section:
+        """Creates a new Section with the given PID and data."""
+
+    def send_event(self, element: Gst.Element) -> bool:
+        """Sends the section as a Gst event to the given element."""
+
 class StreamType:
     RESERVED_00: int
     VIDEO_MPEG1: int

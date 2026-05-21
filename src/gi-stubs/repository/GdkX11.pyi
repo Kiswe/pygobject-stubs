@@ -1,29 +1,25 @@
-import typing
+from typing import type_check_only
 
-from gi.repository import Gdk
+from enum import IntEnum
+
+from gi import _gi
+from gi.repository import _Gdk4
 from gi.repository import GObject
-from gi.repository import Pango
 from gi.repository import xlib
-
-T = typing.TypeVar("T")
-
-_lock = ...  # FIXME Constant
-_namespace: str = "GdkX11"
-_version: str = "4.0"
 
 def x11_device_get_id(device: X11DeviceXI2) -> int: ...
 def x11_device_manager_lookup(
     device_manager: X11DeviceManagerXI2, device_id: int
-) -> typing.Optional[X11DeviceXI2]: ...
+) -> X11DeviceXI2 | None: ...
 def x11_free_compound_text(ctext: int) -> None: ...
 def x11_free_text_list(list: str) -> None: ...
 def x11_get_server_time(surface: X11Surface) -> int: ...
 def x11_get_xatom_by_name_for_display(display: X11Display, atom_name: str) -> int: ...
 def x11_get_xatom_name_for_display(display: X11Display, xatom: int) -> str: ...
 def x11_lookup_xdisplay(xdisplay: xlib.Display) -> X11Display: ...
-def x11_set_sm_client_id(sm_client_id: typing.Optional[str] = None) -> None: ...
+def x11_set_sm_client_id(sm_client_id: str | None = None) -> None: ...
 
-class X11AppLaunchContext(Gdk.AppLaunchContext):
+class X11AppLaunchContext(_Gdk4.AppLaunchContext):
     """
     :Constructors:
 
@@ -44,14 +40,9 @@ class X11AppLaunchContext(Gdk.AppLaunchContext):
     Signals from GObject:
       notify (GParam)
     """
+    def __init__(self, *, display: _Gdk4.Display | None = ...) -> None: ...
 
-    class Props:
-        display: Gdk.Display
-
-    props: Props = ...
-    def __init__(self, display: Gdk.Display = ...) -> None: ...
-
-class X11AppLaunchContextClass(GObject.GPointer): ...
+class X11AppLaunchContextClass(_gi.Struct): ...
 
 class X11DeviceManagerXI2(GObject.Object):
     """
@@ -72,25 +63,31 @@ class X11DeviceManagerXI2(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def display(self) -> _Gdk4.Display | None: ...
+        @property
+        def major(self) -> int: ...
+        @property
+        def minor(self) -> int: ...
+        @property
+        def opcode(self) -> int: ...
 
-    class Props:
-        display: Gdk.Display
-        major: int
-        minor: int
-        opcode: int
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        display: Gdk.Display = ...,
+        *,
+        display: _Gdk4.Display | None = ...,
         major: int = ...,
         minor: int = ...,
         opcode: int = ...,
     ) -> None: ...
 
-class X11DeviceManagerXI2Class(GObject.GPointer): ...
+class X11DeviceManagerXI2Class(_gi.Struct): ...
 
-class X11DeviceXI2(Gdk.Device):
+class X11DeviceXI2(_Gdk4.Device):
     """
     :Constructors:
 
@@ -130,45 +127,30 @@ class X11DeviceXI2(Gdk.Device):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(_Gdk4.Device.Props):
+        @property
+        def device_id(self) -> int: ...
 
-    class Props:
-        device_id: int
-        active_layout_index: int
-        caps_lock_state: bool
-        direction: Pango.Direction
-        display: Gdk.Display
-        has_bidi_layouts: bool
-        has_cursor: bool
-        layout_names: typing.Optional[list[str]]
-        modifier_state: Gdk.ModifierType
-        n_axes: int
-        name: str
-        num_lock_state: bool
-        num_touches: int
-        product_id: typing.Optional[str]
-        scroll_lock_state: bool
-        seat: Gdk.Seat
-        source: Gdk.InputSource
-        tool: typing.Optional[Gdk.DeviceTool]
-        vendor_id: typing.Optional[str]
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
+        *,
         device_id: int = ...,
-        display: Gdk.Display = ...,
+        display: _Gdk4.Display | None = ...,
         has_cursor: bool = ...,
-        name: str = ...,
+        name: str | None = ...,
         num_touches: int = ...,
-        product_id: str = ...,
-        seat: Gdk.Seat = ...,
-        source: Gdk.InputSource = ...,
-        vendor_id: str = ...,
+        product_id: str | None = ...,
+        seat: _Gdk4.Seat | None = ...,
+        source: _Gdk4._InputSourceValueType = ...,
+        vendor_id: str | None = ...,
     ) -> None: ...
 
-class X11DeviceXI2Class(GObject.GPointer): ...
+class X11DeviceXI2Class(_gi.Struct): ...
 
-class X11Display(Gdk.Display):
+class X11Display(_Gdk4.Display):
     """
     :Constructors:
 
@@ -198,54 +180,39 @@ class X11Display(Gdk.Display):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        composited: bool
-        dmabuf_formats: Gdk.DmabufFormats
-        input_shapes: bool
-        rgba: bool
-        shadow_width: bool
-
-    props: Props = ...
     def error_trap_pop(self) -> int: ...
     def error_trap_pop_ignored(self) -> None: ...
     def error_trap_push(self) -> None: ...
-    def get_default_group(self) -> Gdk.Surface: ...
-    def get_egl_display(self) -> None: ...
-    def get_egl_version(self) -> typing.Tuple[bool, int, int]: ...
-    def get_glx_version(self) -> typing.Tuple[bool, int, int]: ...
-    def get_primary_monitor(self) -> Gdk.Monitor: ...
+    def get_default_group(self) -> _Gdk4.Surface: ...
+    def get_egl_display(self) -> int: ...
+    def get_egl_version(self) -> tuple[bool, int, int]: ...
+    def get_glx_version(self) -> tuple[bool, int, int]: ...
+    def get_primary_monitor(self) -> _Gdk4.Monitor: ...
     def get_screen(self) -> X11Screen: ...
     def get_startup_notification_id(self) -> str: ...
     def get_user_time(self) -> int: ...
-    def get_xcursor(self, cursor: Gdk.Cursor) -> int: ...
+    def get_xcursor(self, cursor: _Gdk4.Cursor) -> int: ...
     def get_xdisplay(self) -> xlib.Display: ...
     def get_xrootwindow(self) -> int: ...
     def get_xscreen(self) -> xlib.Screen: ...
     def grab(self) -> None: ...
     @staticmethod
-    def open(
-        display_name: typing.Optional[str] = None,
-    ) -> typing.Optional[Gdk.Display]: ...
-    def set_cursor_theme(self, theme: typing.Optional[str], size: int) -> None: ...
+    def open(display_name: str | None = None) -> _Gdk4.Display | None: ...
+    def set_cursor_theme(self, theme: str | None, size: int) -> None: ...
     @staticmethod
-    def set_program_class(display: Gdk.Display, program_class: str) -> None: ...
+    def set_program_class(display: _Gdk4.Display, program_class: str) -> None: ...
     def set_startup_notification_id(self, startup_id: str) -> None: ...
     def set_surface_scale(self, scale: int) -> None: ...
-    def string_to_compound_text(
-        self, str: str
-    ) -> typing.Tuple[int, str, int, bytes]: ...
+    def string_to_compound_text(self, str: str) -> tuple[int, str, int, bytes]: ...
     def text_property_to_text_list(
         self, encoding: str, format: int, text: int, length: int, list: str
     ) -> int: ...
     def ungrab(self) -> None: ...
-    def utf8_to_compound_text(
-        self, str: str
-    ) -> typing.Tuple[bool, str, int, bytes]: ...
+    def utf8_to_compound_text(self, str: str) -> tuple[bool, str, int, bytes]: ...
 
-class X11DisplayClass(GObject.GPointer): ...
+class X11DisplayClass(_gi.Struct): ...
 
-class X11Drag(Gdk.Drag):
+class X11Drag(_Gdk4.Drag):
     """
     :Constructors:
 
@@ -272,30 +239,20 @@ class X11Drag(Gdk.Drag):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        actions: Gdk.DragAction
-        content: Gdk.ContentProvider
-        device: Gdk.Device
-        display: Gdk.Display
-        formats: Gdk.ContentFormats
-        selected_action: Gdk.DragAction
-        surface: Gdk.Surface
-
-    props: Props = ...
     def __init__(
         self,
-        actions: Gdk.DragAction = ...,
-        content: Gdk.ContentProvider = ...,
-        device: Gdk.Device = ...,
-        formats: Gdk.ContentFormats = ...,
-        selected_action: Gdk.DragAction = ...,
-        surface: Gdk.Surface = ...,
+        *,
+        actions: _Gdk4._DragActionValueType = ...,
+        content: _Gdk4.ContentProvider | None = ...,
+        device: _Gdk4.Device | None = ...,
+        formats: _Gdk4.ContentFormats | None = ...,
+        selected_action: _Gdk4._DragActionValueType = ...,
+        surface: _Gdk4.Surface | None = ...,
     ) -> None: ...
 
-class X11DragClass(GObject.GPointer): ...
+class X11DragClass(_gi.Struct): ...
 
-class X11GLContext(Gdk.GLContext):
+class X11GLContext(_Gdk4.GLContext):
     """
     :Constructors:
 
@@ -317,26 +274,18 @@ class X11GLContext(Gdk.GLContext):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        allowed_apis: Gdk.GLAPI
-        api: Gdk.GLAPI
-        shared_context: typing.Optional[Gdk.GLContext]
-        display: typing.Optional[Gdk.Display]
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     def __init__(
         self,
-        allowed_apis: Gdk.GLAPI = ...,
-        shared_context: Gdk.GLContext = ...,
-        display: Gdk.Display = ...,
-        surface: Gdk.Surface = ...,
+        *,
+        allowed_apis: _Gdk4._GLAPIValueType = ...,
+        shared_context: _Gdk4.GLContext | None = ...,
+        display: _Gdk4.Display | None = ...,
+        surface: _Gdk4.Surface | None = ...,
     ) -> None: ...
 
-class X11GLContextClass(GObject.GPointer): ...
+class X11GLContextClass(_gi.Struct): ...
 
-class X11Monitor(Gdk.Monitor):
+class X11Monitor(_Gdk4.Monitor):
     """
     :Constructors:
 
@@ -367,28 +316,11 @@ class X11Monitor(Gdk.Monitor):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        connector: typing.Optional[str]
-        description: typing.Optional[str]
-        display: Gdk.Display
-        geometry: Gdk.Rectangle
-        height_mm: int
-        manufacturer: typing.Optional[str]
-        model: typing.Optional[str]
-        refresh_rate: int
-        scale: float
-        scale_factor: int
-        subpixel_layout: Gdk.SubpixelLayout
-        valid: bool
-        width_mm: int
-
-    props: Props = ...
-    def __init__(self, display: Gdk.Display = ...) -> None: ...
+    def __init__(self, *, display: _Gdk4.Display | None = ...) -> None: ...
     def get_output(self) -> int: ...
-    def get_workarea(self) -> Gdk.Rectangle: ...
+    def get_workarea(self) -> _Gdk4.Rectangle: ...
 
-class X11MonitorClass(GObject.GPointer): ...
+class X11MonitorClass(_gi.Struct): ...
 
 class X11Screen(GObject.Object):
     """
@@ -406,7 +338,6 @@ class X11Screen(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def get_current_desktop(self) -> int: ...
     def get_monitor_output(self, monitor_num: int) -> int: ...
     def get_number_of_desktops(self) -> int: ...
@@ -415,9 +346,9 @@ class X11Screen(GObject.Object):
     def get_xscreen(self) -> xlib.Screen: ...
     def supports_net_wm_hint(self, property_name: str) -> bool: ...
 
-class X11ScreenClass(GObject.GPointer): ...
+class X11ScreenClass(_gi.Struct): ...
 
-class X11Surface(Gdk.Surface):
+class X11Surface(_Gdk4.Surface):
     """
     :Constructors:
 
@@ -447,45 +378,32 @@ class X11Surface(Gdk.Surface):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        cursor: typing.Optional[Gdk.Cursor]
-        display: Gdk.Display
-        frame_clock: Gdk.FrameClock
-        height: int
-        mapped: bool
-        scale: float
-        scale_factor: int
-        width: int
-
-    props: Props = ...
     def __init__(
         self,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
-        display: Gdk.Display = ...,
-        frame_clock: Gdk.FrameClock = ...,
+        *,
+        cursor: _Gdk4.Cursor | None = ...,
+        display: _Gdk4.Display | None = ...,
+        frame_clock: _Gdk4.FrameClock | None = ...,
     ) -> None: ...
     def get_desktop(self) -> int: ...
-    def get_group(self) -> typing.Optional[Gdk.Surface]: ...
+    def get_group(self) -> _Gdk4.Surface | None: ...
     def get_xid(self) -> int: ...
     @staticmethod
     def lookup_for_display(display: X11Display, window: int) -> X11Surface: ...
     def move_to_current_desktop(self) -> None: ...
     def move_to_desktop(self, desktop: int) -> None: ...
     def set_frame_sync_enabled(self, frame_sync_enabled: bool) -> None: ...
-    def set_group(self, leader: Gdk.Surface) -> None: ...
+    def set_group(self, leader: _Gdk4.Surface) -> None: ...
     def set_skip_pager_hint(self, skips_pager: bool) -> None: ...
     def set_skip_taskbar_hint(self, skips_taskbar: bool) -> None: ...
     def set_theme_variant(self, variant: str) -> None: ...
     def set_urgency_hint(self, urgent: bool) -> None: ...
     def set_user_time(self, timestamp: int) -> None: ...
-    def set_utf8_property(
-        self, name: str, value: typing.Optional[str] = None
-    ) -> None: ...
+    def set_utf8_property(self, name: str, value: str | None = None) -> None: ...
 
-class X11SurfaceClass(GObject.GPointer): ...
+class X11SurfaceClass(_gi.Struct): ...
 
-class X11DeviceType(GObject.GEnum):
+class X11DeviceType(IntEnum):
     FLOATING = 2
     LOGICAL = 0
     PHYSICAL = 1

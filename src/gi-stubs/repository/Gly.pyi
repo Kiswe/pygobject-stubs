@@ -1,0 +1,656 @@
+from typing import Literal
+from typing import overload
+from typing import type_check_only
+from typing import TypeAlias
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
+
+from gi import _gi
+from gi.repository import Gio
+from gi.repository import GLib
+from gi.repository import GObject
+
+_DataTs = TypeVarTuple("_DataTs", default=Unpack[tuple[()]])
+
+def loader_error_quark() -> int: ...
+def memory_format_has_alpha(memory_format: _MemoryFormatValueType) -> bool: ...
+def memory_format_is_premultiplied(memory_format: _MemoryFormatValueType) -> bool: ...
+
+class Cicp(GObject.GBoxed):
+    """
+    :Constructors:
+
+    ::
+
+        Cicp()
+    """
+
+    color_primaries: int
+    transfer_characteristics: int
+    matrix_coefficients: int
+    video_full_range_flag: int
+    def copy(self) -> Cicp: ...
+    def free(self) -> None: ...
+
+class Creator(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Creator(**properties)
+        new(mime_type:str) -> Gly.Creator
+
+    Object GlyCreator
+
+    Properties from GlyCreator:
+      sandbox-selector -> GlySandboxSelector: sandbox-selector
+      mime-type -> gchararray: mime-type
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def mime_type(self) -> str | None: ...
+        @property
+        def sandbox_selector(self) -> SandboxSelector: ...
+        @sandbox_selector.setter
+        def sandbox_selector(self, value: _SandboxSelectorValueType) -> None: ...
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        mime_type: str | None = ...,
+        sandbox_selector: _SandboxSelectorValueType = ...,
+    ) -> None: ...
+    def add_frame(
+        self,
+        width: int,
+        height: int,
+        memory_format: _MemoryFormatValueType,
+        texture: GLib.Bytes,
+    ) -> NewFrame: ...
+    def add_frame_with_stride(
+        self,
+        width: int,
+        height: int,
+        stride: int,
+        memory_format: _MemoryFormatValueType,
+        texture: GLib.Bytes,
+    ) -> NewFrame: ...
+    def add_metadata_key_value(self, key: str, value: str) -> bool: ...
+    def create(self) -> EncodedImage | None: ...
+    @overload
+    def create_async(
+        self, cancellable: Gio.Cancellable | None = None
+    ) -> _gi.Async[EncodedImage]: ...
+    @overload
+    def create_async(
+        self,
+        cancellable: Gio.Cancellable | None,
+        callback: Gio._AsyncReadyVarArgsCallback[Creator, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def create_async(
+        self,
+        cancellable: Gio.Cancellable | None = None,
+        *,
+        callback: Gio._AsyncReadyVarArgsCallback[Creator] | None,
+    ) -> None: ...
+    def create_finish(self, result: Gio.AsyncResult) -> EncodedImage: ...
+    @classmethod
+    def new(cls, mime_type: str) -> Creator: ...
+    def set_encoding_compression(self, compression: int) -> bool: ...
+    def set_encoding_quality(self, quality: int) -> bool: ...
+    def set_sandbox_selector(
+        self, sandbox_selector: _SandboxSelectorValueType
+    ) -> bool: ...
+
+class CreatorClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        CreatorClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class EncodedImage(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        EncodedImage(**properties)
+
+    Object GlyEncodedImage
+
+    Properties from GlyEncodedImage:
+      data -> GBytes: data
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def data(self) -> GLib.Bytes: ...
+
+    @property
+    def props(self) -> Props: ...
+    def get_data(self) -> GLib.Bytes: ...
+
+class EncodedImageClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        EncodedImageClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Frame(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Frame(**properties)
+
+    Object GlyFrame
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_buf_bytes(self) -> GLib.Bytes: ...
+    def get_color_cicp(self) -> Cicp | None: ...
+    def get_delay(self) -> int: ...
+    def get_height(self) -> int: ...
+    def get_memory_format(self) -> MemoryFormat: ...
+    def get_stride(self) -> int: ...
+    def get_width(self) -> int: ...
+
+class FrameClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        FrameClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class FrameRequest(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        FrameRequest(**properties)
+        new() -> Gly.FrameRequest
+
+    Object GlyFrameRequest
+
+    Properties from GlyFrameRequest:
+      scale-width -> guint: scale-width
+      scale-height -> guint: scale-height
+      loop-animation -> gboolean: loop-animation
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        loop_animation: bool
+        @property
+        def scale_height(self) -> int: ...
+        @property
+        def scale_width(self) -> int: ...
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, loop_animation: bool = ...) -> None: ...
+    @classmethod
+    def new(cls) -> FrameRequest: ...
+    def set_loop_animation(self, loop_animation: bool) -> None: ...
+    def set_scale(self, width: int, height: int) -> None: ...
+
+class FrameRequestClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        FrameRequestClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Image(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Image(**properties)
+
+    Object GlyImage
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_height(self) -> int: ...
+    def get_metadata_key_value(self, key: str) -> str | None: ...
+    def get_metadata_keys(self) -> list[str]: ...
+    def get_mime_type(self) -> str: ...
+    def get_specific_frame(self, frame_request: FrameRequest) -> Frame: ...
+    @overload
+    def get_specific_frame_async(
+        self, frame_request: FrameRequest, cancellable: Gio.Cancellable | None = None
+    ) -> _gi.Async[Frame]: ...
+    @overload
+    def get_specific_frame_async(
+        self,
+        frame_request: FrameRequest,
+        cancellable: Gio.Cancellable | None,
+        callback: Gio._AsyncReadyVarArgsCallback[Image, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def get_specific_frame_async(
+        self,
+        frame_request: FrameRequest,
+        cancellable: Gio.Cancellable | None = None,
+        *,
+        callback: Gio._AsyncReadyVarArgsCallback[Image] | None,
+    ) -> None: ...
+    def get_specific_frame_finish(self, result: Gio.AsyncResult) -> Frame: ...
+    def get_transformation_orientation(self) -> int: ...
+    def get_width(self) -> int: ...
+    def next_frame(self) -> Frame: ...
+    @overload
+    def next_frame_async(
+        self, cancellable: Gio.Cancellable | None = None
+    ) -> _gi.Async[Frame]: ...
+    @overload
+    def next_frame_async(
+        self,
+        cancellable: Gio.Cancellable | None,
+        callback: Gio._AsyncReadyVarArgsCallback[Image, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def next_frame_async(
+        self,
+        cancellable: Gio.Cancellable | None = None,
+        *,
+        callback: Gio._AsyncReadyVarArgsCallback[Image] | None,
+    ) -> None: ...
+    def next_frame_finish(self, result: Gio.AsyncResult) -> Frame: ...
+
+class ImageClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        ImageClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Loader(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Loader(**properties)
+        new(file:Gio.File) -> Gly.Loader
+        new_for_bytes(bytes:GLib.Bytes) -> Gly.Loader
+        new_for_stream(stream:Gio.InputStream) -> Gly.Loader
+
+    Object GlyLoader
+
+    Properties from GlyLoader:
+      file -> GFile: file
+      stream -> GInputStream: stream
+      bytes -> GBytes: bytes
+      cancellable -> GCancellable: cancellable
+      sandbox-selector -> GlySandboxSelector: sandbox-selector
+      memory-format-selection -> GlyMemoryFormatSelection: memory-format-selection
+      apply-transformation -> gboolean: apply-transformation
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        apply_transformation: bool
+        @property
+        def bytes(self) -> GLib.Bytes | None: ...
+        cancellable: Gio.Cancellable | None
+        @property
+        def file(self) -> Gio.File | None: ...
+        @property
+        def memory_format_selection(self) -> MemoryFormatSelection: ...
+        @memory_format_selection.setter
+        def memory_format_selection(
+            self, value: _MemoryFormatSelectionValueType
+        ) -> None: ...
+        @property
+        def sandbox_selector(self) -> SandboxSelector: ...
+        @sandbox_selector.setter
+        def sandbox_selector(self, value: _SandboxSelectorValueType) -> None: ...
+        @property
+        def stream(self) -> Gio.InputStream | None: ...
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        apply_transformation: bool = ...,
+        bytes: GLib.Bytes | None = ...,
+        cancellable: Gio.Cancellable | None = ...,
+        file: Gio.File | None = ...,
+        memory_format_selection: _MemoryFormatSelectionValueType = ...,
+        sandbox_selector: _SandboxSelectorValueType = ...,
+        stream: Gio.InputStream | None = ...,
+    ) -> None: ...
+    @staticmethod
+    def get_mime_types() -> list[str]: ...
+    @overload
+    @staticmethod
+    def get_mime_types_async(
+        cancellable: Gio.Cancellable | None = None,
+    ) -> _gi.Async[list[str]]: ...
+    @overload
+    @staticmethod
+    def get_mime_types_async(
+        cancellable: Gio.Cancellable | None,
+        callback: Gio._AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def get_mime_types_async(
+        cancellable: Gio.Cancellable | None = None,
+        *,
+        callback: Gio._AsyncReadyVarArgsCallback[None] | None,
+    ) -> None: ...
+    @staticmethod
+    def get_mime_types_finish(result: Gio.AsyncResult) -> list[str]: ...
+    def load(self) -> Image: ...
+    @overload
+    def load_async(
+        self, cancellable: Gio.Cancellable | None = None
+    ) -> _gi.Async[Image]: ...
+    @overload
+    def load_async(
+        self,
+        cancellable: Gio.Cancellable | None,
+        callback: Gio._AsyncReadyVarArgsCallback[Loader, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def load_async(
+        self,
+        cancellable: Gio.Cancellable | None = None,
+        *,
+        callback: Gio._AsyncReadyVarArgsCallback[Loader] | None,
+    ) -> None: ...
+    def load_finish(self, result: Gio.AsyncResult) -> Image: ...
+    @classmethod
+    def new(cls, file: Gio.File) -> Loader: ...
+    @classmethod
+    def new_for_bytes(cls, bytes: GLib.Bytes) -> Loader: ...
+    @classmethod
+    def new_for_stream(cls, stream: Gio.InputStream) -> Loader: ...
+    def set_accepted_memory_formats(
+        self, memory_format_selection: _MemoryFormatSelectionValueType
+    ) -> None: ...
+    def set_apply_transformations(self, apply_transformations: bool) -> None: ...
+    def set_sandbox_selector(
+        self, sandbox_selector: _SandboxSelectorValueType
+    ) -> None: ...
+
+class LoaderClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        LoaderClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class NewFrame(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        NewFrame(**properties)
+
+    Object GlyNewFrame
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def set_color_icc_profile(self, icc_profile: GLib.Bytes) -> bool: ...
+
+class NewFrameClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        NewFrameClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class MemoryFormatSelection(GObject.GFlags):
+    A8B8G8R8 = 64
+    A8R8G8B8 = 16
+    A8R8G8B8_PREMULTIPLIED = 2
+    B8G8R8 = 256
+    B8G8R8A8 = 8
+    B8G8R8A8_PREMULTIPLIED = 1
+    G16 = 4194304
+    G16A16 = 2097152
+    G16A16_PREMULTIPLIED = 1048576
+    G8 = 524288
+    G8A8 = 262144
+    G8A8_PREMULTIPLIED = 131072
+    R16G16B16 = 512
+    R16G16B16A16 = 2048
+    R16G16B16A16_FLOAT = 8192
+    R16G16B16A16_PREMULTIPLIED = 1024
+    R16G16B16_FLOAT = 4096
+    R32G32B32A32_FLOAT = 65536
+    R32G32B32A32_FLOAT_PREMULTIPLIED = 32768
+    R32G32B32_FLOAT = 16384
+    R8G8B8 = 128
+    R8G8B8A8 = 32
+    R8G8B8A8_PREMULTIPLIED = 4
+
+_MemoryFormatSelectionLiteralType: TypeAlias = Literal[
+    "A8b8g8r8",
+    "A8r8g8b8",
+    "A8r8g8b8Premultiplied",
+    "B8g8r8",
+    "B8g8r8a8",
+    "B8g8r8a8Premultiplied",
+    "G16",
+    "G16a16",
+    "G16a16Premultiplied",
+    "G8",
+    "G8a8",
+    "G8a8Premultiplied",
+    "R16g16b16",
+    "R16g16b16Float",
+    "R16g16b16a16",
+    "R16g16b16a16Float",
+    "R16g16b16a16Premultiplied",
+    "R32g32b32Float",
+    "R32g32b32a32Float",
+    "R32g32b32a32FloatPremultiplied",
+    "R8g8b8",
+    "R8g8b8a8",
+    "R8g8b8a8Premultiplied",
+    "a8b8g8r8",
+    "a8r8g8b8",
+    "a8r8g8b8-premultiplied",
+    "b8g8r8",
+    "b8g8r8a8",
+    "b8g8r8a8-premultiplied",
+    "g16",
+    "g16a16",
+    "g16a16-premultiplied",
+    "g8",
+    "g8a8",
+    "g8a8-premultiplied",
+    "r16g16b16",
+    "r16g16b16-float",
+    "r16g16b16a16",
+    "r16g16b16a16-float",
+    "r16g16b16a16-premultiplied",
+    "r32g32b32-float",
+    "r32g32b32a32-float",
+    "r32g32b32a32-float-premultiplied",
+    "r8g8b8",
+    "r8g8b8a8",
+    "r8g8b8a8-premultiplied",
+]
+_MemoryFormatSelectionValueType: TypeAlias = (
+    MemoryFormatSelection
+    | _MemoryFormatSelectionLiteralType
+    | tuple[_MemoryFormatSelectionLiteralType, ...]
+)
+
+class LoaderError(GObject.GEnum):
+    FAILED = 0
+    NO_MORE_FRAMES = 2
+    UNKNOWN_IMAGE_FORMAT = 1
+    @staticmethod
+    def quark() -> int: ...
+
+_LoaderErrorLiteralType: TypeAlias = Literal[
+    "Failed",
+    "NoMoreFrames",
+    "UnknownImageFormat",
+    "failed",
+    "no-more-frames",
+    "unknown-image-format",
+]
+_LoaderErrorValueType: TypeAlias = LoaderError | _LoaderErrorLiteralType
+
+class MemoryFormat(GObject.GEnum):
+    A8B8G8R8 = 6
+    A8R8G8B8 = 4
+    A8R8G8B8_PREMULTIPLIED = 1
+    B8G8R8 = 8
+    B8G8R8A8 = 3
+    B8G8R8A8_PREMULTIPLIED = 0
+    G16 = 22
+    G16A16 = 21
+    G16A16_PREMULTIPLIED = 20
+    G8 = 19
+    G8A8 = 18
+    G8A8_PREMULTIPLIED = 17
+    R16G16B16 = 9
+    R16G16B16A16 = 11
+    R16G16B16A16_FLOAT = 13
+    R16G16B16A16_PREMULTIPLIED = 10
+    R16G16B16_FLOAT = 12
+    R32G32B32A32_FLOAT = 16
+    R32G32B32A32_FLOAT_PREMULTIPLIED = 15
+    R32G32B32_FLOAT = 14
+    R8G8B8 = 7
+    R8G8B8A8 = 5
+    R8G8B8A8_PREMULTIPLIED = 2
+    @staticmethod
+    def has_alpha(memory_format: _MemoryFormatValueType) -> bool: ...
+    @staticmethod
+    def is_premultiplied(memory_format: _MemoryFormatValueType) -> bool: ...
+
+_MemoryFormatLiteralType: TypeAlias = Literal[
+    "A8b8g8r8",
+    "A8r8g8b8",
+    "A8r8g8b8Premultiplied",
+    "B8g8r8",
+    "B8g8r8a8",
+    "B8g8r8a8Premultiplied",
+    "G16",
+    "G16a16",
+    "G16a16Premultiplied",
+    "G8",
+    "G8a8",
+    "G8a8Premultiplied",
+    "R16g16b16",
+    "R16g16b16Float",
+    "R16g16b16a16",
+    "R16g16b16a16Float",
+    "R16g16b16a16Premultiplied",
+    "R32g32b32Float",
+    "R32g32b32a32Float",
+    "R32g32b32a32FloatPremultiplied",
+    "R8g8b8",
+    "R8g8b8a8",
+    "R8g8b8a8Premultiplied",
+    "a8b8g8r8",
+    "a8r8g8b8",
+    "a8r8g8b8-premultiplied",
+    "b8g8r8",
+    "b8g8r8a8",
+    "b8g8r8a8-premultiplied",
+    "g16",
+    "g16a16",
+    "g16a16-premultiplied",
+    "g8",
+    "g8a8",
+    "g8a8-premultiplied",
+    "r16g16b16",
+    "r16g16b16-float",
+    "r16g16b16a16",
+    "r16g16b16a16-float",
+    "r16g16b16a16-premultiplied",
+    "r32g32b32-float",
+    "r32g32b32a32-float",
+    "r32g32b32a32-float-premultiplied",
+    "r8g8b8",
+    "r8g8b8a8",
+    "r8g8b8a8-premultiplied",
+]
+_MemoryFormatValueType: TypeAlias = MemoryFormat | _MemoryFormatLiteralType
+
+class SandboxSelector(GObject.GEnum):
+    AUTO = 0
+    BWRAP = 1
+    FLATPAK_SPAWN = 2
+    NOT_SANDBOXED = 3
+
+_SandboxSelectorLiteralType: TypeAlias = Literal[
+    "Auto",
+    "Bwrap",
+    "FlatpakSpawn",
+    "NotSandboxed",
+    "auto",
+    "bwrap",
+    "flatpak-spawn",
+    "not-sandboxed",
+]
+_SandboxSelectorValueType: TypeAlias = SandboxSelector | _SandboxSelectorLiteralType

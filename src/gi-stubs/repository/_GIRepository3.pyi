@@ -1,22 +1,23 @@
-import typing
+from typing import Any
+from typing import Final
 
+from collections.abc import Sequence
+from enum import IntEnum
+from enum import IntFlag
+
+from gi import _gi
 from gi.repository import GLib
 from gi.repository import GObject
 
-T = typing.TypeVar("T")
-
-TYPE_TAG_N_TYPES: int = 22
-_lock = ...  # FIXME Constant
-_namespace: str = "GIRepository"
-_version: str = "3.0"
+TYPE_TAG_N_TYPES: Final[int]
 
 def invoke_error_quark() -> int: ...
 def type_tag_argument_from_hash_pointer(
-    storage_type: TypeTag, hash_pointer: None
+    storage_type: TypeTag, hash_pointer: int | Any | None = None
 ) -> Argument: ...
 def type_tag_hash_pointer_from_argument(
     storage_type: TypeTag, arg: Argument
-) -> None: ...
+) -> int: ...
 def type_tag_to_string(type: TypeTag) -> str: ...
 
 class ArgInfo(BaseInfo):
@@ -27,11 +28,12 @@ class ArgInfo(BaseInfo):
 
         ArgInfo(**properties)
     """
-
-    parent: BaseInfoStack = ...
-    padding: list[None] = ...
-    def get_closure_index(self) -> typing.Tuple[bool, int]: ...
-    def get_destroy_index(self) -> typing.Tuple[bool, int]: ...
+    @property
+    def parent(self) -> BaseInfoStack: ...
+    @property
+    def padding(self) -> list[int]: ...
+    def get_closure_index(self) -> tuple[bool, int]: ...
+    def get_destroy_index(self) -> tuple[bool, int]: ...
     def get_direction(self) -> Direction: ...
     def get_ownership_transfer(self) -> Transfer: ...
     def get_scope(self) -> ScopeType: ...
@@ -43,50 +45,30 @@ class ArgInfo(BaseInfo):
     def load_type_info(self) -> TypeInfo: ...
     def may_be_null(self) -> bool: ...
 
-class Argument(GObject.GPointer):
-    v_boolean = ...  # FIXME Constant
-    v_double = ...  # FIXME Constant
-    v_float = ...  # FIXME Constant
-    v_int = ...  # FIXME Constant
-    v_int16 = ...  # FIXME Constant
-    v_int32 = ...  # FIXME Constant
-    v_int64 = ...  # FIXME Constant
-    v_int8 = ...  # FIXME Constant
-    v_long = ...  # FIXME Constant
-    v_pointer = ...  # FIXME Constant
-    v_short = ...  # FIXME Constant
-    v_size = ...  # FIXME Constant
-    v_ssize = ...  # FIXME Constant
-    v_string = ...  # FIXME Constant
-    v_uint = ...  # FIXME Constant
-    v_uint16 = ...  # FIXME Constant
-    v_uint32 = ...  # FIXME Constant
-    v_uint64 = ...  # FIXME Constant
-    v_uint8 = ...  # FIXME Constant
-    v_ulong = ...  # FIXME Constant
-    v_ushort = ...  # FIXME Constant
+class Argument(_gi.Struct):
+    v_boolean = ...  # FIXME: Constant is missing typing annotation
+    v_double = ...  # FIXME: Constant is missing typing annotation
+    v_float = ...  # FIXME: Constant is missing typing annotation
+    v_int = ...  # FIXME: Constant is missing typing annotation
+    v_int16 = ...  # FIXME: Constant is missing typing annotation
+    v_int32 = ...  # FIXME: Constant is missing typing annotation
+    v_int64 = ...  # FIXME: Constant is missing typing annotation
+    v_int8 = ...  # FIXME: Constant is missing typing annotation
+    v_long = ...  # FIXME: Constant is missing typing annotation
+    v_pointer = ...  # FIXME: Constant is missing typing annotation
+    v_short = ...  # FIXME: Constant is missing typing annotation
+    v_size = ...  # FIXME: Constant is missing typing annotation
+    v_ssize = ...  # FIXME: Constant is missing typing annotation
+    v_string = ...  # FIXME: Constant is missing typing annotation
+    v_uint = ...  # FIXME: Constant is missing typing annotation
+    v_uint16 = ...  # FIXME: Constant is missing typing annotation
+    v_uint32 = ...  # FIXME: Constant is missing typing annotation
+    v_uint64 = ...  # FIXME: Constant is missing typing annotation
+    v_uint8 = ...  # FIXME: Constant is missing typing annotation
+    v_ulong = ...  # FIXME: Constant is missing typing annotation
+    v_ushort = ...  # FIXME: Constant is missing typing annotation
 
-class ArrayType:
-    ARRAY: ArrayType = 1
-    BYTE_ARRAY: ArrayType = 3
-    C: ArrayType = 0
-    PTR_ARRAY: ArrayType = 2
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
-
-class AttributeIter(GObject.GPointer):
+class AttributeIter(_gi.Struct):
     """
     :Constructors:
 
@@ -94,11 +76,10 @@ class AttributeIter(GObject.GPointer):
 
         AttributeIter()
     """
+    @property
+    def data(self) -> int: ...
 
-    data: None = ...
-    _dummy: list[None] = ...
-
-class BaseInfo:
+class BaseInfo(_gi.Fundamental):
     """
     :Constructors:
 
@@ -106,22 +87,23 @@ class BaseInfo:
 
         BaseInfo(**properties)
     """
-
     def clear(self) -> None: ...
     def equal(self, info2: BaseInfo) -> bool: ...
-    def get_attribute(self, name: str) -> typing.Optional[str]: ...
+    def get_attribute(self, name: str) -> str | None: ...
     def get_container(self) -> BaseInfo: ...
-    def get_name(self) -> typing.Optional[str]: ...
+    def get_name(self) -> str | None: ...
     def get_namespace(self) -> str: ...
     def get_typelib(self) -> Typelib: ...
     def is_deprecated(self) -> bool: ...
-    def iterate_attributes(self) -> typing.Tuple[bool, AttributeIter, str, str]: ...
+    def iterate_attributes(
+        self, iterator: AttributeIter
+    ) -> tuple[bool, AttributeIter, str, str]: ...
     def ref(self) -> BaseInfo: ...
     def unref(self) -> None: ...
 
-class BaseInfoClass(GObject.GPointer): ...
+class BaseInfoClass(_gi.Struct): ...
 
-class BaseInfoStack(GObject.GPointer):
+class BaseInfoStack(_gi.Struct):
     """
     :Constructors:
 
@@ -129,12 +111,16 @@ class BaseInfoStack(GObject.GPointer):
 
         BaseInfoStack()
     """
-
-    parent_instance: GObject.TypeInstance = ...
-    dummy0: int = ...
-    dummy1: list[None] = ...
-    dummy2: list[int] = ...
-    dummy3: list[None] = ...
+    @property
+    def parent_instance(self) -> GObject.TypeInstance: ...
+    @property
+    def dummy0(self) -> int: ...
+    @property
+    def dummy1(self) -> list[int]: ...
+    @property
+    def dummy2(self) -> list[int]: ...
+    @property
+    def dummy3(self) -> list[int]: ...
 
 class CallableInfo(BaseInfo):
     """
@@ -144,34 +130,40 @@ class CallableInfo(BaseInfo):
 
         CallableInfo(**properties)
     """
-
     def can_throw_gerror(self) -> bool: ...
     def get_arg(self, n: int) -> ArgInfo: ...
-    def get_async_function(self) -> typing.Optional[CallableInfo]: ...
+    def get_async_function(self) -> CallableInfo | None: ...
     def get_caller_owns(self) -> Transfer: ...
-    def get_finish_function(self) -> typing.Optional[CallableInfo]: ...
+    def get_finish_function(self) -> CallableInfo | None: ...
     def get_instance_ownership_transfer(self) -> Transfer: ...
     def get_n_args(self) -> int: ...
-    def get_return_attribute(self, name: str) -> typing.Optional[str]: ...
+    def get_return_attribute(self, name: str) -> str | None: ...
     def get_return_type(self) -> TypeInfo: ...
-    def get_sync_function(self) -> typing.Optional[CallableInfo]: ...
+    def get_sync_function(self) -> CallableInfo | None: ...
     def invoke(
         self,
-        function: None,
-        in_args: typing.Sequence[Argument],
-        out_args: typing.Sequence[Argument],
-    ) -> typing.Tuple[bool, Argument]: ...
+        function: int | Any | None,
+        in_args: Sequence[Argument],
+        out_args: Sequence[Argument],
+    ) -> tuple[bool, Argument]: ...
     def is_async(self) -> bool: ...
     def is_method(self) -> bool: ...
     def iterate_return_attributes(
-        self,
-    ) -> typing.Tuple[bool, AttributeIter, str, str]: ...
+        self, iterator: AttributeIter
+    ) -> tuple[bool, AttributeIter, str, str]: ...
     def load_arg(self, n: int) -> ArgInfo: ...
     def load_return_type(self) -> TypeInfo: ...
     def may_return_null(self) -> bool: ...
     def skip_return(self) -> bool: ...
 
-class CallbackInfo(CallableInfo): ...
+class CallbackInfo(CallableInfo):
+    """
+    :Constructors:
+
+    ::
+
+        CallbackInfo(**properties)
+    """
 
 class ConstantInfo(BaseInfo):
     """
@@ -181,27 +173,7 @@ class ConstantInfo(BaseInfo):
 
         ConstantInfo(**properties)
     """
-
     def get_type_info(self) -> TypeInfo: ...
-
-class Direction:
-    IN: Direction = 0
-    INOUT: Direction = 2
-    OUT: Direction = 1
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
 
 class EnumInfo(RegisteredTypeInfo):
     """
@@ -211,8 +183,7 @@ class EnumInfo(RegisteredTypeInfo):
 
         EnumInfo(**properties)
     """
-
-    def get_error_domain(self) -> typing.Optional[str]: ...
+    def get_error_domain(self) -> str | None: ...
     def get_method(self, n: int) -> FunctionInfo: ...
     def get_n_methods(self) -> int: ...
     def get_n_values(self) -> int: ...
@@ -227,31 +198,19 @@ class FieldInfo(BaseInfo):
 
         FieldInfo(**properties)
     """
-
     def get_flags(self) -> FieldInfoFlags: ...
     def get_offset(self) -> int: ...
     def get_size(self) -> int: ...
     def get_type_info(self) -> TypeInfo: ...
 
-class FieldInfoFlags:
-    READABLE: FieldInfoFlags = 1
-    WRITABLE: FieldInfoFlags = 2
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
+class FlagsInfo(EnumInfo):
+    """
+    :Constructors:
 
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
+    ::
 
-class FlagsInfo(EnumInfo): ...
+        FlagsInfo(**properties)
+    """
 
 class FunctionInfo(CallableInfo):
     """
@@ -261,33 +220,10 @@ class FunctionInfo(CallableInfo):
 
         FunctionInfo(**properties)
     """
-
     def get_flags(self) -> FunctionInfoFlags: ...
-    def get_property(self) -> typing.Optional[PropertyInfo]: ...
+    def get_property(self) -> PropertyInfo | None: ...
     def get_symbol(self) -> str: ...
-    def get_vfunc(self) -> typing.Optional[VFuncInfo]: ...
-
-class FunctionInfoFlags:
-    IS_ASYNC: FunctionInfoFlags = 32
-    IS_CONSTRUCTOR: FunctionInfoFlags = 2
-    IS_GETTER: FunctionInfoFlags = 4
-    IS_METHOD: FunctionInfoFlags = 1
-    IS_SETTER: FunctionInfoFlags = 8
-    WRAPS_VFUNC: FunctionInfoFlags = 16
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
+    def get_vfunc(self) -> VFuncInfo | None: ...
 
 class InterfaceInfo(RegisteredTypeInfo):
     """
@@ -297,12 +233,11 @@ class InterfaceInfo(RegisteredTypeInfo):
 
         InterfaceInfo(**properties)
     """
-
-    def find_method(self, name: str) -> typing.Optional[FunctionInfo]: ...
-    def find_signal(self, name: str) -> typing.Optional[SignalInfo]: ...
-    def find_vfunc(self, name: str) -> typing.Optional[VFuncInfo]: ...
+    def find_method(self, name: str) -> FunctionInfo | None: ...
+    def find_signal(self, name: str) -> SignalInfo | None: ...
+    def find_vfunc(self, name: str) -> VFuncInfo | None: ...
     def get_constant(self, n: int) -> ConstantInfo: ...
-    def get_iface_struct(self) -> typing.Optional[StructInfo]: ...
+    def get_iface_struct(self) -> StructInfo | None: ...
     def get_method(self, n: int) -> FunctionInfo: ...
     def get_n_constants(self) -> int: ...
     def get_n_methods(self) -> int: ...
@@ -315,25 +250,6 @@ class InterfaceInfo(RegisteredTypeInfo):
     def get_signal(self, n: int) -> SignalInfo: ...
     def get_vfunc(self, n: int) -> VFuncInfo: ...
 
-class InvokeError:
-    ARGUMENT_MISMATCH: InvokeError = 2
-    FAILED: InvokeError = 0
-    SYMBOL_NOT_FOUND: InvokeError = 1
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
-
 class ObjectInfo(RegisteredTypeInfo):
     """
     :Constructors:
@@ -342,23 +258,22 @@ class ObjectInfo(RegisteredTypeInfo):
 
         ObjectInfo(**properties)
     """
-
-    def find_method(self, name: str) -> typing.Optional[FunctionInfo]: ...
+    def find_method(self, name: str) -> FunctionInfo | None: ...
     def find_method_using_interfaces(
         self, name: str
-    ) -> typing.Tuple[typing.Optional[FunctionInfo], BaseInfo]: ...
-    def find_signal(self, name: str) -> typing.Optional[SignalInfo]: ...
-    def find_vfunc(self, name: str) -> typing.Optional[VFuncInfo]: ...
+    ) -> tuple[FunctionInfo | None, BaseInfo | None]: ...
+    def find_signal(self, name: str) -> SignalInfo | None: ...
+    def find_vfunc(self, name: str) -> VFuncInfo | None: ...
     def find_vfunc_using_interfaces(
         self, name: str
-    ) -> typing.Tuple[typing.Optional[VFuncInfo], BaseInfo]: ...
+    ) -> tuple[VFuncInfo | None, BaseInfo | None]: ...
     def get_abstract(self) -> bool: ...
-    def get_class_struct(self) -> typing.Optional[StructInfo]: ...
+    def get_class_struct(self) -> StructInfo | None: ...
     def get_constant(self, n: int) -> ConstantInfo: ...
     def get_field(self, n: int) -> FieldInfo: ...
     def get_final(self) -> bool: ...
     def get_fundamental(self) -> bool: ...
-    def get_get_value_function_name(self) -> typing.Optional[str]: ...
+    def get_get_value_function_name(self) -> str | None: ...
     def get_interface(self, n: int) -> InterfaceInfo: ...
     def get_method(self, n: int) -> FunctionInfo: ...
     def get_n_constants(self) -> int: ...
@@ -368,14 +283,14 @@ class ObjectInfo(RegisteredTypeInfo):
     def get_n_properties(self) -> int: ...
     def get_n_signals(self) -> int: ...
     def get_n_vfuncs(self) -> int: ...
-    def get_parent(self) -> typing.Optional[ObjectInfo]: ...
+    def get_parent(self) -> ObjectInfo | None: ...
     def get_property(self, n: int) -> PropertyInfo: ...
-    def get_ref_function_name(self) -> typing.Optional[str]: ...
-    def get_set_value_function_name(self) -> typing.Optional[str]: ...
+    def get_ref_function_name(self) -> str | None: ...
+    def get_set_value_function_name(self) -> str | None: ...
     def get_signal(self, n: int) -> SignalInfo: ...
     def get_type_init_function_name(self) -> str: ...
     def get_type_name(self) -> str: ...
-    def get_unref_function_name(self) -> typing.Optional[str]: ...
+    def get_unref_function_name(self) -> str | None: ...
     def get_vfunc(self, n: int) -> VFuncInfo: ...
 
 class PropertyInfo(BaseInfo):
@@ -386,11 +301,10 @@ class PropertyInfo(BaseInfo):
 
         PropertyInfo(**properties)
     """
-
     def get_flags(self) -> GObject.ParamFlags: ...
-    def get_getter(self) -> typing.Optional[FunctionInfo]: ...
+    def get_getter(self) -> FunctionInfo | None: ...
     def get_ownership_transfer(self) -> Transfer: ...
-    def get_setter(self) -> typing.Optional[FunctionInfo]: ...
+    def get_setter(self) -> FunctionInfo | None: ...
     def get_type_info(self) -> TypeInfo: ...
 
 class RegisteredTypeInfo(BaseInfo):
@@ -401,10 +315,9 @@ class RegisteredTypeInfo(BaseInfo):
 
         RegisteredTypeInfo(**properties)
     """
-
-    def get_g_type(self) -> typing.Type[typing.Any]: ...
-    def get_type_init_function_name(self) -> typing.Optional[str]: ...
-    def get_type_name(self) -> typing.Optional[str]: ...
+    def get_g_type(self) -> type[Any]: ...
+    def get_type_init_function_name(self) -> str | None: ...
+    def get_type_name(self) -> str | None: ...
     def is_boxed(self) -> bool: ...
 
 class Repository(GObject.Object):
@@ -421,52 +334,48 @@ class Repository(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def dump(input_filename: str, output_filename: str) -> bool: ...
+    @staticmethod
+    def dup_default() -> Repository: ...
     def enumerate_versions(self, namespace_: str) -> list[str]: ...
     @staticmethod
     def error_quark() -> int: ...
-    def find_by_error_domain(self, domain: int) -> typing.Optional[EnumInfo]: ...
-    def find_by_gtype(
-        self, gtype: typing.Type[typing.Any]
-    ) -> typing.Optional[BaseInfo]: ...
-    def find_by_name(self, namespace_: str, name: str) -> typing.Optional[BaseInfo]: ...
-    def get_c_prefix(self, namespace_: str) -> typing.Optional[str]: ...
+    def find_by_error_domain(self, domain: int) -> EnumInfo | None: ...
+    def find_by_gtype(self, gtype: type[Any]) -> BaseInfo | None: ...
+    def find_by_name(self, namespace_: str, name: str) -> BaseInfo | None: ...
+    def get_c_prefix(self, namespace_: str) -> str | None: ...
     def get_dependencies(self, namespace_: str) -> list[str]: ...
     def get_immediate_dependencies(self, namespace_: str) -> list[str]: ...
     def get_info(self, namespace_: str, idx: int) -> BaseInfo: ...
     def get_library_path(self) -> list[str]: ...
     def get_loaded_namespaces(self) -> list[str]: ...
     def get_n_infos(self, namespace_: str) -> int: ...
-    def get_object_gtype_interfaces(
-        self, gtype: typing.Type[typing.Any]
-    ) -> list[InterfaceInfo]: ...
+    def get_object_gtype_interfaces(self, gtype: type[Any]) -> list[InterfaceInfo]: ...
     @staticmethod
     def get_option_group() -> GLib.OptionGroup: ...
     def get_search_path(self) -> list[str]: ...
-    def get_shared_libraries(self, namespace_: str) -> typing.Optional[list[str]]: ...
-    def get_typelib_path(self, namespace_: str) -> typing.Optional[str]: ...
+    def get_shared_libraries(self, namespace_: str) -> list[str]: ...
+    def get_typelib_path(self, namespace_: str) -> str | None: ...
     def get_version(self, namespace_: str) -> str: ...
-    def is_registered(
-        self, namespace_: str, version: typing.Optional[str] = None
-    ) -> bool: ...
+    def is_registered(self, namespace_: str, version: str | None = None) -> bool: ...
     def load_typelib(self, typelib: Typelib, flags: RepositoryLoadFlags) -> str: ...
-    def new() -> Repository: ...  # FIXME Function
+    @classmethod
+    def new(cls) -> Repository: ...
     def prepend_library_path(self, directory: str) -> None: ...
     def prepend_search_path(self, directory: str) -> None: ...
     def require(
-        self, namespace_: str, version: typing.Optional[str], flags: RepositoryLoadFlags
+        self, namespace_: str, version: str | None, flags: RepositoryLoadFlags
     ) -> Typelib: ...
     def require_private(
         self,
         typelib_dir: str,
         namespace_: str,
-        version: typing.Optional[str],
+        version: str | None,
         flags: RepositoryLoadFlags,
     ) -> Typelib: ...
 
-class RepositoryClass(GObject.GPointer):
+class RepositoryClass(_gi.Struct):
     """
     :Constructors:
 
@@ -474,66 +383,8 @@ class RepositoryClass(GObject.GPointer):
 
         RepositoryClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-
-class RepositoryError:
-    LIBRARY_NOT_FOUND: RepositoryError = 3
-    NAMESPACE_MISMATCH: RepositoryError = 1
-    NAMESPACE_VERSION_CONFLICT: RepositoryError = 2
-    TYPELIB_NOT_FOUND: RepositoryError = 0
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
-
-class RepositoryLoadFlags:
-    LAZY: RepositoryLoadFlags = 1
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
-
-class ScopeType:
-    ASYNC: ScopeType = 2
-    CALL: ScopeType = 1
-    FOREVER: ScopeType = 4
-    INVALID: ScopeType = 0
-    NOTIFIED: ScopeType = 3
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SignalInfo(CallableInfo):
     """
@@ -543,8 +394,7 @@ class SignalInfo(CallableInfo):
 
         SignalInfo(**properties)
     """
-
-    def get_class_closure(self) -> typing.Optional[VFuncInfo]: ...
+    def get_class_closure(self) -> VFuncInfo | None: ...
     def get_flags(self) -> GObject.SignalFlags: ...
     def true_stops_emit(self) -> bool: ...
 
@@ -556,38 +406,18 @@ class StructInfo(RegisteredTypeInfo):
 
         StructInfo(**properties)
     """
-
-    def find_field(self, name: str) -> typing.Optional[FieldInfo]: ...
-    def find_method(self, name: str) -> typing.Optional[FunctionInfo]: ...
+    def find_field(self, name: str) -> FieldInfo | None: ...
+    def find_method(self, name: str) -> FunctionInfo | None: ...
     def get_alignment(self) -> int: ...
-    def get_copy_function_name(self) -> typing.Optional[str]: ...
+    def get_copy_function_name(self) -> str | None: ...
     def get_field(self, n: int) -> FieldInfo: ...
-    def get_free_function_name(self) -> typing.Optional[str]: ...
+    def get_free_function_name(self) -> str | None: ...
     def get_method(self, n: int) -> FunctionInfo: ...
     def get_n_fields(self) -> int: ...
     def get_n_methods(self) -> int: ...
     def get_size(self) -> int: ...
     def is_foreign(self) -> bool: ...
     def is_gtype_struct(self) -> bool: ...
-
-class Transfer:
-    CONTAINER: Transfer = 1
-    EVERYTHING: Transfer = 2
-    NOTHING: Transfer = 0
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
 
 class TypeInfo(BaseInfo):
     """
@@ -597,58 +427,23 @@ class TypeInfo(BaseInfo):
 
         TypeInfo(**properties)
     """
-
-    parent: BaseInfoStack = ...
-    padding: list[None] = ...
-    def argument_from_hash_pointer(self, hash_pointer: None) -> Argument: ...
-    def get_array_fixed_size(self) -> typing.Tuple[bool, int]: ...
-    def get_array_length_index(self) -> typing.Tuple[bool, int]: ...
+    @property
+    def parent(self) -> BaseInfoStack: ...
+    @property
+    def padding(self) -> list[int]: ...
+    def argument_from_hash_pointer(
+        self, hash_pointer: int | Any | None = None
+    ) -> Argument: ...
+    def get_array_fixed_size(self) -> tuple[bool, int]: ...
+    def get_array_length_index(self) -> tuple[bool, int]: ...
     def get_array_type(self) -> ArrayType: ...
-    def get_interface(self) -> typing.Optional[BaseInfo]: ...
-    def get_param_type(self, n: int) -> typing.Optional[TypeInfo]: ...
+    def get_interface(self) -> BaseInfo | None: ...
+    def get_param_type(self, n: int) -> TypeInfo | None: ...
     def get_storage_type(self) -> TypeTag: ...
     def get_tag(self) -> TypeTag: ...
-    def hash_pointer_from_argument(self, arg: Argument) -> None: ...
+    def hash_pointer_from_argument(self, arg: Argument) -> int: ...
     def is_pointer(self) -> bool: ...
     def is_zero_terminated(self) -> bool: ...
-
-class TypeTag:
-    ARRAY: TypeTag = 15
-    BOOLEAN: TypeTag = 1
-    DOUBLE: TypeTag = 11
-    ERROR: TypeTag = 20
-    FILENAME: TypeTag = 14
-    FLOAT: TypeTag = 10
-    GHASH: TypeTag = 19
-    GLIST: TypeTag = 17
-    GSLIST: TypeTag = 18
-    GTYPE: TypeTag = 12
-    INT16: TypeTag = 4
-    INT32: TypeTag = 6
-    INT64: TypeTag = 8
-    INT8: TypeTag = 2
-    INTERFACE: TypeTag = 16
-    UINT16: TypeTag = 5
-    UINT32: TypeTag = 7
-    UINT64: TypeTag = 9
-    UINT8: TypeTag = 3
-    UNICHAR: TypeTag = 21
-    UTF8: TypeTag = 13
-    VOID: TypeTag = 0
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
 
 class Typelib(GObject.GBoxed):
     """
@@ -658,11 +453,11 @@ class Typelib(GObject.GBoxed):
 
         new_from_bytes(bytes:GLib.Bytes) -> GIRepository.Typelib
     """
-
     def get_namespace(self) -> str: ...
-    def new_from_bytes(bytes: GLib.Bytes) -> Typelib: ...  # FIXME Function
+    @classmethod
+    def new_from_bytes(cls, bytes: GLib.Bytes) -> Typelib: ...
     def ref(self) -> Typelib: ...
-    def symbol(self, symbol_name: str) -> typing.Tuple[bool, None]: ...
+    def symbol(self, symbol_name: str) -> tuple[bool, int]: ...
     def unref(self) -> None: ...
 
 class UnionInfo(RegisteredTypeInfo):
@@ -673,22 +468,28 @@ class UnionInfo(RegisteredTypeInfo):
 
         UnionInfo(**properties)
     """
-
-    def find_method(self, name: str) -> typing.Optional[FunctionInfo]: ...
+    def find_method(self, name: str) -> FunctionInfo | None: ...
     def get_alignment(self) -> int: ...
-    def get_copy_function_name(self) -> typing.Optional[str]: ...
-    def get_discriminator(self, n: int) -> typing.Optional[ConstantInfo]: ...
-    def get_discriminator_offset(self) -> typing.Tuple[bool, int]: ...
-    def get_discriminator_type(self) -> typing.Optional[TypeInfo]: ...
+    def get_copy_function_name(self) -> str | None: ...
+    def get_discriminator(self, n: int) -> ConstantInfo | None: ...
+    def get_discriminator_offset(self) -> tuple[bool, int]: ...
+    def get_discriminator_type(self) -> TypeInfo | None: ...
     def get_field(self, n: int) -> FieldInfo: ...
-    def get_free_function_name(self) -> typing.Optional[str]: ...
+    def get_free_function_name(self) -> str | None: ...
     def get_method(self, n: int) -> FunctionInfo: ...
     def get_n_fields(self) -> int: ...
     def get_n_methods(self) -> int: ...
     def get_size(self) -> int: ...
     def is_discriminated(self) -> bool: ...
 
-class UnresolvedInfo(BaseInfo): ...
+class UnresolvedInfo(BaseInfo):
+    """
+    :Constructors:
+
+    ::
+
+        UnresolvedInfo(**properties)
+    """
 
 class VFuncInfo(CallableInfo):
     """
@@ -698,31 +499,11 @@ class VFuncInfo(CallableInfo):
 
         VFuncInfo(**properties)
     """
-
-    def get_address(self, implementor_gtype: typing.Type[typing.Any]) -> None: ...
+    def get_address(self, implementor_gtype: type[Any]) -> int: ...
     def get_flags(self) -> VFuncInfoFlags: ...
-    def get_invoker(self) -> typing.Optional[FunctionInfo]: ...
+    def get_invoker(self) -> FunctionInfo | None: ...
     def get_offset(self) -> int: ...
-    def get_signal(self) -> typing.Optional[SignalInfo]: ...
-
-class VFuncInfoFlags:
-    CHAIN_UP: VFuncInfoFlags = 1
-    NOT_OVERRIDE: VFuncInfoFlags = 4
-    OVERRIDE: VFuncInfoFlags = 2
-    denominator = ...  # FIXME Constant
-    imag = ...  # FIXME Constant
-    numerator = ...  # FIXME Constant
-    real = ...  # FIXME Constant
-
-    def as_integer_ratio(self, /): ...  # FIXME Function
-    def bit_count(self, /): ...  # FIXME Function
-    def bit_length(self, /): ...  # FIXME Function
-    def conjugate(self, *args, **kwargs): ...  # FIXME Function
-    def from_bytes(bytes, byteorder="big", *, signed=False): ...  # FIXME Function
-    def is_integer(self, /): ...  # FIXME Function
-    def to_bytes(
-        self, /, length=1, byteorder="big", *, signed=False
-    ): ...  # FIXME Function
+    def get_signal(self) -> SignalInfo | None: ...
 
 class ValueInfo(BaseInfo):
     """
@@ -732,5 +513,86 @@ class ValueInfo(BaseInfo):
 
         ValueInfo(**properties)
     """
-
     def get_value(self) -> int: ...
+
+class FieldInfoFlags(IntFlag):
+    INFO_FLAGS_NONE = 0
+    IS_READABLE = 1
+    IS_WRITABLE = 2
+
+class FunctionInfoFlags(IntFlag):
+    INFO_FLAGS_NONE = 0
+    IS_ASYNC = 32
+    IS_CONSTRUCTOR = 2
+    IS_GETTER = 4
+    IS_METHOD = 1
+    IS_SETTER = 8
+    WRAPS_VFUNC = 16
+
+class RepositoryLoadFlags(IntFlag):
+    LAZY = 1
+    NONE = 0
+
+class VFuncInfoFlags(IntFlag):
+    INFO_FLAGS_NONE = 0
+    MUST_CHAIN_UP = 1
+    MUST_NOT_OVERRIDE = 4
+    MUST_OVERRIDE = 2
+
+class ArrayType(IntEnum):
+    ARRAY = 1
+    BYTE_ARRAY = 3
+    C = 0
+    PTR_ARRAY = 2
+
+class Direction(IntEnum):
+    IN = 0
+    INOUT = 2
+    OUT = 1
+
+class InvokeError(IntEnum):
+    ARGUMENT_MISMATCH = 2
+    FAILED = 0
+    SYMBOL_NOT_FOUND = 1
+
+class RepositoryError(IntEnum):
+    LIBRARY_NOT_FOUND = 3
+    NAMESPACE_MISMATCH = 1
+    NAMESPACE_VERSION_CONFLICT = 2
+    TYPELIB_NOT_FOUND = 0
+
+class ScopeType(IntEnum):
+    ASYNC = 2
+    CALL = 1
+    FOREVER = 4
+    INVALID = 0
+    NOTIFIED = 3
+
+class Transfer(IntEnum):
+    CONTAINER = 1
+    EVERYTHING = 2
+    NOTHING = 0
+
+class TypeTag(IntEnum):
+    ARRAY = 15
+    BOOLEAN = 1
+    DOUBLE = 11
+    ERROR = 20
+    FILENAME = 14
+    FLOAT = 10
+    GHASH = 19
+    GLIST = 17
+    GSLIST = 18
+    GTYPE = 12
+    INT16 = 4
+    INT32 = 6
+    INT64 = 8
+    INT8 = 2
+    INTERFACE = 16
+    UINT16 = 5
+    UINT32 = 7
+    UINT64 = 9
+    UINT8 = 3
+    UNICHAR = 21
+    UTF8 = 13
+    VOID = 0

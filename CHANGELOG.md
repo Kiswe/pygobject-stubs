@@ -1,3 +1,140 @@
+# 2.17.0 (18 Mar 2026)
+
+## Feature
+
+* Add Aravis 0.8 ([#266](https://github.com/pygobject/pygobject-stubs/issues/266)) (#266)
+* Add ECal 2.0
+* Add EDataServer 1.2
+* Add ICalGLib 3.0
+* Support Generic[T] base class
+
+## Typing
+
+* Improve type hints for
+    - Adw
+    - DBus
+    - DBusGLib
+    - Gdk4
+    - GdkWayland
+    - Gio
+    - GioUnix
+    - GLib
+    - GObject
+    - Gsk
+    - Gst
+    - Gtk4
+    - GtkSource5
+    - Pango
+
+## Change
+
+* Require PyGObject>=3.55.0
+
+## Bug Fixes
+
+* Add type annotation for override module fields
+* Ignore GObject __init__ override
+* Ignore PYI016 - Duplicate union member `None`
+* Get the correct list of attributes for a class
+* __init__() and set_properties() does not allow positional args
+* Add stub for __exit__()
+* Generator: Get function name via name attribute if available
+
+# 2.16.0 (08 Dec 2025)
+
+## Improvements
+
+* Remove FIXME when override function is typed
+
+## Typing
+
+* Improve type hints for
+    - Gst*
+
+## Bug Fixes
+
+* Gst module cannot reference itself
+* Add [@staticmethod](https://github.com/staticmethod) for override methods
+
+# 2.15.0 (01 Dec 2025)
+
+## Feature
+
+* Add Gly
+* Add GlyGtk4
+* Add overridden function docstring
+
+## Improvements
+
+* Add non-GI base classes
+* Allow stub for some special python methods
+
+## Typing
+
+* Improve type hints for
+    - Adw
+    - Gdk4
+    - GdkPixbuf
+    - GdkX11
+    - GLib
+    - GObject
+    - Gsk
+    - GSound
+    - Gst*
+    - Gtk4
+    - Pango
+    - PangoCairo
+    - Spelling
+
+## Change
+
+* Filter out private constants and fields
+
+## Bug Fixes
+
+* Correctly skip field if a method has the same name
+* skip closure/destroy arguments preceding current arg
+
+# 2.14.0 (17 Sep 2025)
+
+## Feature
+
+* Add GIRepository 3.0
+* Add win32 1.0
+* Add GLibWin32 2.0
+* Add GioWin32 2.0
+* Add GdkWin32 3.0 and 4.0
+* Add Atspi ([#215](https://github.com/pygobject/pygobject-stubs/issues/215)) (#215)
+* Add XdpGtk4 ([#212](https://github.com/pygobject/pygobject-stubs/issues/212)) (#212#203)
+* Add GExiv2 ([#209](https://github.com/pygobject/pygobject-stubs/issues/209)) (#209)
+
+## Typing
+
+* Improve type hints for
+    - Adw
+    - Gdk4
+    - GdkPixbuf
+    - GdkX11
+    - Gio
+    - Gio
+    - GIRepository 2.0
+    - GLib
+    - GObject
+    - Graphene
+    - Gsk
+    - Gtk4
+    - Pango
+    - PangoCairo
+    - PyGObject
+    - Secret
+    - Soup3
+    - Spelling
+
+## Bug Fixes
+
+* Generator: Handle enums with no attributes
+* Generator: Convert Flags with invalid names to int
+
 # 2.13.0 (11 Mar 2025)
 
 ## Feature

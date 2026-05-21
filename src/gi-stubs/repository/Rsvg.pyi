@@ -1,130 +1,170 @@
-from typing import Any
-from typing import Callable
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
+from typing import Final
+from typing import Literal
+from typing import type_check_only
+from typing import TypeAlias
+from typing_extensions import TypeVar
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
 
-from gi.repository import GdkPixbuf
+from collections.abc import Callable
+from collections.abc import Sequence
+from enum import IntEnum
+
+import cairo
+from gi import _gi
 from gi.repository import Gio
 from gi.repository import GObject
 
-MAJOR_VERSION: int = 2
-MICRO_VERSION: int = 5
-MINOR_VERSION: int = 54
-VERSION: str = "2.54.5"
-_lock = ...  # FIXME Constant
-_namespace: str = "Rsvg"
-_version: str = "2.0"
+_SomeSurface = TypeVar("_SomeSurface", bound=cairo.Surface)
+_DataTs = TypeVarTuple("_DataTs", default=Unpack[tuple[()]])
+
+HAVE_CSS: Final = True
+HAVE_PIXBUF: Final[int]
+HAVE_SVGZ: Final = True
+MAJOR_VERSION: Final[int]
+MICRO_VERSION: Final[int]
+MINOR_VERSION: Final[int]
+VERSION: Final = "2.61.0"
 
 def cleanup() -> None: ...
 def error_quark() -> int: ...
 def init() -> None: ...
-def pixbuf_from_file(filename: str) -> Optional[GdkPixbuf.Pixbuf]: ...
-def pixbuf_from_file_at_max_size(
-    filename: str, max_width: int, max_height: int
-) -> Optional[GdkPixbuf.Pixbuf]: ...
-def pixbuf_from_file_at_size(
-    filename: str, width: int, height: int
-) -> Optional[GdkPixbuf.Pixbuf]: ...
-def pixbuf_from_file_at_zoom(
-    filename: str, x_zoom: float, y_zoom: float
-) -> Optional[GdkPixbuf.Pixbuf]: ...
-def pixbuf_from_file_at_zoom_with_max(
-    filename: str, x_zoom: float, y_zoom: float, max_width: int, max_height: int
-) -> Optional[GdkPixbuf.Pixbuf]: ...
 def set_default_dpi(dpi: float) -> None: ...
 def set_default_dpi_x_y(dpi_x: float, dpi_y: float) -> None: ...
 def term() -> None: ...
 
-class DimensionData(GObject.GPointer):
-    width: int = ...
-    height: int = ...
-    em: float = ...
-    ex: float = ...
+class DimensionData(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        DimensionData()
+    """
+
+    width: int
+    height: int
+    em: float
+    ex: float
 
 class Handle(GObject.Object):
-    class Props:
+    """
+    :Constructors:
+
+    ::
+
+        Handle(**properties)
+        new() -> Rsvg.Handle
+        new_from_data(data:list) -> Rsvg.Handle or None
+        new_from_file(filename:str) -> Rsvg.Handle or None
+        new_from_gfile_sync(file:Gio.File, flags:Rsvg.HandleFlags, cancellable:Gio.Cancellable=None) -> Rsvg.Handle or None
+        new_from_stream_sync(input_stream:Gio.InputStream, base_file:Gio.File=None, flags:Rsvg.HandleFlags, cancellable:Gio.Cancellable=None) -> Rsvg.Handle or None
+        new_with_flags(flags:Rsvg.HandleFlags) -> Rsvg.Handle
+
+    Object RsvgHandle
+
+    Properties from RsvgHandle:
+      dpi-x -> gdouble: dpi-x
+      dpi-y -> gdouble: dpi-y
+      flags -> RsvgHandleFlags: flags
+      base-uri -> gchararray: base-uri
+      width -> gint: width
+      height -> gint: height
+      em -> gdouble: em
+      ex -> gdouble: ex
+      title -> gchararray: title
+      desc -> gchararray: desc
+      metadata -> gchararray: metadata
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(GObject.Object.Props):
         base_uri: str
-        desc: str
+        @property
+        def desc(self) -> str | None: ...
         dpi_x: float
         dpi_y: float
-        em: float
-        ex: float
-        flags: HandleFlags
-        height: int
-        metadata: str
-        title: str
-        width: int
+        @property
+        def em(self) -> float: ...
+        @property
+        def ex(self) -> float: ...
+        @property
+        def flags(self) -> HandleFlags: ...
+        @property
+        def height(self) -> int: ...
+        @property
+        def metadata(self) -> str | None: ...
+        @property
+        def title(self) -> str | None: ...
+        @property
+        def width(self) -> int: ...
 
-    props: Props = ...
-    parent: GObject.Object = ...
-    _abi_padding: list[None] = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent(self) -> GObject.Object: ...
     def __init__(
         self,
+        *,
         base_uri: str = ...,
         dpi_x: float = ...,
         dpi_y: float = ...,
-        flags: HandleFlags = ...,
-    ): ...
+        flags: _HandleFlagsValueType = ...,
+    ) -> None: ...
     def close(self) -> bool: ...
     def free(self) -> None: ...
     def get_base_uri(self) -> str: ...
-    def get_desc(self) -> Optional[str]: ...
+    def get_desc(self) -> str | None: ...
     def get_dimensions(self) -> DimensionData: ...
     def get_dimensions_sub(
-        self, id: Optional[str] = None
-    ) -> Tuple[bool, DimensionData]: ...
+        self, id: str | None = None
+    ) -> tuple[bool, DimensionData]: ...
     def get_geometry_for_element(
-        self, id: Optional[str] = None
-    ) -> Tuple[bool, Rectangle, Rectangle]: ...
+        self, id: str | None = None
+    ) -> tuple[bool, Rectangle, Rectangle]: ...
     def get_geometry_for_layer(
-        self, id: Optional[str], viewport: Rectangle
-    ) -> Tuple[bool, Rectangle, Rectangle]: ...
+        self, id: str | None, viewport: Rectangle
+    ) -> tuple[bool, Rectangle, Rectangle]: ...
     def get_intrinsic_dimensions(
         self,
-    ) -> Tuple[bool, Length, bool, Length, bool, Rectangle]: ...
-    def get_intrinsic_size_in_pixels(self) -> Tuple[bool, float, float]: ...
-    def get_metadata(self) -> Optional[str]: ...
-    def get_pixbuf(self) -> Optional[GdkPixbuf.Pixbuf]: ...
-    def get_pixbuf_sub(
-        self, id: Optional[str] = None
-    ) -> Optional[GdkPixbuf.Pixbuf]: ...
-    def get_position_sub(
-        self, id: Optional[str] = None
-    ) -> Tuple[bool, PositionData]: ...
-    def get_title(self) -> Optional[str]: ...
+    ) -> tuple[bool, Length, bool, Length, bool, Rectangle]: ...
+    def get_intrinsic_size_in_pixels(self) -> tuple[bool, float, float]: ...
+    def get_metadata(self) -> str | None: ...
+    def get_position_sub(self, id: str | None = None) -> tuple[bool, PositionData]: ...
+    def get_title(self) -> str | None: ...
     def has_sub(self, id: str) -> bool: ...
     def internal_set_testing(self, testing: bool) -> None: ...
     @classmethod
     def new(cls) -> Handle: ...
     @classmethod
-    def new_from_data(cls, data: Sequence[int]) -> Optional[Handle]: ...
+    def new_from_data(cls, data: Sequence[int]) -> Handle | None: ...
     @classmethod
-    def new_from_file(cls, filename: str) -> Optional[Handle]: ...
+    def new_from_file(cls, filename: str) -> Handle | None: ...
     @classmethod
     def new_from_gfile_sync(
         cls,
         file: Gio.File,
-        flags: HandleFlags,
-        cancellable: Optional[Gio.Cancellable] = None,
-    ) -> Optional[Handle]: ...
+        flags: _HandleFlagsValueType,
+        cancellable: Gio.Cancellable | None = None,
+    ) -> Handle | None: ...
     @classmethod
     def new_from_stream_sync(
         cls,
         input_stream: Gio.InputStream,
-        base_file: Optional[Gio.File],
-        flags: HandleFlags,
-        cancellable: Optional[Gio.Cancellable] = None,
-    ) -> Optional[Handle]: ...
+        base_file: Gio.File | None,
+        flags: _HandleFlagsValueType,
+        cancellable: Gio.Cancellable | None = None,
+    ) -> Handle | None: ...
     @classmethod
-    def new_with_flags(cls, flags: HandleFlags) -> Handle: ...
+    def new_with_flags(cls, flags: _HandleFlagsValueType) -> Handle: ...
     def read_stream_sync(
-        self, stream: Gio.InputStream, cancellable: Optional[Gio.Cancellable] = None
+        self, stream: Gio.InputStream, cancellable: Gio.Cancellable | None = None
     ) -> bool: ...
     def render_cairo(self, cr: cairo.Context[_SomeSurface]) -> bool: ...
     def render_cairo_sub(
-        self, cr: cairo.Context[_SomeSurface], id: Optional[str] = None
+        self, cr: cairo.Context[_SomeSurface], id: str | None = None
     ) -> bool: ...
     def render_document(
         self, cr: cairo.Context[_SomeSurface], viewport: Rectangle
@@ -132,53 +172,103 @@ class Handle(GObject.Object):
     def render_element(
         self,
         cr: cairo.Context[_SomeSurface],
-        id: Optional[str],
+        id: str | None,
         element_viewport: Rectangle,
     ) -> bool: ...
     def render_layer(
-        self, cr: cairo.Context[_SomeSurface], id: Optional[str], viewport: Rectangle
+        self, cr: cairo.Context[_SomeSurface], id: str | None, viewport: Rectangle
     ) -> bool: ...
     def set_base_gfile(self, base_file: Gio.File) -> None: ...
     def set_base_uri(self, base_uri: str) -> None: ...
+    def set_cancellable_for_rendering(
+        self, cancellable: Gio.Cancellable | None = None
+    ) -> None: ...
     def set_dpi(self, dpi: float) -> None: ...
     def set_dpi_x_y(self, dpi_x: float, dpi_y: float) -> None: ...
     def set_size_callback(
         self,
-        size_func: Optional[Callable[..., Tuple[int, int]]] = None,
-        *user_data: Any,
+        size_func: Callable[[Unpack[_DataTs]], tuple[int, int]] | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
     def set_stylesheet(self, css: Sequence[int]) -> bool: ...
     def write(self, buf: Sequence[int]) -> bool: ...
 
-class HandleClass(GObject.GPointer):
-    parent: GObject.ObjectClass = ...
-    _abi_padding: list[None] = ...
+class HandleClass(_gi.Struct):
+    """
+    :Constructors:
 
-class Length(GObject.GPointer):
-    length: float = ...
-    unit: Unit = ...
+    ::
 
-class PositionData(GObject.GPointer):
-    x: int = ...
-    y: int = ...
+        HandleClass()
+    """
+    @property
+    def parent(self) -> GObject.ObjectClass: ...
 
-class Rectangle(GObject.GPointer):
-    x: float = ...
-    y: float = ...
-    width: float = ...
-    height: float = ...
+class Length(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        Length()
+    """
+
+    length: float
+    unit: Unit
+
+class PositionData(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        PositionData()
+    """
+
+    x: int
+    y: int
+
+class Rectangle(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        Rectangle()
+    """
+
+    x: float
+    y: float
+    width: float
+    height: float
 
 class HandleFlags(GObject.GFlags):
     FLAGS_NONE = 0
     FLAG_KEEP_IMAGE_DATA = 2
     FLAG_UNLIMITED = 1
 
+_HandleFlagsLiteralType: TypeAlias = Literal[
+    "RSVG_HANDLE_FLAGS_NONE",
+    "RSVG_HANDLE_FLAG_KEEP_IMAGE_DATA",
+    "RSVG_HANDLE_FLAG_UNLIMITED",
+    "flag-keep-image-data",
+    "flag-unlimited",
+    "flags-none",
+]
+_HandleFlagsValueType: TypeAlias = (
+    HandleFlags | _HandleFlagsLiteralType | tuple[_HandleFlagsLiteralType, ...]
+)
+
 class Error(GObject.GEnum):
     FAILED = 0
     @staticmethod
     def quark() -> int: ...
 
-class Unit(GObject.GEnum):
+_ErrorLiteralType: TypeAlias = Literal["RSVG_ERROR_FAILED", "failed"]
+_ErrorValueType: TypeAlias = Error | _ErrorLiteralType
+
+class Unit(IntEnum):
+    CH = 9
     CM = 5
     EM = 2
     EX = 3

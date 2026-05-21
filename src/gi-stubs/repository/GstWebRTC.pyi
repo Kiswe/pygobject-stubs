@@ -1,23 +1,22 @@
 from typing import Any
-from typing import Callable
 from typing import Literal
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
+from typing import type_check_only
+from typing import TypeAlias
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
 
+from collections.abc import Callable
+
+from gi import _gi
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gst
 from gi.repository import GstSdp
 
-_lock = ...  # FIXME Constant
-_namespace: str = "GstWebRTC"
-_version: str = "1.0"
+_DataTs = TypeVarTuple("_DataTs", default=Unpack[tuple[()]])
 
 def webrtc_error_quark() -> int: ...
-def webrtc_sdp_type_to_string(type: WebRTCSDPType) -> str: ...
+def webrtc_sdp_type_to_string(type: _WebRTCSDPTypeValueType) -> str: ...
 
 class WebRTCDTLSTransport(Gst.Object):
     """
@@ -55,28 +54,32 @@ class WebRTCDTLSTransport(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        certificate: str
+    @type_check_only
+    class Props(Gst.Object.Props):
+        certificate: str | None
         client: bool
-        remote_certificate: str
-        session_id: int
-        state: WebRTCDTLSTransportState
-        transport: WebRTCICETransport
-        name: Optional[str]
-        parent: Optional[Gst.Object]
+        @property
+        def remote_certificate(self) -> str | None: ...
+        @property
+        def session_id(self) -> int: ...
+        @property
+        def state(self) -> WebRTCDTLSTransportState: ...
+        @property
+        def transport(self) -> WebRTCICETransport | None: ...
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        certificate: str = ...,
+        *,
+        certificate: str | None = ...,
         client: bool = ...,
         session_id: int = ...,
-        name: Optional[str] = ...,
+        name: str | None = ...,
         parent: Gst.Object = ...,
-    ): ...
+    ) -> None: ...
 
-class WebRTCDTLSTransportClass(GObject.GPointer): ...
+class WebRTCDTLSTransportClass(_gi.Struct): ...
 
 class WebRTCDataChannel(GObject.Object):
     """
@@ -126,38 +129,398 @@ class WebRTCDataChannel(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        buffered_amount: int
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def buffered_amount(self) -> int: ...
         buffered_amount_low_threshold: int
-        id: int
-        label: str
-        max_packet_lifetime: int
-        max_retransmits: int
-        negotiated: bool
-        ordered: bool
-        priority: WebRTCPriorityType
-        protocol: str
-        ready_state: WebRTCDataChannelState
+        @property
+        def id(self) -> int: ...
+        @property
+        def label(self) -> str | None: ...
+        @property
+        def max_packet_lifetime(self) -> int: ...
+        @property
+        def max_retransmits(self) -> int: ...
+        @property
+        def negotiated(self) -> bool: ...
+        @property
+        def ordered(self) -> bool: ...
+        @property
+        def priority(self) -> WebRTCPriorityType: ...
+        @property
+        def protocol(self) -> str | None: ...
+        @property
+        def ready_state(self) -> WebRTCDataChannelState: ...
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
+        *,
         buffered_amount_low_threshold: int = ...,
         id: int = ...,
-        label: str = ...,
+        label: str | None = ...,
         max_packet_lifetime: int = ...,
         max_retransmits: int = ...,
         negotiated: bool = ...,
         ordered: bool = ...,
-        priority: WebRTCPriorityType = ...,
-        protocol: str = ...,
-    ): ...
+        priority: _WebRTCPriorityTypeValueType = ...,
+        protocol: str | None = ...,
+    ) -> None: ...
     def close(self) -> None: ...
-    def send_data(self, data: Optional[GLib.Bytes] = None) -> None: ...
-    def send_string(self, str: Optional[str] = None) -> None: ...
+    def send_data(self, data: GLib.Bytes | None = None) -> None: ...
+    def send_data_full(self, data: GLib.Bytes | None = None) -> bool: ...
+    def send_string(self, str: str | None = None) -> None: ...
+    def send_string_full(self, str: str | None = None) -> bool: ...
 
-class WebRTCDataChannelClass(GObject.GPointer): ...
+class WebRTCDataChannelClass(_gi.Struct): ...
+
+class WebRTCICE(Gst.Object):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICE(**properties)
+
+    Object GstWebRTCICE
+
+    Signals from GstWebRTCICE:
+      add-local-ip-address (gchararray) -> gboolean
+
+    Properties from GstWebRTCICE:
+      min-rtp-port -> guint: ICE RTP candidate min port
+        Minimum port for local rtp port range. min-rtp-port must be <= max-rtp-port
+      max-rtp-port -> guint: ICE RTP candidate max port
+        Maximum port for local rtp port range. max-rtp-port must be >= min-rtp-port
+
+    Signals from GstObject:
+      deep-notify (GstObject, GParam)
+
+    Properties from GstObject:
+      name -> gchararray: Name
+        The name of the object
+      parent -> GstObject: Parent
+        The parent of the object
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        max_rtp_port: int
+        min_rtp_port: int
+
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent(self) -> Gst.Object: ...
+    @property
+    def ice_gathering_state(self) -> WebRTCICEGatheringState: ...
+    @property
+    def ice_connection_state(self) -> WebRTCICEConnectionState: ...
+    @property
+    def min_rtp_port(self) -> int: ...
+    @property
+    def max_rtp_port(self) -> int: ...
+    def __init__(
+        self,
+        *,
+        max_rtp_port: int = ...,
+        min_rtp_port: int = ...,
+        name: str | None = ...,
+        parent: Gst.Object = ...,
+    ) -> None: ...
+    def add_candidate(
+        self,
+        stream: WebRTCICEStream,
+        candidate: str,
+        promise: Gst.Promise | None = None,
+    ) -> None: ...
+    def add_stream(self, session_id: int) -> WebRTCICEStream | None: ...
+    def add_turn_server(self, uri: str) -> bool: ...
+    def close(self, promise: Gst.Promise | None = None) -> None: ...
+    def do_add_candidate(
+        self, stream: WebRTCICEStream, candidate: str, promise: Gst.Promise | None, /
+    ) -> None: ...
+    def do_add_stream(self, session_id: int, /) -> WebRTCICEStream | None: ...
+    def do_add_turn_server(self, uri: str, /) -> bool: ...
+    def do_close(self, promise: Gst.Promise | None, /) -> None: ...
+    def do_find_transport(
+        self, stream: WebRTCICEStream, component: _WebRTCICEComponentValueType, /
+    ) -> WebRTCICETransport | None: ...
+    def do_gather_candidates(self, stream: WebRTCICEStream, /) -> bool: ...
+    def do_get_http_proxy(self) -> str: ...
+    def do_get_is_controller(self) -> bool: ...
+    def do_get_local_candidates(
+        self, stream: WebRTCICEStream, /
+    ) -> WebRTCICECandidateStats: ...
+    def do_get_remote_candidates(
+        self, stream: WebRTCICEStream, /
+    ) -> WebRTCICECandidateStats: ...
+    def do_get_selected_pair(
+        self, stream: WebRTCICEStream, /
+    ) -> tuple[bool, WebRTCICECandidateStats, WebRTCICECandidateStats]: ...
+    def do_get_stun_server(self) -> str | None: ...
+    def do_get_turn_server(self) -> str | None: ...
+    def do_set_force_relay(self, force_relay: bool, /) -> None: ...
+    def do_set_http_proxy(self, uri: str, /) -> None: ...
+    def do_set_is_controller(self, controller: bool, /) -> None: ...
+    def do_set_local_credentials(
+        self, stream: WebRTCICEStream, ufrag: str, pwd: str, /
+    ) -> bool: ...
+    def do_set_on_ice_candidate(
+        self,
+        func: Callable[[WebRTCICE, int, str, Any | None], None],
+        user_data: int | Any | None,
+        notify: Callable[[Any | None], None],
+        /,
+    ) -> None: ...
+    def do_set_remote_credentials(
+        self, stream: WebRTCICEStream, ufrag: str, pwd: str, /
+    ) -> bool: ...
+    def do_set_stun_server(self, uri: str | None, /) -> None: ...
+    def do_set_tos(self, stream: WebRTCICEStream, tos: int, /) -> None: ...
+    def do_set_turn_server(self, uri: str | None, /) -> None: ...
+    def find_transport(
+        self, stream: WebRTCICEStream, component: _WebRTCICEComponentValueType
+    ) -> WebRTCICETransport | None: ...
+    def gather_candidates(self, stream: WebRTCICEStream) -> bool: ...
+    def get_http_proxy(self) -> str: ...
+    def get_is_controller(self) -> bool: ...
+    def get_local_candidates(
+        self, stream: WebRTCICEStream
+    ) -> list[WebRTCICECandidateStats]: ...
+    def get_remote_candidates(
+        self, stream: WebRTCICEStream
+    ) -> list[WebRTCICECandidateStats]: ...
+    def get_selected_pair(
+        self, stream: WebRTCICEStream
+    ) -> tuple[bool, WebRTCICECandidateStats, WebRTCICECandidateStats]: ...
+    def get_stun_server(self) -> str | None: ...
+    def get_turn_server(self) -> str | None: ...
+    def set_force_relay(self, force_relay: bool) -> None: ...
+    def set_http_proxy(self, uri: str) -> None: ...
+    def set_is_controller(self, controller: bool) -> None: ...
+    def set_local_credentials(
+        self, stream: WebRTCICEStream, ufrag: str, pwd: str
+    ) -> bool: ...
+    def set_on_ice_candidate(
+        self,
+        func: Callable[[WebRTCICE, int, str, Unpack[_DataTs]], None],
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    def set_remote_credentials(
+        self, stream: WebRTCICEStream, ufrag: str, pwd: str
+    ) -> bool: ...
+    def set_stun_server(self, uri: str | None = None) -> None: ...
+    def set_tos(self, stream: WebRTCICEStream, tos: int) -> None: ...
+    def set_turn_server(self, uri: str | None = None) -> None: ...
+
+class WebRTCICECandidate(GObject.GBoxed):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICECandidate()
+    """
+
+    candidate: str
+    component: int
+    sdp_mid: str
+    sdp_mline_index: int
+    stats: WebRTCICECandidateStats
+    def copy(self) -> WebRTCICECandidate: ...
+    def free(self) -> None: ...
+
+class WebRTCICECandidatePair(GObject.GBoxed):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICECandidatePair()
+    """
+
+    local: WebRTCICECandidate
+    remote: WebRTCICECandidate
+    def copy(self) -> WebRTCICECandidatePair: ...
+    def free(self) -> None: ...
+
+class WebRTCICECandidateStats(GObject.GBoxed):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICECandidateStats()
+    """
+
+    ipaddr: str
+    port: int
+    stream_id: int
+    type: str
+    proto: str
+    relay_proto: str
+    prio: int
+    url: str
+    def copy(self) -> WebRTCICECandidateStats: ...
+    def free(self) -> None: ...
+
+class WebRTCICEClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICEClass()
+    """
+    @property
+    def parent_class(self) -> Gst.ObjectClass: ...
+    @property
+    def add_stream(self) -> Callable[[WebRTCICE, int], WebRTCICEStream | None]: ...
+    @property
+    def find_transport(
+        self,
+    ) -> Callable[
+        [WebRTCICE, WebRTCICEStream, _WebRTCICEComponentValueType],
+        WebRTCICETransport | None,
+    ]: ...
+    @property
+    def gather_candidates(self) -> Callable[[WebRTCICE, WebRTCICEStream], bool]: ...
+    @property
+    def add_candidate(
+        self,
+    ) -> Callable[[WebRTCICE, WebRTCICEStream, str, Gst.Promise | None], None]: ...
+    @property
+    def set_local_credentials(
+        self,
+    ) -> Callable[[WebRTCICE, WebRTCICEStream, str, str], bool]: ...
+    @property
+    def set_remote_credentials(
+        self,
+    ) -> Callable[[WebRTCICE, WebRTCICEStream, str, str], bool]: ...
+    @property
+    def add_turn_server(self) -> Callable[[WebRTCICE, str], bool]: ...
+    @property
+    def set_is_controller(self) -> Callable[[WebRTCICE, bool], None]: ...
+    @property
+    def get_is_controller(self) -> Callable[[WebRTCICE], bool]: ...
+    @property
+    def set_force_relay(self) -> Callable[[WebRTCICE, bool], None]: ...
+    @property
+    def set_stun_server(self) -> Callable[[WebRTCICE, str | None], None]: ...
+    @property
+    def get_stun_server(self) -> Callable[[WebRTCICE], str | None]: ...
+    @property
+    def set_turn_server(self) -> Callable[[WebRTCICE, str | None], None]: ...
+    @property
+    def get_turn_server(self) -> Callable[[WebRTCICE], str | None]: ...
+    @property
+    def set_http_proxy(self) -> Callable[[WebRTCICE, str], None]: ...
+    @property
+    def get_http_proxy(self) -> Callable[[WebRTCICE], str]: ...
+    @property
+    def set_tos(self) -> Callable[[WebRTCICE, WebRTCICEStream, int], None]: ...
+    @property
+    def set_on_ice_candidate(
+        self,
+    ) -> Callable[
+        [
+            WebRTCICE,
+            Callable[[WebRTCICE, int, str, Any | None], None],
+            Any | None,
+            Callable[[Any | None], None],
+        ],
+        None,
+    ]: ...
+    @property
+    def get_local_candidates(
+        self,
+    ) -> Callable[[WebRTCICE, WebRTCICEStream], WebRTCICECandidateStats]: ...
+    @property
+    def get_remote_candidates(
+        self,
+    ) -> Callable[[WebRTCICE, WebRTCICEStream], WebRTCICECandidateStats]: ...
+    @property
+    def get_selected_pair(
+        self,
+    ) -> Callable[
+        [WebRTCICE, WebRTCICEStream],
+        tuple[bool, WebRTCICECandidateStats, WebRTCICECandidateStats],
+    ]: ...
+    @property
+    def close(self) -> Callable[[WebRTCICE, Gst.Promise | None], None]: ...
+
+class WebRTCICEStream(Gst.Object):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICEStream(**properties)
+
+    Object GstWebRTCICEStream
+
+    Properties from GstWebRTCICEStream:
+      stream-id -> guint: ICE stream id
+        ICE stream id associated with this stream
+
+    Signals from GstObject:
+      deep-notify (GstObject, GParam)
+
+    Properties from GstObject:
+      name -> gchararray: Name
+        The name of the object
+      parent -> GstObject: Parent
+        The parent of the object
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        @property
+        def stream_id(self) -> int: ...
+
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent(self) -> Gst.Object: ...
+    @property
+    def stream_id(self) -> int: ...
+    def __init__(
+        self, *, stream_id: int = ..., name: str | None = ..., parent: Gst.Object = ...
+    ) -> None: ...
+    def do_find_transport(
+        self, component: _WebRTCICEComponentValueType, /
+    ) -> WebRTCICETransport | None: ...
+    def do_gather_candidates(self) -> bool: ...
+    def find_transport(
+        self, component: _WebRTCICEComponentValueType
+    ) -> WebRTCICETransport | None: ...
+    def gather_candidates(self) -> bool: ...
+
+class WebRTCICEStreamClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICEStreamClass()
+    """
+    @property
+    def parent_class(self) -> Gst.ObjectClass: ...
+    @property
+    def find_transport(
+        self,
+    ) -> Callable[
+        [WebRTCICEStream, _WebRTCICEComponentValueType], WebRTCICETransport | None
+    ]: ...
+    @property
+    def gather_candidates(self) -> Callable[[WebRTCICEStream], bool]: ...
 
 class WebRTCICETransport(Gst.Object):
     """
@@ -193,23 +556,68 @@ class WebRTCICETransport(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        @property
+        def component(self) -> WebRTCICEComponent: ...
+        @property
+        def gathering_state(self) -> WebRTCICEGatheringState: ...
+        @property
+        def state(self) -> WebRTCICEConnectionState: ...
 
-    class Props:
-        component: WebRTCICEComponent
-        gathering_state: WebRTCICEGatheringState
-        state: WebRTCICEConnectionState
-        name: Optional[str]
-        parent: Optional[Gst.Object]
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent(self) -> Gst.Object: ...
+    @property
+    def role(self) -> WebRTCICERole: ...
+    @property
+    def component(self) -> WebRTCICEComponent: ...
+    @property
+    def state(self) -> WebRTCICEConnectionState: ...
+    @property
+    def gathering_state(self) -> WebRTCICEGatheringState: ...
+    @property
+    def src(self) -> Gst.Element: ...
+    @property
+    def sink(self) -> Gst.Element: ...
     def __init__(
         self,
-        component: WebRTCICEComponent = ...,
-        name: Optional[str] = ...,
+        *,
+        component: _WebRTCICEComponentValueType = ...,
+        name: str | None = ...,
         parent: Gst.Object = ...,
-    ): ...
+    ) -> None: ...
+    def connection_state_change(
+        self, new_state: _WebRTCICEConnectionStateValueType
+    ) -> None: ...
+    def do_gather_candidates(self) -> bool: ...
+    def do_get_selected_candidate_pair(self) -> WebRTCICECandidatePair | None: ...
+    def gathering_state_change(
+        self, new_state: _WebRTCICEGatheringStateValueType
+    ) -> None: ...
+    def get_selected_candidate_pair(self) -> WebRTCICECandidatePair | None: ...
+    def new_candidate(
+        self, stream_id: int, component: _WebRTCICEComponentValueType, attr: str
+    ) -> None: ...
+    def selected_pair_change(self) -> None: ...
 
-class WebRTCICETransportClass(GObject.GPointer): ...
+class WebRTCICETransportClass(_gi.Struct):
+    """
+    :Constructors:
+
+    ::
+
+        WebRTCICETransportClass()
+    """
+    @property
+    def parent_class(self) -> Gst.ObjectClass: ...
+    @property
+    def gather_candidates(self) -> Callable[[WebRTCICETransport], bool]: ...
+    @property
+    def get_selected_candidate_pair(
+        self,
+    ) -> Callable[[WebRTCICETransport], WebRTCICECandidatePair | None]: ...
 
 class WebRTCRTPReceiver(Gst.Object):
     """
@@ -237,16 +645,16 @@ class WebRTCRTPReceiver(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        @property
+        def transport(self) -> WebRTCDTLSTransport | None: ...
 
-    class Props:
-        transport: WebRTCDTLSTransport
-        name: Optional[str]
-        parent: Optional[Gst.Object]
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, name: str | None = ..., parent: Gst.Object = ...) -> None: ...
 
-    props: Props = ...
-    def __init__(self, name: Optional[str] = ..., parent: Gst.Object = ...): ...
-
-class WebRTCRTPReceiverClass(GObject.GPointer): ...
+class WebRTCRTPReceiverClass(_gi.Struct): ...
 
 class WebRTCRTPSender(Gst.Object):
     """
@@ -276,23 +684,27 @@ class WebRTCRTPSender(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        @property
+        def priority(self) -> WebRTCPriorityType: ...
+        @priority.setter
+        def priority(self, value: _WebRTCPriorityTypeValueType) -> None: ...
+        @property
+        def transport(self) -> WebRTCDTLSTransport | None: ...
 
-    class Props:
-        priority: WebRTCPriorityType
-        transport: WebRTCDTLSTransport
-        name: Optional[str]
-        parent: Optional[Gst.Object]
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        priority: WebRTCPriorityType = ...,
-        name: Optional[str] = ...,
+        *,
+        priority: _WebRTCPriorityTypeValueType = ...,
+        name: str | None = ...,
         parent: Gst.Object = ...,
-    ): ...
-    def set_priority(self, priority: WebRTCPriorityType) -> None: ...
+    ) -> None: ...
+    def set_priority(self, priority: _WebRTCPriorityTypeValueType) -> None: ...
 
-class WebRTCRTPSenderClass(GObject.GPointer): ...
+class WebRTCRTPSenderClass(_gi.Struct): ...
 
 class WebRTCRTPTransceiver(Gst.Object):
     """
@@ -309,16 +721,18 @@ class WebRTCRTPTransceiver(Gst.Object):
         The RTP sender for this transceiver
       receiver -> GstWebRTCRTPReceiver: Receiver
         The RTP receiver for this transceiver
-      current-direction -> GstWebRTCRTPTransceiverDirection: Current Direction
-        Transceiver current direction
       direction -> GstWebRTCRTPTransceiverDirection: Direction
         Transceiver direction
       mlineindex -> guint: Media Line Index
         Index in the SDP of the Media
       mid -> gchararray: Media ID
         The media ID of the m-line associated with this transceiver. This  association is established, when possible, whenever either a local or remote description is applied. This field is null if neither a local or remote description has been applied, or if its associated m-line is rejected by either a remote offer or any answer.
+      current-direction -> GstWebRTCRTPTransceiverDirection: Current Direction
+        Transceiver current direction
       kind -> GstWebRTCKind: Media Kind
         Kind of media this transceiver transports
+      codec-preferences -> GstCaps: Codec Preferences
+        Caps representing the codec preferences.
 
     Signals from GstObject:
       deep-notify (GstObject, GParam)
@@ -332,32 +746,41 @@ class WebRTCRTPTransceiver(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        codec_preferences: Gst.Caps | None
+        @property
+        def current_direction(self) -> WebRTCRTPTransceiverDirection: ...
+        @property
+        def direction(self) -> WebRTCRTPTransceiverDirection: ...
+        @direction.setter
+        def direction(self, value: _WebRTCRTPTransceiverDirectionValueType) -> None: ...
+        @property
+        def kind(self) -> WebRTCKind: ...
+        @property
+        def mid(self) -> str | None: ...
+        @property
+        def mlineindex(self) -> int: ...
+        @property
+        def receiver(self) -> WebRTCRTPReceiver | None: ...
+        @property
+        def sender(self) -> WebRTCRTPSender | None: ...
 
-    class Props:
-        codec_preferences: Gst.Caps
-        current_direction: WebRTCRTPTransceiverDirection
-        direction: WebRTCRTPTransceiverDirection
-        kind: WebRTCKind
-        mid: str
-        mlineindex: int
-        receiver: WebRTCRTPReceiver
-        sender: WebRTCRTPSender
-        name: Optional[str]
-        parent: Optional[Gst.Object]
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        codec_preferences: Gst.Caps = ...,
-        direction: WebRTCRTPTransceiverDirection = ...,
+        *,
+        codec_preferences: Gst.Caps | None = ...,
+        direction: _WebRTCRTPTransceiverDirectionValueType = ...,
         mlineindex: int = ...,
-        receiver: WebRTCRTPReceiver = ...,
-        sender: WebRTCRTPSender = ...,
-        name: Optional[str] = ...,
+        receiver: WebRTCRTPReceiver | None = ...,
+        sender: WebRTCRTPSender | None = ...,
+        name: str | None = ...,
         parent: Gst.Object = ...,
-    ): ...
+    ) -> None: ...
 
-class WebRTCRTPTransceiverClass(GObject.GPointer): ...
+class WebRTCRTPTransceiverClass(_gi.Struct): ...
 
 class WebRTCSCTPTransport(Gst.Object):
     """
@@ -391,19 +814,22 @@ class WebRTCSCTPTransport(Gst.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(Gst.Object.Props):
+        @property
+        def max_channels(self) -> int: ...
+        @property
+        def max_message_size(self) -> int: ...
+        @property
+        def state(self) -> WebRTCSCTPTransportState: ...
+        @property
+        def transport(self) -> WebRTCDTLSTransport | None: ...
 
-    class Props:
-        max_channels: int
-        max_message_size: int
-        state: WebRTCSCTPTransportState
-        transport: WebRTCDTLSTransport
-        name: Optional[str]
-        parent: Optional[Gst.Object]
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, name: str | None = ..., parent: Gst.Object = ...) -> None: ...
 
-    props: Props = ...
-    def __init__(self, name: Optional[str] = ..., parent: Gst.Object = ...): ...
-
-class WebRTCSCTPTransportClass(GObject.GPointer): ...
+class WebRTCSCTPTransportClass(_gi.Struct): ...
 
 class WebRTCSessionDescription(GObject.GBoxed):
     """
@@ -415,13 +841,13 @@ class WebRTCSessionDescription(GObject.GBoxed):
         new(type:GstWebRTC.WebRTCSDPType, sdp:GstSdp.SDPMessage) -> GstWebRTC.WebRTCSessionDescription
     """
 
-    type: WebRTCSDPType = ...
-    sdp: GstSdp.SDPMessage = ...
+    type: WebRTCSDPType
+    sdp: GstSdp.SDPMessage
     def copy(self) -> WebRTCSessionDescription: ...
     def free(self) -> None: ...
     @classmethod
     def new(
-        cls, type: WebRTCSDPType, sdp: GstSdp.SDPMessage
+        cls, type: _WebRTCSDPTypeValueType, sdp: GstSdp.SDPMessage
     ) -> WebRTCSessionDescription: ...
 
 class WebRTCBundlePolicy(GObject.GEnum):
@@ -430,11 +856,52 @@ class WebRTCBundlePolicy(GObject.GEnum):
     MAX_COMPAT = 2
     NONE = 0
 
+_WebRTCBundlePolicyLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_BUNDLE_POLICY_BALANCED",
+    "GST_WEBRTC_BUNDLE_POLICY_MAX_BUNDLE",
+    "GST_WEBRTC_BUNDLE_POLICY_MAX_COMPAT",
+    "GST_WEBRTC_BUNDLE_POLICY_NONE",
+    "balanced",
+    "max-bundle",
+    "max-compat",
+    "none",
+]
+_WebRTCBundlePolicyValueType: TypeAlias = (
+    WebRTCBundlePolicy | _WebRTCBundlePolicyLiteralType
+)
+
+class WebRTCDTLSRole(GObject.GEnum):
+    CLIENT = 0
+    SERVER = 1
+    UNKNOWN = 2
+
+_WebRTCDTLSRoleLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_DTLS_ROLE_CLIENT",
+    "GST_WEBRTC_DTLS_ROLE_SERVER",
+    "GST_WEBRTC_DTLS_ROLE_UNKNOWN",
+    "client",
+    "server",
+    "unknown",
+]
+_WebRTCDTLSRoleValueType: TypeAlias = WebRTCDTLSRole | _WebRTCDTLSRoleLiteralType
+
 class WebRTCDTLSSetup(GObject.GEnum):
     ACTIVE = 2
     ACTPASS = 1
     NONE = 0
     PASSIVE = 3
+
+_WebRTCDTLSSetupLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_DTLS_SETUP_ACTIVE",
+    "GST_WEBRTC_DTLS_SETUP_ACTPASS",
+    "GST_WEBRTC_DTLS_SETUP_NONE",
+    "GST_WEBRTC_DTLS_SETUP_PASSIVE",
+    "active",
+    "actpass",
+    "none",
+    "passive",
+]
+_WebRTCDTLSSetupValueType: TypeAlias = WebRTCDTLSSetup | _WebRTCDTLSSetupLiteralType
 
 class WebRTCDTLSTransportState(GObject.GEnum):
     CLOSED = 1
@@ -443,12 +910,41 @@ class WebRTCDTLSTransportState(GObject.GEnum):
     FAILED = 2
     NEW = 0
 
+_WebRTCDTLSTransportStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_DTLS_TRANSPORT_STATE_CLOSED",
+    "GST_WEBRTC_DTLS_TRANSPORT_STATE_CONNECTED",
+    "GST_WEBRTC_DTLS_TRANSPORT_STATE_CONNECTING",
+    "GST_WEBRTC_DTLS_TRANSPORT_STATE_FAILED",
+    "GST_WEBRTC_DTLS_TRANSPORT_STATE_NEW",
+    "closed",
+    "connected",
+    "connecting",
+    "failed",
+    "new",
+]
+_WebRTCDTLSTransportStateValueType: TypeAlias = (
+    WebRTCDTLSTransportState | _WebRTCDTLSTransportStateLiteralType
+)
+
 class WebRTCDataChannelState(GObject.GEnum):
     CLOSED = 4
     CLOSING = 3
     CONNECTING = 1
-    NEW = 0
     OPEN = 2
+
+_WebRTCDataChannelStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_DATA_CHANNEL_STATE_CLOSED",
+    "GST_WEBRTC_DATA_CHANNEL_STATE_CLOSING",
+    "GST_WEBRTC_DATA_CHANNEL_STATE_CONNECTING",
+    "GST_WEBRTC_DATA_CHANNEL_STATE_OPEN",
+    "closed",
+    "closing",
+    "connecting",
+    "open",
+]
+_WebRTCDataChannelStateValueType: TypeAlias = (
+    WebRTCDataChannelState | _WebRTCDataChannelStateLiteralType
+)
 
 class WebRTCError(GObject.GEnum):
     DATA_CHANNEL_FAILURE = 0
@@ -457,19 +953,93 @@ class WebRTCError(GObject.GEnum):
     FINGERPRINT_FAILURE = 2
     HARDWARE_ENCODER_NOT_AVAILABLE = 5
     INTERNAL_FAILURE = 8
+    INVALID_MODIFICATION = 9
     INVALID_STATE = 7
     SCTP_FAILURE = 3
     SDP_SYNTAX_ERROR = 4
+    TYPE_ERROR = 10
     @staticmethod
     def quark() -> int: ...
+
+_WebRTCErrorLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ERROR_DATA_CHANNEL_FAILURE",
+    "GST_WEBRTC_ERROR_DTLS_FAILURE",
+    "GST_WEBRTC_ERROR_ENCODER_ERROR",
+    "GST_WEBRTC_ERROR_FINGERPRINT_FAILURE",
+    "GST_WEBRTC_ERROR_HARDWARE_ENCODER_NOT_AVAILABLE",
+    "GST_WEBRTC_ERROR_INTERNAL_FAILURE",
+    "GST_WEBRTC_ERROR_INVALID_MODIFICATION",
+    "GST_WEBRTC_ERROR_INVALID_STATE",
+    "GST_WEBRTC_ERROR_SCTP_FAILURE",
+    "GST_WEBRTC_ERROR_SDP_SYNTAX_ERROR",
+    "GST_WEBRTC_ERROR_TYPE_ERROR",
+    "data-channel-failure",
+    "dtls-failure",
+    "encoder-error",
+    "fingerprint-failure",
+    "hardware-encoder-not-available",
+    "internal-failure",
+    "invalid-modification",
+    "invalid-state",
+    "sctp-failure",
+    "sdp-syntax-error",
+    "type-error",
+]
+_WebRTCErrorValueType: TypeAlias = WebRTCError | _WebRTCErrorLiteralType
 
 class WebRTCFECType(GObject.GEnum):
     NONE = 0
     ULP_RED = 1
 
+_WebRTCFECTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_FEC_TYPE_NONE", "GST_WEBRTC_FEC_TYPE_ULP_RED", "none", "ulp-red"
+]
+_WebRTCFECTypeValueType: TypeAlias = WebRTCFECType | _WebRTCFECTypeLiteralType
+
+class WebRTCICECandidateProtocolType(GObject.GEnum):
+    TCP = 0
+    UDP = 1
+
+_WebRTCICECandidateProtocolTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_CANDIDATE_PROTOCOL_TYPE_TCP",
+    "GST_WEBRTC_ICE_CANDIDATE_PROTOCOL_TYPE_UDP",
+    "tcp",
+    "udp",
+]
+_WebRTCICECandidateProtocolTypeValueType: TypeAlias = (
+    WebRTCICECandidateProtocolType | _WebRTCICECandidateProtocolTypeLiteralType
+)
+
+class WebRTCICECandidateType(GObject.GEnum):
+    HOST = 0
+    PEER_REFLEXIVE = 2
+    RELAYED = 3
+    SERVER_REFLEXIVE = 1
+
+_WebRTCICECandidateTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_CANDIDATE_TYPE_HOST",
+    "GST_WEBRTC_ICE_CANDIDATE_TYPE_PEER_REFLEXIVE",
+    "GST_WEBRTC_ICE_CANDIDATE_TYPE_RELAYED",
+    "GST_WEBRTC_ICE_CANDIDATE_TYPE_SERVER_REFLEXIVE",
+    "host",
+    "peer-reflexive",
+    "relayed",
+    "server-reflexive",
+]
+_WebRTCICECandidateTypeValueType: TypeAlias = (
+    WebRTCICECandidateType | _WebRTCICECandidateTypeLiteralType
+)
+
 class WebRTCICEComponent(GObject.GEnum):
     RTCP = 1
     RTP = 0
+
+_WebRTCICEComponentLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_COMPONENT_RTCP", "GST_WEBRTC_ICE_COMPONENT_RTP", "rtcp", "rtp"
+]
+_WebRTCICEComponentValueType: TypeAlias = (
+    WebRTCICEComponent | _WebRTCICEComponentLiteralType
+)
 
 class WebRTCICEConnectionState(GObject.GEnum):
     CHECKING = 1
@@ -480,23 +1050,103 @@ class WebRTCICEConnectionState(GObject.GEnum):
     FAILED = 4
     NEW = 0
 
+_WebRTCICEConnectionStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_CONNECTION_STATE_CHECKING",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_CLOSED",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_COMPLETED",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_CONNECTED",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_DISCONNECTED",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_FAILED",
+    "GST_WEBRTC_ICE_CONNECTION_STATE_NEW",
+    "checking",
+    "closed",
+    "completed",
+    "connected",
+    "disconnected",
+    "failed",
+    "new",
+]
+_WebRTCICEConnectionStateValueType: TypeAlias = (
+    WebRTCICEConnectionState | _WebRTCICEConnectionStateLiteralType
+)
+
 class WebRTCICEGatheringState(GObject.GEnum):
     COMPLETE = 2
     GATHERING = 1
     NEW = 0
 
+_WebRTCICEGatheringStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_GATHERING_STATE_COMPLETE",
+    "GST_WEBRTC_ICE_GATHERING_STATE_GATHERING",
+    "GST_WEBRTC_ICE_GATHERING_STATE_NEW",
+    "complete",
+    "gathering",
+    "new",
+]
+_WebRTCICEGatheringStateValueType: TypeAlias = (
+    WebRTCICEGatheringState | _WebRTCICEGatheringStateLiteralType
+)
+
 class WebRTCICERole(GObject.GEnum):
     CONTROLLED = 0
     CONTROLLING = 1
+
+_WebRTCICERoleLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_ROLE_CONTROLLED",
+    "GST_WEBRTC_ICE_ROLE_CONTROLLING",
+    "controlled",
+    "controlling",
+]
+_WebRTCICERoleValueType: TypeAlias = WebRTCICERole | _WebRTCICERoleLiteralType
+
+class WebRTCICETcpCandidateType(GObject.GEnum):
+    ACTIVE = 0
+    NONE = 3
+    PASSIVE = 1
+    SO = 2
+
+_WebRTCICETcpCandidateTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_TCP_CANDIDATE_TYPE_ACTIVE",
+    "GST_WEBRTC_ICE_TCP_CANDIDATE_TYPE_NONE",
+    "GST_WEBRTC_ICE_TCP_CANDIDATE_TYPE_PASSIVE",
+    "GST_WEBRTC_ICE_TCP_CANDIDATE_TYPE_SO",
+    "active",
+    "none",
+    "passive",
+    "so",
+]
+_WebRTCICETcpCandidateTypeValueType: TypeAlias = (
+    WebRTCICETcpCandidateType | _WebRTCICETcpCandidateTypeLiteralType
+)
 
 class WebRTCICETransportPolicy(GObject.GEnum):
     ALL = 0
     RELAY = 1
 
+_WebRTCICETransportPolicyLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_ICE_TRANSPORT_POLICY_ALL",
+    "GST_WEBRTC_ICE_TRANSPORT_POLICY_RELAY",
+    "all",
+    "relay",
+]
+_WebRTCICETransportPolicyValueType: TypeAlias = (
+    WebRTCICETransportPolicy | _WebRTCICETransportPolicyLiteralType
+)
+
 class WebRTCKind(GObject.GEnum):
     AUDIO = 1
     UNKNOWN = 0
     VIDEO = 2
+
+_WebRTCKindLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_KIND_AUDIO",
+    "GST_WEBRTC_KIND_UNKNOWN",
+    "GST_WEBRTC_KIND_VIDEO",
+    "audio",
+    "unknown",
+    "video",
+]
+_WebRTCKindValueType: TypeAlias = WebRTCKind | _WebRTCKindLiteralType
 
 class WebRTCPeerConnectionState(GObject.GEnum):
     CLOSED = 5
@@ -506,11 +1156,43 @@ class WebRTCPeerConnectionState(GObject.GEnum):
     FAILED = 4
     NEW = 0
 
+_WebRTCPeerConnectionStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_PEER_CONNECTION_STATE_CLOSED",
+    "GST_WEBRTC_PEER_CONNECTION_STATE_CONNECTED",
+    "GST_WEBRTC_PEER_CONNECTION_STATE_CONNECTING",
+    "GST_WEBRTC_PEER_CONNECTION_STATE_DISCONNECTED",
+    "GST_WEBRTC_PEER_CONNECTION_STATE_FAILED",
+    "GST_WEBRTC_PEER_CONNECTION_STATE_NEW",
+    "closed",
+    "connected",
+    "connecting",
+    "disconnected",
+    "failed",
+    "new",
+]
+_WebRTCPeerConnectionStateValueType: TypeAlias = (
+    WebRTCPeerConnectionState | _WebRTCPeerConnectionStateLiteralType
+)
+
 class WebRTCPriorityType(GObject.GEnum):
     HIGH = 4
     LOW = 2
     MEDIUM = 3
     VERY_LOW = 1
+
+_WebRTCPriorityTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_PRIORITY_TYPE_HIGH",
+    "GST_WEBRTC_PRIORITY_TYPE_LOW",
+    "GST_WEBRTC_PRIORITY_TYPE_MEDIUM",
+    "GST_WEBRTC_PRIORITY_TYPE_VERY_LOW",
+    "high",
+    "low",
+    "medium",
+    "very-low",
+]
+_WebRTCPriorityTypeValueType: TypeAlias = (
+    WebRTCPriorityType | _WebRTCPriorityTypeLiteralType
+)
 
 class WebRTCRTPTransceiverDirection(GObject.GEnum):
     INACTIVE = 1
@@ -519,11 +1201,41 @@ class WebRTCRTPTransceiverDirection(GObject.GEnum):
     SENDONLY = 2
     SENDRECV = 4
 
+_WebRTCRTPTransceiverDirectionLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_INACTIVE",
+    "GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_NONE",
+    "GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_RECVONLY",
+    "GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_SENDONLY",
+    "GST_WEBRTC_RTP_TRANSCEIVER_DIRECTION_SENDRECV",
+    "inactive",
+    "none",
+    "recvonly",
+    "sendonly",
+    "sendrecv",
+]
+_WebRTCRTPTransceiverDirectionValueType: TypeAlias = (
+    WebRTCRTPTransceiverDirection | _WebRTCRTPTransceiverDirectionLiteralType
+)
+
 class WebRTCSCTPTransportState(GObject.GEnum):
     CLOSED = 3
     CONNECTED = 2
     CONNECTING = 1
     NEW = 0
+
+_WebRTCSCTPTransportStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_SCTP_TRANSPORT_STATE_CLOSED",
+    "GST_WEBRTC_SCTP_TRANSPORT_STATE_CONNECTED",
+    "GST_WEBRTC_SCTP_TRANSPORT_STATE_CONNECTING",
+    "GST_WEBRTC_SCTP_TRANSPORT_STATE_NEW",
+    "closed",
+    "connected",
+    "connecting",
+    "new",
+]
+_WebRTCSCTPTransportStateValueType: TypeAlias = (
+    WebRTCSCTPTransportState | _WebRTCSCTPTransportStateLiteralType
+)
 
 class WebRTCSDPType(GObject.GEnum):
     ANSWER = 3
@@ -531,7 +1243,19 @@ class WebRTCSDPType(GObject.GEnum):
     PRANSWER = 2
     ROLLBACK = 4
     @staticmethod
-    def to_string(type: WebRTCSDPType) -> str: ...
+    def to_string(type: _WebRTCSDPTypeValueType) -> str: ...
+
+_WebRTCSDPTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_SDP_TYPE_ANSWER",
+    "GST_WEBRTC_SDP_TYPE_OFFER",
+    "GST_WEBRTC_SDP_TYPE_PRANSWER",
+    "GST_WEBRTC_SDP_TYPE_ROLLBACK",
+    "answer",
+    "offer",
+    "pranswer",
+    "rollback",
+]
+_WebRTCSDPTypeValueType: TypeAlias = WebRTCSDPType | _WebRTCSDPTypeLiteralType
 
 class WebRTCSignalingState(GObject.GEnum):
     CLOSED = 1
@@ -540,6 +1264,24 @@ class WebRTCSignalingState(GObject.GEnum):
     HAVE_REMOTE_OFFER = 3
     HAVE_REMOTE_PRANSWER = 5
     STABLE = 0
+
+_WebRTCSignalingStateLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_SIGNALING_STATE_CLOSED",
+    "GST_WEBRTC_SIGNALING_STATE_HAVE_LOCAL_OFFER",
+    "GST_WEBRTC_SIGNALING_STATE_HAVE_LOCAL_PRANSWER",
+    "GST_WEBRTC_SIGNALING_STATE_HAVE_REMOTE_OFFER",
+    "GST_WEBRTC_SIGNALING_STATE_HAVE_REMOTE_PRANSWER",
+    "GST_WEBRTC_SIGNALING_STATE_STABLE",
+    "closed",
+    "have-local-offer",
+    "have-local-pranswer",
+    "have-remote-offer",
+    "have-remote-pranswer",
+    "stable",
+]
+_WebRTCSignalingStateValueType: TypeAlias = (
+    WebRTCSignalingState | _WebRTCSignalingStateLiteralType
+)
 
 class WebRTCStatsType(GObject.GEnum):
     CANDIDATE_PAIR = 11
@@ -556,3 +1298,35 @@ class WebRTCStatsType(GObject.GEnum):
     REMOTE_OUTBOUND_RTP = 5
     STREAM = 9
     TRANSPORT = 10
+
+_WebRTCStatsTypeLiteralType: TypeAlias = Literal[
+    "GST_WEBRTC_STATS_CANDIDATE_PAIR",
+    "GST_WEBRTC_STATS_CERTIFICATE",
+    "GST_WEBRTC_STATS_CODEC",
+    "GST_WEBRTC_STATS_CSRC",
+    "GST_WEBRTC_STATS_DATA_CHANNEL",
+    "GST_WEBRTC_STATS_INBOUND_RTP",
+    "GST_WEBRTC_STATS_LOCAL_CANDIDATE",
+    "GST_WEBRTC_STATS_OUTBOUND_RTP",
+    "GST_WEBRTC_STATS_PEER_CONNECTION",
+    "GST_WEBRTC_STATS_REMOTE_CANDIDATE",
+    "GST_WEBRTC_STATS_REMOTE_INBOUND_RTP",
+    "GST_WEBRTC_STATS_REMOTE_OUTBOUND_RTP",
+    "GST_WEBRTC_STATS_STREAM",
+    "GST_WEBRTC_STATS_TRANSPORT",
+    "candidate-pair",
+    "certificate",
+    "codec",
+    "csrc",
+    "data-channel",
+    "inbound-rtp",
+    "local-candidate",
+    "outbound-rtp",
+    "peer-connection",
+    "remote-candidate",
+    "remote-inbound-rtp",
+    "remote-outbound-rtp",
+    "stream",
+    "transport",
+]
+_WebRTCStatsTypeValueType: TypeAlias = WebRTCStatsType | _WebRTCStatsTypeLiteralType

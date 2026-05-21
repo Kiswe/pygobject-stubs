@@ -1,16 +1,18 @@
 from __future__ import annotations
 
 from typing import Any
-from typing import Optional
+from typing import TYPE_CHECKING
 
 import itertools
 import logging
 import os
-import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
 import setuptools.build_meta as _orig
+
+if TYPE_CHECKING:
+    from _typeshed import StrPath
 
 logging.basicConfig(level="INFO", format="%(levelname)s: %(message)s")
 log = logging.getLogger()
@@ -42,6 +44,7 @@ class LibVersion:
 DEFAULT_STUB_CONFIG = [
     LibVersion("Gdk", "4"),
     LibVersion("GdkWin32", "4"),
+    LibVersion("GdkMacos", "4"),
     LibVersion("GIRepository", "3"),
     LibVersion("Gtk", "4"),
     LibVersion("GtkSource", "5"),
@@ -52,7 +55,7 @@ DEFAULT_STUB_CONFIG = [
 
 
 def _get_settings_stub_config(
-    config_settings: Optional[dict[str, str]],
+    config_settings: dict[str, str] | None,
 ) -> list[LibVersion]:
     libs = []
     if config_settings is None:
@@ -89,32 +92,53 @@ def _install_stubs(stub_config: list[LibVersion]) -> None:
             DEFAULT_STUB_CONFIG.remove(lib)
 
     for lib in itertools.chain(stub_config, DEFAULT_STUB_CONFIG):
-        stub_path = GI_REPOSITORY_DIR / f"_{lib}.pyi"
         new_stub_path = GI_REPOSITORY_DIR / f"{lib.name}.pyi"
         log.info("Install %s", lib)
-        shutil.copy(stub_path, new_stub_path)
+        new_stub_path.write_text(f"from ._{lib} import *")
 
 
-def get_requires_for_build_sdist(*args: Any, **kwargs: Any) -> str:
+def get_requires_for_build_editable(
+    config_settings: _orig._ConfigSettings | None = None,
+) -> list[str]:
+    return _orig.get_requires_for_build_editable(config_settings)
+
+
+def prepare_metadata_for_build_editable(
+    metadata_directory: StrPath, config_settings: _orig._ConfigSettings | None = None
+) -> str:
+    return _orig.prepare_metadata_for_build_editable(
+        metadata_directory, config_settings
+    )
+
+
+def build_editable(
+    wheel_directory: str,
+    config_settings: dict[str, str] | None = None,
+    metadata_directory: str | None = None,
+) -> str:
+    return _orig.build_editable(wheel_directory, config_settings, metadata_directory)
+
+
+def get_requires_for_build_sdist(*args: Any, **kwargs: Any) -> str:  # noqa: ANN401
     return _orig.get_requires_for_build_sdist(*args, **kwargs)
 
 
-def build_sdist(*args: Any, **kwargs: Any) -> str:
+def build_sdist(*args: Any, **kwargs: Any) -> str:  # noqa: ANN401
     return _orig.build_sdist(*args, **kwargs)
 
 
-def get_requires_for_build_wheel(*args: Any, **kwargs: Any) -> str:
+def get_requires_for_build_wheel(*args: Any, **kwargs: Any) -> str:  # noqa: ANN401
     return _orig.get_requires_for_build_wheel(*args, **kwargs)
 
 
-def prepare_metadata_for_build_wheel(*args: Any, **kwargs: Any) -> str:
+def prepare_metadata_for_build_wheel(*args: Any, **kwargs: Any) -> str:  # noqa: ANN401
     return _orig.prepare_metadata_for_build_wheel(*args, **kwargs)
 
 
 def build_wheel(
     wheel_directory: str,
-    config_settings: Optional[dict[str, str]] = None,
-    metadata_directory: Optional[str] = None,
+    config_settings: dict[str, str] | None = None,
+    metadata_directory: str | None = None,
 ) -> str:
     stub_config = _get_settings_stub_config(config_settings)
     if not stub_config:
@@ -123,10 +147,8 @@ def build_wheel(
     _check_config(stub_config)
     _install_stubs(stub_config)
 
-    basename = _orig.build_wheel(
+    return _orig.build_wheel(
         wheel_directory,
         config_settings=config_settings,
         metadata_directory=metadata_directory,
     )
-
-    return basename

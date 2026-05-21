@@ -1,38 +1,34 @@
 from typing import Any
-from typing import Callable
-from typing import Literal
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
-from typing import TypeVar
+from typing import Final
+
+from collections.abc import Callable
+from collections.abc import Sequence
+from enum import IntEnum
+from enum import IntFlag
 
 from gi.repository import GLib
 from gi.repository import GObject
 
-MAJOR_VERSION: int = 2
-MICRO_VERSION: int = 3
-MINOR_VERSION: int = 42
-OPTIONS_USE_DFG: str = "useDFGJIT"
-OPTIONS_USE_FTL: str = "useFTLJIT"
-OPTIONS_USE_JIT: str = "useJIT"
-OPTIONS_USE_LLINT: str = "useLLInt"
-_lock = ...  # FIXME Constant
-_namespace: str = "JavaScriptCore"
-_version: str = "6.0"
+MAJOR_VERSION: Final[int]
+MICRO_VERSION: Final[int]
+MINOR_VERSION: Final[int]
+OPTIONS_USE_DFG: Final = "useDFGJIT"
+OPTIONS_USE_FTL: Final = "useFTLJIT"
+OPTIONS_USE_JIT: Final = "useJIT"
+OPTIONS_USE_LLINT: Final = "useLLInt"
 
 def get_major_version() -> int: ...
 def get_micro_version() -> int: ...
 def get_minor_version() -> int: ...
 def options_foreach(function: Callable[..., bool], *user_data: Any) -> None: ...
-def options_get_boolean(option: str) -> Tuple[bool, bool]: ...
-def options_get_double(option: str) -> Tuple[bool, float]: ...
-def options_get_int(option: str) -> Tuple[bool, int]: ...
+def options_get_boolean(option: str) -> tuple[bool, bool]: ...
+def options_get_double(option: str) -> tuple[bool, float]: ...
+def options_get_int(option: str) -> tuple[bool, int]: ...
 def options_get_option_group() -> GLib.OptionGroup: ...
-def options_get_range_string(option: str) -> Tuple[bool, str]: ...
-def options_get_size(option: str) -> Tuple[bool, int]: ...
-def options_get_string(option: str) -> Tuple[bool, str]: ...
-def options_get_uint(option: str) -> Tuple[bool, int]: ...
+def options_get_range_string(option: str) -> tuple[bool, str]: ...
+def options_get_size(option: str) -> tuple[bool, int]: ...
+def options_get_string(option: str) -> tuple[bool, str]: ...
+def options_get_uint(option: str) -> tuple[bool, int]: ...
 def options_set_boolean(option: str, value: bool) -> bool: ...
 def options_set_double(option: str, value: float) -> bool: ...
 def options_set_int(option: str, value: int) -> bool: ...
@@ -60,51 +56,52 @@ class Class(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         name: str
         parent: Class
         context: Context
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self, context: Context = ..., name: str = ..., parent: Class = ...
     ): ...
     def add_constructor(
         self,
-        name: Optional[str],
+        name: str | None,
         callback: Callable[..., None],
-        return_type: Type,
-        parameter_types: Optional[Sequence[Type]] = None,
+        return_type: type,
+        parameter_types: Sequence[type] | None = None,
         *user_data: Any,
     ) -> Value: ...
     def add_constructor_variadic(
         self,
-        name: Optional[str],
+        name: str | None,
         callback: Callable[..., None],
-        return_type: Type,
+        return_type: type,
         *user_data: Any,
     ) -> Value: ...
     def add_method(
         self,
         name: str,
         callback: Callable[..., None],
-        return_type: Type,
-        parameter_types: Optional[Sequence[Type]] = None,
+        return_type: type,
+        parameter_types: Sequence[type] | None = None,
         *user_data: Any,
     ) -> None: ...
     def add_method_variadic(
         self,
         name: str,
         callback: Callable[..., None],
-        return_type: Type,
+        return_type: type,
         *user_data: Any,
     ) -> None: ...
     def add_property(
         self,
         name: str,
-        property_type: Type,
-        getter: Optional[Callable[[], None]] = None,
-        setter: Optional[Callable[..., None]] = None,
+        property_type: type,
+        getter: Callable[[], None] | None = None,
+        setter: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def get_name(self) -> str: ...
@@ -118,8 +115,8 @@ class ClassClass(GObject.GPointer):
 
         ClassClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class ClassVTable(GObject.GPointer):
     """
@@ -130,19 +127,11 @@ class ClassVTable(GObject.GPointer):
         ClassVTable()
     """
 
-    get_property: Callable[[Class, Context, None, str], Optional[Value]] = ...
-    set_property: Callable[[Class, Context, None, str, Value], bool] = ...
-    has_property: Callable[[Class, Context, None, str], bool] = ...
-    delete_property: Callable[[Class, Context, None, str], bool] = ...
-    enumerate_properties: Callable[[Class, Context, None], Optional[list[str]]] = ...
-    _jsc_reserved0: None = ...
-    _jsc_reserved1: None = ...
-    _jsc_reserved2: None = ...
-    _jsc_reserved3: None = ...
-    _jsc_reserved4: None = ...
-    _jsc_reserved5: None = ...
-    _jsc_reserved6: None = ...
-    _jsc_reserved7: None = ...
+    get_property: Callable[[Class, Context, None, str], Value | None]
+    set_property: Callable[[Class, Context, None, str, Value], bool]
+    has_property: Callable[[Class, Context, None, str], bool]
+    delete_property: Callable[[Class, Context, None, str], bool]
+    enumerate_properties: Callable[[Class, Context, None], list[str] | None]
 
 class Context(GObject.Object):
     """
@@ -163,14 +152,15 @@ class Context(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         virtual_machine: VirtualMachine
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(self, virtual_machine: VirtualMachine = ...): ...
     def check_syntax(
         self, code: str, length: int, mode: CheckSyntaxMode, uri: str, line_number: int
-    ) -> Tuple[CheckSyntaxResult, Exception]: ...
+    ) -> tuple[CheckSyntaxResult, Exception]: ...
     def clear_exception(self) -> None: ...
     def evaluate(self, code: str, length: int) -> Value: ...
     def evaluate_in_object(
@@ -178,16 +168,16 @@ class Context(GObject.Object):
         code: str,
         length: int,
         object_instance: None,
-        object_class: Optional[Class],
+        object_class: Class | None,
         uri: str,
         line_number: int,
-    ) -> Tuple[Value, Value]: ...
+    ) -> tuple[Value, Value]: ...
     def evaluate_with_source_uri(
         self, code: str, length: int, uri: str, line_number: int
     ) -> Value: ...
     @staticmethod
-    def get_current() -> Optional[Context]: ...
-    def get_exception(self) -> Optional[Exception]: ...
+    def get_current() -> Context | None: ...
+    def get_exception(self) -> Exception | None: ...
     def get_global_object(self) -> Value: ...
     def get_value(self, name: str) -> Value: ...
     def get_virtual_machine(self) -> VirtualMachine: ...
@@ -202,9 +192,9 @@ class Context(GObject.Object):
     def register_class(
         self,
         name: str,
-        parent_class: Optional[Class] = None,
-        vtable: Optional[ClassVTable] = None,
-        destroy_notify: Optional[Callable[[None], None]] = None,
+        parent_class: Class | None = None,
+        vtable: ClassVTable | None = None,
+        destroy_notify: Callable[[None], None] | None = None,
     ) -> Class: ...
     def set_value(self, name: str, value: Value) -> None: ...
     def throw(self, error_message: str) -> None: ...
@@ -219,8 +209,8 @@ class ContextClass(GObject.GPointer):
 
         ContextClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Exception(GObject.Object):
     """
@@ -238,12 +228,12 @@ class Exception(GObject.Object):
       notify (GParam)
     """
 
-    def get_backtrace_string(self) -> Optional[str]: ...
+    def get_backtrace_string(self) -> str | None: ...
     def get_column_number(self) -> int: ...
     def get_line_number(self) -> int: ...
     def get_message(self) -> str: ...
     def get_name(self) -> str: ...
-    def get_source_uri(self) -> Optional[str]: ...
+    def get_source_uri(self) -> str | None: ...
     @classmethod
     def new(cls, context: Context, message: str) -> Exception: ...
     @classmethod
@@ -259,8 +249,8 @@ class ExceptionClass(GObject.GPointer):
 
         ExceptionClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Value(GObject.Object):
     """
@@ -293,17 +283,16 @@ class Value(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         context: Context
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(self, context: Context = ...): ...
-    def array_buffer_get_data(self, size: Optional[int] = None) -> None: ...
+    def array_buffer_get_data(self, size: int | None = None) -> None: ...
     def array_buffer_get_size(self) -> int: ...
-    def constructor_call(
-        self, parameters: Optional[Sequence[Value]] = None
-    ) -> Value: ...
-    def function_call(self, parameters: Optional[Sequence[Value]] = None) -> Value: ...
+    def constructor_call(self, parameters: Sequence[Value] | None = None) -> Value: ...
+    def function_call(self, parameters: Sequence[Value] | None = None) -> Value: ...
     def get_context(self) -> Context: ...
     def is_array(self) -> bool: ...
     def is_array_buffer(self) -> bool: ...
@@ -322,12 +311,12 @@ class Value(GObject.Object):
         context: Context,
         data: None,
         size: int,
-        destroy_notify: Optional[Callable[..., None]] = None,
+        destroy_notify: Callable[..., None] | None = None,
         *user_data: Any,
-    ) -> Optional[Value]: ...
+    ) -> Value | None: ...
     @classmethod
     def new_array_from_garray(
-        cls, context: Context, array: Optional[Sequence[Value]] = None
+        cls, context: Context, array: Sequence[Value] | None = None
     ) -> Value: ...
     @classmethod
     def new_array_from_strv(cls, context: Context, strv: Sequence[str]) -> Value: ...
@@ -339,19 +328,19 @@ class Value(GObject.Object):
     def new_function(
         cls,
         context: Context,
-        name: Optional[str],
+        name: str | None,
         callback: Callable[..., None],
-        return_type: Type,
-        parameter_types: Optional[Sequence[Type]] = None,
+        return_type: type,
+        parameter_types: Sequence[type] | None = None,
         *user_data: Any,
     ) -> Value: ...
     @classmethod
     def new_function_variadic(
         cls,
         context: Context,
-        name: Optional[str],
+        name: str | None,
         callback: Callable[..., None],
-        return_type: Type,
+        return_type: type,
         *user_data: Any,
     ) -> Value: ...
     @classmethod
@@ -360,13 +349,13 @@ class Value(GObject.Object):
     def new_number(cls, context: Context, number: float) -> Value: ...
     @classmethod
     def new_object(
-        cls, context: Context, instance: None, jsc_class: Optional[Class] = None
+        cls, context: Context, instance: None, jsc_class: Class | None = None
     ) -> Value: ...
     @classmethod
-    def new_string(cls, context: Context, string: Optional[str] = None) -> Value: ...
+    def new_string(cls, context: Context, string: str | None = None) -> Value: ...
     @classmethod
     def new_string_from_bytes(
-        cls, context: Context, bytes: Optional[GLib.Bytes] = None
+        cls, context: Context, bytes: GLib.Bytes | None = None
     ) -> Value: ...
     @classmethod
     def new_typed_array(
@@ -381,24 +370,24 @@ class Value(GObject.Object):
         self,
         property_name: str,
         flags: ValuePropertyFlags,
-        property_type: Type,
-        getter: Optional[Callable[..., None]] = None,
-        setter: Optional[Callable[..., None]] = None,
+        property_type: type,
+        getter: Callable[..., None] | None = None,
+        setter: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def object_define_property_data(
         self,
         property_name: str,
         flags: ValuePropertyFlags,
-        property_value: Optional[Value] = None,
+        property_value: Value | None = None,
     ) -> None: ...
     def object_delete_property(self, name: str) -> bool: ...
-    def object_enumerate_properties(self) -> Optional[list[str]]: ...
+    def object_enumerate_properties(self) -> list[str] | None: ...
     def object_get_property(self, name: str) -> Value: ...
     def object_get_property_at_index(self, index: int) -> Value: ...
     def object_has_property(self, name: str) -> bool: ...
     def object_invoke_method(
-        self, name: str, parameters: Optional[Sequence[Value]] = None
+        self, name: str, parameters: Sequence[Value] | None = None
     ) -> Value: ...
     def object_is_instance_of(self, name: str) -> bool: ...
     def object_set_property(self, name: str, property: Value) -> None: ...
@@ -424,8 +413,8 @@ class ValueClass(GObject.GPointer):
 
         ValueClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class VirtualMachine(GObject.Object):
     """
@@ -453,8 +442,8 @@ class VirtualMachineClass(GObject.GPointer):
 
         VirtualMachineClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class WeakValue(GObject.Object):
     """
@@ -477,10 +466,11 @@ class WeakValue(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         value: Value
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(self, value: Value = ...): ...
     def get_value(self) -> Value: ...
     @classmethod
@@ -494,19 +484,19 @@ class WeakValueClass(GObject.GPointer):
 
         WeakValueClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class ValuePropertyFlags(GObject.GFlags):
+class ValuePropertyFlags(IntFlag):
     CONFIGURABLE = 1
     ENUMERABLE = 2
     WRITABLE = 4
 
-class CheckSyntaxMode(GObject.GEnum):
+class CheckSyntaxMode(IntEnum):
     MODULE = 1
     SCRIPT = 0
 
-class CheckSyntaxResult(GObject.GEnum):
+class CheckSyntaxResult(IntEnum):
     IRRECOVERABLE_ERROR = 2
     OUT_OF_MEMORY_ERROR = 4
     RECOVERABLE_ERROR = 1
@@ -514,7 +504,7 @@ class CheckSyntaxResult(GObject.GEnum):
     SUCCESS = 0
     UNTERMINATED_LITERAL_ERROR = 3
 
-class OptionType(GObject.GEnum):
+class OptionType(IntEnum):
     BOOLEAN = 0
     DOUBLE = 4
     INT = 1
@@ -523,7 +513,7 @@ class OptionType(GObject.GEnum):
     STRING = 5
     UINT = 2
 
-class TypedArrayType(GObject.GEnum):
+class TypedArrayType(IntEnum):
     FLOAT32 = 10
     FLOAT64 = 11
     INT16 = 2

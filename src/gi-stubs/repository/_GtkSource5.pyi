@@ -1,33 +1,30 @@
 from typing import Any
-from typing import Callable
-from typing import Literal
-from typing import Optional
-from typing import Sequence
-from typing import Tuple
-from typing import Type
+from typing import Final
+from typing import Protocol
 from typing import TypeVar
-from typing import Union
 
-from gi.repository import Gdk
+from collections.abc import Callable
+from collections.abc import Sequence
+
+from gi.repository import _Gdk4
+from gi.repository import _Gtk4
 from gi.repository import GdkPixbuf
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
-from gi.repository import Gtk
 from gi.repository import Pango
 
-MAJOR_VERSION: int = 5
-MICRO_VERSION: int = 1
-MINOR_VERSION: int = 12
-_lock = ...  # FIXME Constant
-_namespace: str = "GtkSource"
-_version: str = "5"
+T = TypeVar("T")
+
+MAJOR_VERSION: Final[int]
+MICRO_VERSION: Final[int]
+MINOR_VERSION: Final[int]
 
 def check_version(major: int, minor: int, micro: int) -> bool: ...
 def encoding_get_all() -> list[Encoding]: ...
 def encoding_get_current() -> Encoding: ...
 def encoding_get_default_candidates() -> list[Encoding]: ...
-def encoding_get_from_charset(charset: str) -> Optional[Encoding]: ...
+def encoding_get_from_charset(charset: str) -> Encoding | None: ...
 def encoding_get_utf8() -> Encoding: ...
 def file_loader_error_quark() -> int: ...
 def file_saver_error_quark() -> int: ...
@@ -37,12 +34,154 @@ def get_micro_version() -> int: ...
 def get_minor_version() -> int: ...
 def init() -> None: ...
 def scheduler_add(callback: Callable[..., bool], *user_data: Any) -> int: ...
-def scheduler_add_full(callback: Callable[..., bool], *user_data: Any) -> int: ...
 def scheduler_remove(handler_id: int) -> None: ...
 def utils_escape_search_text(text: str) -> str: ...
 def utils_unescape_search_text(text: str) -> str: ...
 
-class Buffer(Gtk.TextBuffer):
+class Annotation(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Annotation(**properties)
+        new(description:str=None, icon:Gio.Icon=None, line:int, style:GtkSource.AnnotationStyle) -> GtkSource.Annotation
+
+    Object GtkSourceAnnotation
+
+    Properties from GtkSourceAnnotation:
+      style -> GtkSourceAnnotationStyle: style
+      description -> gchararray: description
+      icon -> GIcon: icon
+      line -> guint: line
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GObject.Object.Props):
+        description: str
+        icon: Gio.Icon | None
+        line: int
+        style: AnnotationStyle
+
+    @property
+    def props(self) -> Props: ...
+    def get_description(self) -> str: ...
+    def get_icon(self) -> Gio.Icon | None: ...
+    def get_line(self) -> int: ...
+    def get_style(self) -> AnnotationStyle: ...
+    @classmethod
+    def new(
+        cls,
+        description: str | None,
+        icon: Gio.Icon | None,
+        line: int,
+        style: AnnotationStyle,
+    ) -> Annotation: ...
+
+class AnnotationClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        AnnotationClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class AnnotationProvider(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        AnnotationProvider(**properties)
+        new() -> GtkSource.AnnotationProvider
+
+    Object GtkSourceAnnotationProvider
+
+    Signals from GtkSourceAnnotationProvider:
+      changed ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def add_annotation(self, annotation: Annotation) -> None: ...
+    def do_populate_hover_async(
+        self,
+        annotation: Annotation,
+        display: HoverDisplay,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
+    ) -> None: ...
+    def do_populate_hover_finish(self, result: Gio.AsyncResult) -> bool: ...
+    @classmethod
+    def new(cls) -> AnnotationProvider: ...
+    def populate_hover_async(
+        self,
+        annotation: Annotation,
+        display: HoverDisplay,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
+    ) -> None: ...
+    def populate_hover_finish(self, result: Gio.AsyncResult) -> bool: ...
+    def remove_all(self) -> None: ...
+    def remove_annotation(self, annotation: Annotation) -> bool: ...
+
+class AnnotationProviderClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        AnnotationProviderClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def populate_hover_async(self) -> Callable[..., None]: ...
+    @property
+    def populate_hover_finish(
+        self,
+    ) -> Callable[[AnnotationProvider, Gio.AsyncResult], bool]: ...
+
+class Annotations(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Annotations(**properties)
+
+    Object GtkSourceAnnotations
+
+    Signals from GtkSourceAnnotations:
+      changed ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def add_provider(self, provider: AnnotationProvider) -> None: ...
+    def remove_provider(self, provider: AnnotationProvider) -> bool: ...
+
+class AnnotationsClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        AnnotationsClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Buffer(_Gtk4.TextBuffer):
     """
     :Constructors:
 
@@ -103,90 +242,95 @@ class Buffer(Gtk.TextBuffer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.TextBuffer.Props):
         highlight_matching_brackets: bool
         highlight_syntax: bool
         implicit_trailing_newline: bool
-        language: Optional[Language]
+        language: Language | None
         loading: bool
-        style_scheme: Optional[StyleScheme]
+        style_scheme: StyleScheme | None
         can_redo: bool
         can_undo: bool
         cursor_position: int
         enable_undo: bool
         has_selection: bool
-        tag_table: Gtk.TextTagTable
+        tag_table: _Gtk4.TextTagTable
         text: str
 
-    props: Props = ...
-    parent_instance: Gtk.TextBuffer = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.TextBuffer: ...
     def __init__(
         self,
         highlight_matching_brackets: bool = ...,
         highlight_syntax: bool = ...,
         implicit_trailing_newline: bool = ...,
-        language: Optional[Language] = ...,
-        style_scheme: Optional[StyleScheme] = ...,
+        language: Language | None = ...,
+        style_scheme: StyleScheme | None = ...,
         enable_undo: bool = ...,
-        tag_table: Gtk.TextTagTable = ...,
+        tag_table: _Gtk4.TextTagTable = ...,
         text: str = ...,
-    ): ...
+    ) -> None: ...
     def backward_iter_to_source_mark(
-        self, category: Optional[str] = None
-    ) -> Tuple[bool, Gtk.TextIter]: ...
+        self, category: str | None = None
+    ) -> tuple[bool, _Gtk4.TextIter]: ...
     def change_case(
-        self, case_type: ChangeCaseType, start: Gtk.TextIter, end: Gtk.TextIter
+        self, case_type: ChangeCaseType, start: _Gtk4.TextIter, end: _Gtk4.TextIter
     ) -> None: ...
     def create_source_mark(
-        self, name: Optional[str], category: str, where: Gtk.TextIter
+        self, name: str | None, category: str, where: _Gtk4.TextIter
     ) -> Mark: ...
     def do_bracket_matched(
-        self, iter: Gtk.TextIter, state: BracketMatchType
+        self, iter: _Gtk4.TextIter, state: BracketMatchType
     ) -> None: ...
-    def ensure_highlight(self, start: Gtk.TextIter, end: Gtk.TextIter) -> None: ...
+    def ensure_highlight(self, start: _Gtk4.TextIter, end: _Gtk4.TextIter) -> None: ...
     def forward_iter_to_source_mark(
-        self, category: Optional[str] = None
-    ) -> Tuple[bool, Gtk.TextIter]: ...
-    def get_context_classes_at_iter(self, iter: Gtk.TextIter) -> list[str]: ...
+        self, category: str | None = None
+    ) -> tuple[bool, _Gtk4.TextIter]: ...
+    def get_context_classes_at_iter(self, iter: _Gtk4.TextIter) -> list[str]: ...
     def get_highlight_matching_brackets(self) -> bool: ...
     def get_highlight_syntax(self) -> bool: ...
     def get_implicit_trailing_newline(self) -> bool: ...
-    def get_language(self) -> Optional[Language]: ...
+    def get_language(self) -> Language | None: ...
     def get_loading(self) -> bool: ...
+    def get_markup(self, start: _Gtk4.TextIter, end: _Gtk4.TextIter) -> str: ...
     def get_source_marks_at_iter(
-        self, iter: Gtk.TextIter, category: Optional[str] = None
+        self, iter: _Gtk4.TextIter, category: str | None = None
     ) -> list[Mark]: ...
     def get_source_marks_at_line(
-        self, line: int, category: Optional[str] = None
+        self, line: int, category: str | None = None
     ) -> list[Mark]: ...
-    def get_style_scheme(self) -> Optional[StyleScheme]: ...
+    def get_style_scheme(self) -> StyleScheme | None: ...
     def iter_backward_to_context_class_toggle(
         self, context_class: str
-    ) -> Tuple[bool, Gtk.TextIter]: ...
+    ) -> tuple[bool, _Gtk4.TextIter]: ...
     def iter_forward_to_context_class_toggle(
         self, context_class: str
-    ) -> Tuple[bool, Gtk.TextIter]: ...
+    ) -> tuple[bool, _Gtk4.TextIter]: ...
     def iter_has_context_class(
-        self, iter: Gtk.TextIter, context_class: str
+        self, iter: _Gtk4.TextIter, context_class: str
     ) -> bool: ...
-    def join_lines(self, start: Gtk.TextIter, end: Gtk.TextIter) -> None: ...
+    def join_lines(self, start: _Gtk4.TextIter, end: _Gtk4.TextIter) -> None: ...
     @classmethod
-    def new(cls, table: Optional[Gtk.TextTagTable] = None) -> Buffer: ...
+    def new(cls, table: _Gtk4.TextTagTable | None = None) -> Buffer: ...
     @classmethod
     def new_with_language(cls, language: Language) -> Buffer: ...
     def remove_source_marks(
-        self, start: Gtk.TextIter, end: Gtk.TextIter, category: Optional[str] = None
+        self,
+        start: _Gtk4.TextIter,
+        end: _Gtk4.TextIter,
+        category: str | None = None,
     ) -> None: ...
     def set_highlight_matching_brackets(self, highlight: bool) -> None: ...
     def set_highlight_syntax(self, highlight: bool) -> None: ...
     def set_implicit_trailing_newline(
         self, implicit_trailing_newline: bool
     ) -> None: ...
-    def set_language(self, language: Optional[Language] = None) -> None: ...
-    def set_style_scheme(self, scheme: Optional[StyleScheme] = None) -> None: ...
+    def set_language(self, language: Language | None = None) -> None: ...
+    def set_style_scheme(self, scheme: StyleScheme | None = None) -> None: ...
     def sort_lines(
-        self, start: Gtk.TextIter, end: Gtk.TextIter, flags: SortFlags, column: int
+        self, start: _Gtk4.TextIter, end: _Gtk4.TextIter, flags: SortFlags, column: int
     ) -> None: ...
 
 class BufferClass(GObject.GPointer):
@@ -197,10 +341,12 @@ class BufferClass(GObject.GPointer):
 
         BufferClass()
     """
-
-    parent_class: Gtk.TextBufferClass = ...
-    bracket_matched: Callable[[Buffer, Gtk.TextIter, BracketMatchType], None] = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> _Gtk4.TextBufferClass: ...
+    @property
+    def bracket_matched(
+        self,
+    ) -> Callable[[Buffer, _Gtk4.TextIter, BracketMatchType], None]: ...
 
 class Completion(GObject.Object):
     """
@@ -235,16 +381,16 @@ class Completion(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        buffer: Gtk.TextView
+    class Props(GObject.Object.Props):
+        buffer: _Gtk4.TextView
         page_size: int
         remember_info_visibility: bool
         select_on_show: bool
         show_icons: bool
         view: View
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         page_size: int = ...,
@@ -252,17 +398,15 @@ class Completion(GObject.Object):
         select_on_show: bool = ...,
         show_icons: bool = ...,
         view: View = ...,
-    ): ...
+    ) -> None: ...
     def add_provider(self, provider: CompletionProvider) -> None: ...
     def block_interactive(self) -> None: ...
     @staticmethod
     def fuzzy_highlight(
         haystack: str, casefold_query: str
-    ) -> Optional[Pango.AttrList]: ...
+    ) -> Pango.AttrList | None: ...
     @staticmethod
-    def fuzzy_match(
-        haystack: Optional[str], casefold_needle: str
-    ) -> Tuple[bool, int]: ...
+    def fuzzy_match(haystack: str | None, casefold_needle: str) -> tuple[bool, int]: ...
     def get_buffer(self) -> Buffer: ...
     def get_page_size(self) -> int: ...
     def get_view(self) -> View: ...
@@ -272,7 +416,9 @@ class Completion(GObject.Object):
     def show(self) -> None: ...
     def unblock_interactive(self) -> None: ...
 
-class CompletionCell(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class CompletionCell(
+    _Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
+):
     """
     :Constructors:
 
@@ -295,6 +441,7 @@ class CompletionCell(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
         Widget
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -303,7 +450,6 @@ class CompletionCell(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -344,101 +490,104 @@ class CompletionCell(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         column: CompletionColumn
         markup: str
-        paintable: Gdk.Paintable
-        text: Optional[str]
-        widget: Optional[Gtk.Widget]
+        paintable: _Gdk4.Paintable
+        text: str | None
+        widget: _Gtk4.Widget | None
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         column: CompletionColumn = ...,
         markup: str = ...,
-        paintable: Gdk.Paintable = ...,
-        text: Optional[str] = ...,
-        widget: Gtk.Widget = ...,
+        paintable: _Gdk4.Paintable = ...,
+        text: str | None = ...,
+        widget: _Gtk4.Widget = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
     def get_column(self) -> CompletionColumn: ...
-    def get_widget(self) -> Optional[Gtk.Widget]: ...
+    def get_widget(self) -> _Gtk4.Widget | None: ...
     def set_gicon(self, gicon: Gio.Icon) -> None: ...
     def set_icon_name(self, icon_name: str) -> None: ...
     def set_markup(self, markup: str) -> None: ...
-    def set_paintable(self, paintable: Gdk.Paintable) -> None: ...
-    def set_text(self, text: Optional[str] = None) -> None: ...
+    def set_paintable(self, paintable: _Gdk4.Paintable) -> None: ...
+    def set_text(self, text: str | None = None) -> None: ...
     def set_text_with_attributes(self, text: str, attrs: Pango.AttrList) -> None: ...
-    def set_widget(self, child: Gtk.Widget) -> None: ...
+    def set_widget(self, child: _Gtk4.Widget) -> None: ...
 
 class CompletionCellClass(GObject.GPointer):
     """
@@ -448,8 +597,8 @@ class CompletionCellClass(GObject.GPointer):
 
         CompletionCellClass()
     """
-
-    parent_class: Gtk.WidgetClass = ...
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
 class CompletionClass(GObject.GPointer):
     """
@@ -459,8 +608,8 @@ class CompletionClass(GObject.GPointer):
 
         CompletionClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class CompletionContext(GObject.Object, Gio.ListModel):
     """
@@ -489,29 +638,31 @@ class CompletionContext(GObject.Object, Gio.ListModel):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         busy: bool
-        completion: Optional[Completion]
+        completion: Completion | None
         empty: bool
 
-    props: Props = ...
-    def __init__(self, completion: Completion = ...): ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, completion: Completion = ...) -> None: ...
     def get_activation(self) -> CompletionActivation: ...
-    def get_bounds(self) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter]: ...
-    def get_buffer(self) -> Optional[Buffer]: ...
+    def get_bounds(self) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter]: ...
+    def get_buffer(self) -> Buffer | None: ...
     def get_busy(self) -> bool: ...
-    def get_completion(self) -> Optional[Completion]: ...
+    def get_completion(self) -> Completion | None: ...
     def get_empty(self) -> bool: ...
-    def get_language(self) -> Optional[Language]: ...
+    def get_language(self) -> Language | None: ...
     def get_proposals_for_provider(
         self, provider: CompletionProvider
-    ) -> Optional[Gio.ListModel]: ...
-    def get_view(self) -> Optional[View]: ...
+    ) -> Gio.ListModel | None: ...
+    def get_view(self) -> View | None: ...
     def get_word(self) -> str: ...
     def list_providers(self) -> Gio.ListModel: ...
     def set_proposals_for_provider(
-        self, provider: CompletionProvider, results: Optional[Gio.ListModel] = None
+        self,
+        provider: CompletionProvider,
+        results: Gio.ListModel | None = None,
     ) -> None: ...
 
 class CompletionContextClass(GObject.GPointer):
@@ -522,18 +673,17 @@ class CompletionContextClass(GObject.GPointer):
 
         CompletionContextClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class CompletionProposal(GObject.GInterface):
+class CompletionProposal(GObject.GInterface, Protocol):
     """
     Interface GtkSourceCompletionProposal
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_typed_text(self) -> Optional[str]: ...
+    def get_typed_text(self) -> str | None: ...
 
 class CompletionProposalInterface(GObject.GPointer):
     """
@@ -543,18 +693,18 @@ class CompletionProposalInterface(GObject.GPointer):
 
         CompletionProposalInterface()
     """
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_typed_text(self) -> Callable[[CompletionProposal], str | None]: ...
 
-    parent_iface: GObject.TypeInterface = ...
-    get_typed_text: Callable[[CompletionProposal], Optional[str]] = ...
-
-class CompletionProvider(GObject.GInterface):
+class CompletionProvider(GObject.GInterface, Protocol):
     """
     Interface GtkSourceCompletionProvider
 
     Signals from GObject:
       notify (GParam)
     """
-
     def activate(
         self, context: CompletionContext, proposal: CompletionProposal
     ) -> None: ...
@@ -565,23 +715,23 @@ class CompletionProvider(GObject.GInterface):
         cell: CompletionCell,
     ) -> None: ...
     def get_priority(self, context: CompletionContext) -> int: ...
-    def get_title(self) -> Optional[str]: ...
-    def is_trigger(self, iter: Gtk.TextIter, ch: str) -> bool: ...
+    def get_title(self) -> str | None: ...
+    def is_trigger(self, iter: _Gtk4.TextIter, ch: str) -> bool: ...
     def key_activates(
         self,
         context: CompletionContext,
         proposal: CompletionProposal,
         keyval: int,
-        state: Gdk.ModifierType,
+        state: _Gdk4.ModifierType,
     ) -> bool: ...
     def list_alternates(
         self, context: CompletionContext, proposal: CompletionProposal
-    ) -> Optional[list[CompletionProposal]]: ...
+    ) -> list[CompletionProposal] | None: ...
     def populate_async(
         self,
         context: CompletionContext,
-        cancellable: Optional[Gio.Cancellable] = None,
-        callback: Optional[Callable[..., None]] = None,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def populate_finish(self, result: Gio.AsyncResult) -> Gio.ListModel: ...
@@ -595,40 +745,63 @@ class CompletionProviderInterface(GObject.GPointer):
 
         CompletionProviderInterface()
     """
-
-    parent_iface: GObject.TypeInterface = ...
-    get_title: Callable[[CompletionProvider], Optional[str]] = ...
-    get_priority: Callable[[CompletionProvider, CompletionContext], int] = ...
-    is_trigger: Callable[[CompletionProvider, Gtk.TextIter, str], bool] = ...
-    key_activates: Callable[
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_title(self) -> Callable[[CompletionProvider], str | None]: ...
+    @property
+    def get_priority(
+        self,
+    ) -> Callable[[CompletionProvider, CompletionContext], int]: ...
+    @property
+    def is_trigger(
+        self,
+    ) -> Callable[[CompletionProvider, _Gtk4.TextIter, str], bool]: ...
+    @property
+    def key_activates(
+        self,
+    ) -> Callable[
         [
             CompletionProvider,
             CompletionContext,
             CompletionProposal,
             int,
-            Gdk.ModifierType,
+            _Gdk4.ModifierType,
         ],
         bool,
-    ] = ...
-    populate: None = ...
-    populate_async: Callable[..., None] = ...
-    populate_finish: Callable[
-        [CompletionProvider, Gio.AsyncResult], Gio.ListModel
-    ] = ...
-    refilter: Callable[
-        [CompletionProvider, CompletionContext, Gio.ListModel], None
-    ] = ...
-    display: Callable[
+    ]: ...
+    @property
+    def populate(self) -> None: ...
+    @property
+    def populate_async(self) -> Callable[..., None]: ...
+    @property
+    def populate_finish(
+        self,
+    ) -> Callable[[CompletionProvider, Gio.AsyncResult], Gio.ListModel]: ...
+    @property
+    def refilter(
+        self,
+    ) -> Callable[[CompletionProvider, CompletionContext, Gio.ListModel], None]: ...
+    @property
+    def display(
+        self,
+    ) -> Callable[
         [CompletionProvider, CompletionContext, CompletionProposal, CompletionCell],
         None,
-    ] = ...
-    activate: Callable[
+    ]: ...
+    @property
+    def activate(
+        self,
+    ) -> Callable[
         [CompletionProvider, CompletionContext, CompletionProposal], None
-    ] = ...
-    list_alternates: Callable[
+    ]: ...
+    @property
+    def list_alternates(
+        self,
+    ) -> Callable[
         [CompletionProvider, CompletionContext, CompletionProposal],
-        Optional[list[CompletionProposal]],
-    ] = ...
+        list[CompletionProposal] | None,
+    ]: ...
 
 class CompletionSnippets(GObject.Object, CompletionProvider):
     """
@@ -650,14 +823,15 @@ class CompletionSnippets(GObject.Object, CompletionProvider):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         priority: int
         title: str
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    def __init__(self, priority: int = ..., title: str = ...): ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def __init__(self, priority: int = ..., title: str = ...) -> None: ...
     @classmethod
     def new(cls) -> CompletionSnippets: ...
 
@@ -669,9 +843,8 @@ class CompletionSnippetsClass(GObject.GPointer):
 
         CompletionSnippetsClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class CompletionWords(GObject.Object, CompletionProvider):
     """
@@ -699,16 +872,17 @@ class CompletionWords(GObject.Object, CompletionProvider):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         minimum_word_size: int
         priority: int
         proposals_batch_size: int
         scan_batch_size: int
         title: str
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
         self,
         minimum_word_size: int = ...,
@@ -716,11 +890,11 @@ class CompletionWords(GObject.Object, CompletionProvider):
         proposals_batch_size: int = ...,
         scan_batch_size: int = ...,
         title: str = ...,
-    ): ...
+    ) -> None: ...
     @classmethod
-    def new(cls, title: Optional[str] = None) -> CompletionWords: ...
-    def register(self, buffer: Gtk.TextBuffer) -> None: ...
-    def unregister(self, buffer: Gtk.TextBuffer) -> None: ...
+    def new(cls, title: str | None = None) -> CompletionWords: ...
+    def register(self, buffer: _Gtk4.TextBuffer) -> None: ...
+    def unregister(self, buffer: _Gtk4.TextBuffer) -> None: ...
 
 class CompletionWordsClass(GObject.GPointer):
     """
@@ -730,9 +904,8 @@ class CompletionWordsClass(GObject.GPointer):
 
         CompletionWordsClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Encoding(GObject.GBoxed):
     def copy(self) -> Encoding: ...
@@ -745,7 +918,7 @@ class Encoding(GObject.GBoxed):
     @staticmethod
     def get_default_candidates() -> list[Encoding]: ...
     @staticmethod
-    def get_from_charset(charset: str) -> Optional[Encoding]: ...
+    def get_from_charset(charset: str) -> Encoding | None: ...
     def get_name(self) -> str: ...
     @staticmethod
     def get_utf8() -> Encoding: ...
@@ -777,17 +950,18 @@ class File(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         compression_type: CompressionType
         encoding: Encoding
         location: Gio.File
         newline_type: NewlineType
         read_only: bool
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    def __init__(self, location: Optional[Gio.File] = ...): ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def __init__(self, location: Gio.File | None = ...) -> None: ...
     def check_file_on_disk(self) -> None: ...
     def get_compression_type(self) -> CompressionType: ...
     def get_encoding(self) -> Encoding: ...
@@ -799,7 +973,7 @@ class File(GObject.Object):
     def is_readonly(self) -> bool: ...
     @classmethod
     def new(cls) -> File: ...
-    def set_location(self, location: Optional[Gio.File] = None) -> None: ...
+    def set_location(self, location: Gio.File | None = None) -> None: ...
 
 class FileClass(GObject.GPointer):
     """
@@ -809,9 +983,8 @@ class FileClass(GObject.GPointer):
 
         FileClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class FileLoader(GObject.Object):
     """
@@ -838,34 +1011,34 @@ class FileLoader(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         buffer: Buffer
         file: File
-        input_stream: Optional[Gio.InputStream]
-        location: Optional[Gio.File]
+        input_stream: Gio.InputStream | None
+        location: Gio.File | None
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         buffer: Buffer = ...,
         file: File = ...,
         input_stream: Gio.InputStream = ...,
         location: Gio.File = ...,
-    ): ...
+    ) -> None: ...
     def get_buffer(self) -> Buffer: ...
     def get_compression_type(self) -> CompressionType: ...
     def get_encoding(self) -> Encoding: ...
     def get_file(self) -> File: ...
-    def get_input_stream(self) -> Optional[Gio.InputStream]: ...
-    def get_location(self) -> Optional[Gio.File]: ...
+    def get_input_stream(self) -> Gio.InputStream | None: ...
+    def get_location(self) -> Gio.File | None: ...
     def get_newline_type(self) -> NewlineType: ...
     def load_async(
         self,
         io_priority: int,
-        cancellable: Optional[Gio.Cancellable] = None,
-        progress_callback: Optional[Callable[..., None]] = None,
-        callback: Optional[Callable[..., None]] = None,
+        cancellable: Gio.Cancellable | None = None,
+        progress_callback: Callable[..., None] | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def load_finish(self, result: Gio.AsyncResult) -> bool: ...
@@ -885,8 +1058,8 @@ class FileLoaderClass(GObject.GPointer):
 
         FileLoaderClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class FileSaver(GObject.Object):
     """
@@ -919,8 +1092,7 @@ class FileSaver(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         buffer: Buffer
         compression_type: CompressionType
         encoding: Encoding
@@ -929,17 +1101,18 @@ class FileSaver(GObject.Object):
         location: Gio.File
         newline_type: NewlineType
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         buffer: Buffer = ...,
         compression_type: CompressionType = ...,
-        encoding: Optional[Encoding] = ...,
+        encoding: Encoding | None = ...,
         file: File = ...,
         flags: FileSaverFlags = ...,
         location: Gio.File = ...,
         newline_type: NewlineType = ...,
-    ): ...
+    ) -> None: ...
     def get_buffer(self) -> Buffer: ...
     def get_compression_type(self) -> CompressionType: ...
     def get_encoding(self) -> Encoding: ...
@@ -956,14 +1129,14 @@ class FileSaver(GObject.Object):
     def save_async(
         self,
         io_priority: int,
-        cancellable: Optional[Gio.Cancellable] = None,
-        progress_callback: Optional[Callable[..., None]] = None,
-        callback: Optional[Callable[..., None]] = None,
+        cancellable: Gio.Cancellable | None = None,
+        progress_callback: Callable[..., None] | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def save_finish(self, result: Gio.AsyncResult) -> bool: ...
     def set_compression_type(self, compression_type: CompressionType) -> None: ...
-    def set_encoding(self, encoding: Optional[Encoding] = None) -> None: ...
+    def set_encoding(self, encoding: Encoding | None = None) -> None: ...
     def set_flags(self, flags: FileSaverFlags) -> None: ...
     def set_newline_type(self, newline_type: NewlineType) -> None: ...
 
@@ -975,10 +1148,10 @@ class FileSaverClass(GObject.GPointer):
 
         FileSaverClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class Gutter(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class Gutter(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -995,6 +1168,7 @@ class Gutter(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
         The gutters' text window type
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -1003,7 +1177,6 @@ class Gutter(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -1044,86 +1217,89 @@ class Gutter(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         view: View
-        window_type: Gtk.TextWindowType
+        window_type: _Gtk4.TextWindowType
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         view: View = ...,
-        window_type: Gtk.TextWindowType = ...,
+        window_type: _Gtk4.TextWindowType = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
     def get_view(self) -> View: ...
     def insert(self, renderer: GutterRenderer, position: int) -> bool: ...
     def remove(self, renderer: GutterRenderer) -> None: ...
@@ -1137,8 +1313,8 @@ class GutterClass(GObject.GPointer):
 
         GutterClass()
     """
-
-    parent_class: Gtk.WidgetClass = ...
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
 class GutterLines(GObject.Object):
     """
@@ -1153,17 +1329,19 @@ class GutterLines(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def add_class(self, line: int, name: str) -> None: ...
     def add_qclass(self, line: int, qname: int) -> None: ...
-    def get_buffer(self) -> Gtk.TextBuffer: ...
+    def get_buffer(self) -> _Gtk4.TextBuffer: ...
     def get_first(self) -> int: ...
-    def get_iter_at_line(self, line: int) -> Gtk.TextIter: ...
+    def get_iter_at_line(self, line: int) -> _Gtk4.TextIter: ...
     def get_last(self) -> int: ...
+    def get_line_extent(
+        self, line: int, mode: GutterRendererAlignmentMode
+    ) -> tuple[float, float]: ...
     def get_line_yrange(
         self, line: int, mode: GutterRendererAlignmentMode
-    ) -> Tuple[int, int]: ...
-    def get_view(self) -> Gtk.TextView: ...
+    ) -> tuple[int, int]: ...
+    def get_view(self) -> _Gtk4.TextView: ...
     def has_any_class(self, line: int) -> bool: ...
     def has_class(self, line: int, name: str) -> bool: ...
     def has_qclass(self, line: int, qname: int) -> bool: ...
@@ -1181,10 +1359,12 @@ class GutterLinesClass(GObject.GPointer):
 
         GutterLinesClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class GutterRenderer(
+    _Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
+):
     """
     :Constructors:
 
@@ -1216,6 +1396,7 @@ class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
         The y-padding
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -1224,7 +1405,6 @@ class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -1265,15 +1445,16 @@ class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         alignment_mode: GutterRendererAlignmentMode
         lines: GutterLines
-        view: Gtk.TextView
+        view: _Gtk4.TextView
         xalign: float
         xpad: int
         yalign: float
@@ -1282,40 +1463,43 @@ class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
-    parent_instance: Gtk.Widget = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.Widget: ...
     def __init__(
         self,
         alignment_mode: GutterRendererAlignmentMode = ...,
@@ -1327,69 +1511,74 @@ class GutterRenderer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTa
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
     def activate(
         self,
-        iter: Gtk.TextIter,
-        area: Gdk.Rectangle,
+        iter: _Gtk4.TextIter,
+        area: _Gdk4.Rectangle,
         button: int,
-        state: Gdk.ModifierType,
+        state: _Gdk4.ModifierType,
         n_presses: int,
     ) -> None: ...
     def align_cell(
         self, line: int, width: float, height: float
-    ) -> Tuple[float, float]: ...
+    ) -> tuple[float, float]: ...
     def do_activate(
         self,
-        iter: Gtk.TextIter,
-        area: Gdk.Rectangle,
+        iter: _Gtk4.TextIter,
+        area: _Gdk4.Rectangle,
         button: int,
-        state: Gdk.ModifierType,
+        state: _Gdk4.ModifierType,
         n_presses: int,
     ) -> None: ...
     def do_begin(self, lines: GutterLines) -> None: ...
-    def do_change_buffer(self, old_buffer: Optional[Buffer] = None) -> None: ...
-    def do_change_view(self, old_view: Optional[View] = None) -> None: ...
+    def do_change_buffer(self, old_buffer: Buffer | None = None) -> None: ...
+    def do_change_view(self, old_view: View | None = None) -> None: ...
     def do_end(self) -> None: ...
-    def do_query_activatable(self, iter: Gtk.TextIter, area: Gdk.Rectangle) -> bool: ...
+    def do_query_activatable(
+        self, iter: _Gtk4.TextIter, area: _Gdk4.Rectangle
+    ) -> bool: ...
     def do_query_data(self, lines: GutterLines, line: int) -> None: ...
     def do_snapshot_line(
-        self, snapshot: Gtk.Snapshot, lines: GutterLines, line: int
+        self, snapshot: _Gtk4.Snapshot, lines: GutterLines, line: int
     ) -> None: ...
     def get_alignment_mode(self) -> GutterRendererAlignmentMode: ...
-    def get_buffer(self) -> Optional[Buffer]: ...
+    def get_buffer(self) -> Buffer | None: ...
     def get_view(self) -> View: ...
     def get_xalign(self) -> float: ...
     def get_xpad(self) -> int: ...
     def get_yalign(self) -> float: ...
     def get_ypad(self) -> int: ...
-    def query_activatable(self, iter: Gtk.TextIter, area: Gdk.Rectangle) -> bool: ...
+    def query_activatable(
+        self, iter: _Gtk4.TextIter, area: _Gdk4.Rectangle
+    ) -> bool: ...
     def set_alignment_mode(self, mode: GutterRendererAlignmentMode) -> None: ...
     def set_xalign(self, xalign: float) -> None: ...
     def set_xpad(self, xpad: int) -> None: ...
@@ -1404,26 +1593,36 @@ class GutterRendererClass(GObject.GPointer):
 
         GutterRendererClass()
     """
-
-    parent_class: Gtk.WidgetClass = ...
-    query_data: Callable[[GutterRenderer, GutterLines, int], None] = ...
-    begin: Callable[[GutterRenderer, GutterLines], None] = ...
-    snapshot_line: Callable[
-        [GutterRenderer, Gtk.Snapshot, GutterLines, int], None
-    ] = ...
-    end: Callable[[GutterRenderer], None] = ...
-    change_view: Callable[[GutterRenderer, Optional[View]], None] = ...
-    change_buffer: Callable[[GutterRenderer, Optional[Buffer]], None] = ...
-    query_activatable: Callable[
-        [GutterRenderer, Gtk.TextIter, Gdk.Rectangle], bool
-    ] = ...
-    activate: Callable[
-        [GutterRenderer, Gtk.TextIter, Gdk.Rectangle, int, Gdk.ModifierType, int], None
-    ] = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
+    @property
+    def query_data(self) -> Callable[[GutterRenderer, GutterLines, int], None]: ...
+    @property
+    def begin(self) -> Callable[[GutterRenderer, GutterLines], None]: ...
+    @property
+    def snapshot_line(
+        self,
+    ) -> Callable[[GutterRenderer, _Gtk4.Snapshot, GutterLines, int], None]: ...
+    @property
+    def end(self) -> Callable[[GutterRenderer], None]: ...
+    @property
+    def change_view(self) -> Callable[[GutterRenderer, View | None], None]: ...
+    @property
+    def change_buffer(self) -> Callable[[GutterRenderer, Buffer | None], None]: ...
+    @property
+    def query_activatable(
+        self,
+    ) -> Callable[[GutterRenderer, _Gtk4.TextIter, _Gdk4.Rectangle], bool]: ...
+    @property
+    def activate(
+        self,
+    ) -> Callable[
+        [GutterRenderer, _Gtk4.TextIter, _Gdk4.Rectangle, int, _Gdk4.ModifierType, int],
+        None,
+    ]: ...
 
 class GutterRendererPixbuf(
-    GutterRenderer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget
+    GutterRenderer, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
 ):
     """
     :Constructors:
@@ -1467,6 +1666,7 @@ class GutterRendererPixbuf(
         The y-padding
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -1475,7 +1675,6 @@ class GutterRendererPixbuf(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -1516,19 +1715,19 @@ class GutterRendererPixbuf(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GutterRenderer.Props):
         gicon: Gio.Icon
         icon_name: str
-        paintable: Optional[Gdk.Paintable]
+        paintable: _Gdk4.Paintable | None
         pixbuf: GdkPixbuf.Pixbuf
         alignment_mode: GutterRendererAlignmentMode
         lines: GutterLines
-        view: Gtk.TextView
+        view: _Gtk4.TextView
         xalign: float
         xpad: int
         yalign: float
@@ -1537,46 +1736,49 @@ class GutterRendererPixbuf(
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
-    parent_instance: GutterRenderer = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GutterRenderer: ...
     def __init__(
         self,
-        gicon: Optional[Gio.Icon] = ...,
-        icon_name: Optional[str] = ...,
-        paintable: Optional[Gdk.Paintable] = ...,
-        pixbuf: Optional[GdkPixbuf.Pixbuf] = ...,
+        gicon: Gio.Icon | None = ...,
+        icon_name: str | None = ...,
+        paintable: _Gdk4.Paintable | None = ...,
+        pixbuf: GdkPixbuf.Pixbuf | None = ...,
         alignment_mode: GutterRendererAlignmentMode = ...,
         xalign: float = ...,
         xpad: int = ...,
@@ -1586,44 +1788,45 @@ class GutterRendererPixbuf(
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
     def get_gicon(self) -> Gio.Icon: ...
     def get_icon_name(self) -> str: ...
-    def get_paintable(self) -> Optional[Gdk.Paintable]: ...
+    def get_paintable(self) -> _Gdk4.Paintable | None: ...
     def get_pixbuf(self) -> GdkPixbuf.Pixbuf: ...
     @classmethod
     def new(cls) -> GutterRendererPixbuf: ...
-    def overlay_paintable(self, paintable: Gdk.Paintable) -> None: ...
-    def set_gicon(self, icon: Optional[Gio.Icon] = None) -> None: ...
-    def set_icon_name(self, icon_name: Optional[str] = None) -> None: ...
-    def set_paintable(self, paintable: Optional[Gdk.Paintable] = None) -> None: ...
-    def set_pixbuf(self, pixbuf: Optional[GdkPixbuf.Pixbuf] = None) -> None: ...
+    def overlay_paintable(self, paintable: _Gdk4.Paintable) -> None: ...
+    def set_gicon(self, icon: Gio.Icon | None = None) -> None: ...
+    def set_icon_name(self, icon_name: str | None = None) -> None: ...
+    def set_paintable(self, paintable: _Gdk4.Paintable | None = None) -> None: ...
+    def set_pixbuf(self, pixbuf: GdkPixbuf.Pixbuf | None = None) -> None: ...
 
 class GutterRendererPixbufClass(GObject.GPointer):
     """
@@ -1633,12 +1836,11 @@ class GutterRendererPixbufClass(GObject.GPointer):
 
         GutterRendererPixbufClass()
     """
-
-    parent_class: GutterRendererClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GutterRendererClass: ...
 
 class GutterRendererText(
-    GutterRenderer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget
+    GutterRenderer, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
 ):
     """
     :Constructors:
@@ -1678,6 +1880,7 @@ class GutterRendererText(
         The y-padding
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -1686,7 +1889,6 @@ class GutterRendererText(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -1727,17 +1929,17 @@ class GutterRendererText(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GutterRenderer.Props):
         markup: str
         text: str
         alignment_mode: GutterRendererAlignmentMode
         lines: GutterLines
-        view: Gtk.TextView
+        view: _Gtk4.TextView
         xalign: float
         xpad: int
         yalign: float
@@ -1746,40 +1948,43 @@ class GutterRendererText(
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
-    parent_instance: GutterRenderer = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GutterRenderer: ...
     def __init__(
         self,
         markup: str = ...,
@@ -1793,35 +1998,36 @@ class GutterRendererText(
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
-    def measure(self, text: str) -> Tuple[int, int]: ...
-    def measure_markup(self, markup: str) -> Tuple[int, int]: ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
+    def measure(self, text: str) -> tuple[int, int]: ...
+    def measure_markup(self, markup: str) -> tuple[int, int]: ...
     @classmethod
     def new(cls) -> GutterRendererText: ...
     def set_markup(self, markup: str, length: int) -> None: ...
@@ -1835,9 +2041,8 @@ class GutterRendererTextClass(GObject.GPointer):
 
         GutterRendererTextClass()
     """
-
-    parent_class: GutterRendererClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GutterRendererClass: ...
 
 class Hover(GObject.Object):
     """
@@ -1856,12 +2061,12 @@ class Hover(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         hover_delay: int
 
-    props: Props = ...
-    def __init__(self, hover_delay: int = ...): ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, hover_delay: int = ...) -> None: ...
     def add_provider(self, provider: HoverProvider) -> None: ...
     def remove_provider(self, provider: HoverProvider) -> None: ...
 
@@ -1873,8 +2078,8 @@ class HoverClass(GObject.GPointer):
 
         HoverClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class HoverContext(GObject.Object):
     """
@@ -1889,10 +2094,9 @@ class HoverContext(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_bounds(self) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter]: ...
+    def get_bounds(self) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter]: ...
     def get_buffer(self) -> Buffer: ...
-    def get_iter(self, iter: Gtk.TextIter) -> bool: ...
+    def get_iter(self) -> tuple[bool, _Gtk4.TextIter]: ...
     def get_view(self) -> View: ...
 
 class HoverContextClass(GObject.GPointer):
@@ -1903,10 +2107,12 @@ class HoverContextClass(GObject.GPointer):
 
         HoverContextClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class HoverDisplay(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class HoverDisplay(
+    _Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
+):
     """
     :Constructors:
 
@@ -1917,6 +2123,7 @@ class HoverDisplay(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarg
     Object GtkSourceHoverDisplay
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -1925,7 +2132,6 @@ class HoverDisplay(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarg
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -1966,86 +2172,89 @@ class HoverDisplay(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarg
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-    ): ...
-    def append(self, child: Gtk.Widget) -> None: ...
-    def insert_after(self, child: Gtk.Widget, sibling: Gtk.Widget) -> None: ...
-    def prepend(self, child: Gtk.Widget) -> None: ...
-    def remove(self, child: Gtk.Widget) -> None: ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+    ) -> None: ...
+    def append(self, child: _Gtk4.Widget) -> None: ...
+    def insert_after(self, child: _Gtk4.Widget, sibling: _Gtk4.Widget) -> None: ...
+    def prepend(self, child: _Gtk4.Widget) -> None: ...
+    def remove(self, child: _Gtk4.Widget) -> None: ...
 
 class HoverDisplayClass(GObject.GPointer):
     """
@@ -2055,23 +2264,22 @@ class HoverDisplayClass(GObject.GPointer):
 
         HoverDisplayClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
-    parent_class: Gtk.WidgetClass = ...
-
-class HoverProvider(GObject.GInterface):
+class HoverProvider(GObject.GInterface, Protocol):
     """
     Interface GtkSourceHoverProvider
 
     Signals from GObject:
       notify (GParam)
     """
-
     def populate_async(
         self,
         context: HoverContext,
         display: HoverDisplay,
-        cancellable: Optional[Gio.Cancellable] = None,
-        callback: Optional[Callable[..., None]] = None,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def populate_finish(self, result: Gio.AsyncResult) -> bool: ...
@@ -2084,23 +2292,31 @@ class HoverProviderInterface(GObject.GPointer):
 
         HoverProviderInterface()
     """
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def populate(
+        self,
+    ) -> Callable[[HoverProvider, HoverContext, HoverDisplay], bool]: ...
+    @property
+    def populate_async(self) -> Callable[..., None]: ...
+    @property
+    def populate_finish(self) -> Callable[[HoverProvider, Gio.AsyncResult], bool]: ...
 
-    parent_iface: GObject.TypeInterface = ...
-    populate: Callable[[HoverProvider, HoverContext, HoverDisplay], bool] = ...
-    populate_async: Callable[..., None] = ...
-    populate_finish: Callable[[HoverProvider, Gio.AsyncResult], bool] = ...
-
-class Indenter(GObject.GInterface):
+class Indenter(GObject.GInterface, Protocol):
     """
     Interface GtkSourceIndenter
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def indent(self, view: View) -> Gtk.TextIter: ...
+    def indent(self, view: View) -> _Gtk4.TextIter: ...
     def is_trigger(
-        self, view: View, location: Gtk.TextIter, state: Gdk.ModifierType, keyval: int
+        self,
+        view: View,
+        location: _Gtk4.TextIter,
+        state: _Gdk4.ModifierType,
+        keyval: int,
     ) -> bool: ...
 
 class IndenterInterface(GObject.GPointer):
@@ -2111,12 +2327,14 @@ class IndenterInterface(GObject.GPointer):
 
         IndenterInterface()
     """
-
-    parent_iface: GObject.TypeInterface = ...
-    is_trigger: Callable[
-        [Indenter, View, Gtk.TextIter, Gdk.ModifierType, int], bool
-    ] = ...
-    indent: Callable[[Indenter, View], Gtk.TextIter] = ...
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def is_trigger(
+        self,
+    ) -> Callable[[Indenter, View, _Gtk4.TextIter, _Gdk4.ModifierType, int], bool]: ...
+    @property
+    def indent(self) -> Callable[[Indenter, View], _Gtk4.TextIter]: ...
 
 class Language(GObject.Object):
     """
@@ -2141,24 +2359,24 @@ class Language(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         hidden: bool
         id: str
         name: str
         section: str
 
-    props: Props = ...
-    def get_globs(self) -> Optional[list[str]]: ...
+    @property
+    def props(self) -> Props: ...
+    def get_globs(self) -> list[str] | None: ...
     def get_hidden(self) -> bool: ...
     def get_id(self) -> str: ...
-    def get_metadata(self, name: str) -> Optional[str]: ...
-    def get_mime_types(self) -> Optional[list[str]]: ...
+    def get_metadata(self, name: str) -> str | None: ...
+    def get_mime_types(self) -> list[str] | None: ...
     def get_name(self) -> str: ...
     def get_section(self) -> str: ...
-    def get_style_fallback(self, style_id: str) -> Optional[str]: ...
-    def get_style_ids(self) -> Optional[list[str]]: ...
-    def get_style_name(self, style_id: str) -> Optional[str]: ...
+    def get_style_fallback(self, style_id: str) -> str | None: ...
+    def get_style_ids(self) -> list[str] | None: ...
+    def get_style_name(self, style_id: str) -> str | None: ...
 
 class LanguageClass(GObject.GPointer):
     """
@@ -2168,8 +2386,8 @@ class LanguageClass(GObject.GPointer):
 
         LanguageClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class LanguageManager(GObject.Object):
     """
@@ -2191,26 +2409,28 @@ class LanguageManager(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        language_ids: Optional[list[str]]
+    class Props(GObject.Object.Props):
+        language_ids: list[str] | None
         search_path: list[str]
 
-    props: Props = ...
-    def __init__(self, search_path: Optional[Sequence[str]] = ...): ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, search_path: Sequence[str] | None = ...) -> None: ...
     def append_search_path(self, path: str) -> None: ...
     @staticmethod
     def get_default() -> LanguageManager: ...
-    def get_language(self, id: str) -> Optional[Language]: ...
-    def get_language_ids(self) -> Optional[list[str]]: ...
+    def get_language(self, id: str) -> Language | None: ...
+    def get_language_ids(self) -> list[str] | None: ...
     def get_search_path(self) -> list[str]: ...
     def guess_language(
-        self, filename: Optional[str] = None, content_type: Optional[str] = None
-    ) -> Optional[Language]: ...
+        self,
+        filename: str | None = None,
+        content_type: str | None = None,
+    ) -> Language | None: ...
     @classmethod
     def new(cls) -> LanguageManager: ...
     def prepend_search_path(self, path: str) -> None: ...
-    def set_search_path(self, dirs: Optional[Sequence[str]] = None) -> None: ...
+    def set_search_path(self, dirs: Sequence[str] | None = None) -> None: ...
 
 class LanguageManagerClass(GObject.GPointer):
     """
@@ -2220,16 +2440,16 @@ class LanguageManagerClass(GObject.GPointer):
 
         LanguageManagerClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Map(
     View,
-    Gtk.Accessible,
-    Gtk.AccessibleText,
-    Gtk.Buildable,
-    Gtk.ConstraintTarget,
-    Gtk.Scrollable,
+    _Gtk4.Accessible,
+    _Gtk4.AccessibleText,
+    _Gtk4.Buildable,
+    _Gtk4.ConstraintTarget,
+    _Gtk4.Scrollable,
 ):
     """
     :Constructors:
@@ -2292,6 +2512,7 @@ class Map(
         HOME and END keys move to first/last non whitespace characters on line before going to the start/end of the line
       space-drawer -> GtkSourceSpaceDrawer: Space Drawer
 
+      annotations -> GtkSourceAnnotations: annotations
       tab-width -> guint: Tab Width
         Width of a tab character expressed in spaces
 
@@ -2336,6 +2557,7 @@ class Map(
       extra-menu -> GMenuModel: extra-menu
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -2344,7 +2566,6 @@ class Map(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -2385,14 +2606,15 @@ class Map(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(View.Props):
         font_desc: Pango.FontDescription
-        view: Optional[View]
+        view: View | None
+        annotations: Annotations
         auto_indent: bool
         background_pattern: BackgroundPatternType
         completion: Completion
@@ -2400,7 +2622,7 @@ class Map(
         highlight_current_line: bool
         indent_on_tab: bool
         indent_width: int
-        indenter: Optional[Indenter]
+        indenter: Indenter | None
         insert_spaces_instead_of_tabs: bool
         right_margin_position: int
         show_line_marks: bool
@@ -2412,15 +2634,15 @@ class Map(
         tab_width: int
         accepts_tab: bool
         bottom_margin: int
-        buffer: Gtk.TextBuffer
+        buffer: _Gtk4.TextBuffer
         cursor_visible: bool
         editable: bool
         extra_menu: Gio.MenuModel
         im_module: str
         indent: int
-        input_hints: Gtk.InputHints
-        input_purpose: Gtk.InputPurpose
-        justification: Gtk.Justification
+        input_hints: _Gtk4.InputHints
+        input_purpose: _Gtk4.InputPurpose
+        justification: _Gtk4.Justification
         left_margin: int
         monospace: bool
         overwrite: bool
@@ -2428,51 +2650,54 @@ class Map(
         pixels_below_lines: int
         pixels_inside_wrap: int
         right_margin: int
-        tabs: Optional[Pango.TabArray]
+        tabs: Pango.TabArray | None
         top_margin: int
-        wrap_mode: Gtk.WrapMode
+        wrap_mode: _Gtk4.WrapMode
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
-        hadjustment: Optional[Gtk.Adjustment]
-        hscroll_policy: Gtk.ScrollablePolicy
-        vadjustment: Optional[Gtk.Adjustment]
-        vscroll_policy: Gtk.ScrollablePolicy
+        accessible_role: _Gtk4.AccessibleRole
+        hadjustment: _Gtk4.Adjustment | None
+        hscroll_policy: _Gtk4.ScrollablePolicy
+        vadjustment: _Gtk4.Adjustment | None
+        vscroll_policy: _Gtk4.ScrollablePolicy
 
-    props: Props = ...
-    parent_instance: View = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> View: ...
     def __init__(
         self,
         font_desc: Pango.FontDescription = ...,
@@ -2483,7 +2708,7 @@ class Map(
         highlight_current_line: bool = ...,
         indent_on_tab: bool = ...,
         indent_width: int = ...,
-        indenter: Optional[Indenter] = ...,
+        indenter: Indenter | None = ...,
         insert_spaces_instead_of_tabs: bool = ...,
         right_margin_position: int = ...,
         show_line_marks: bool = ...,
@@ -2494,15 +2719,15 @@ class Map(
         tab_width: int = ...,
         accepts_tab: bool = ...,
         bottom_margin: int = ...,
-        buffer: Optional[Gtk.TextBuffer] = ...,
+        buffer: _Gtk4.TextBuffer | None = ...,
         cursor_visible: bool = ...,
         editable: bool = ...,
-        extra_menu: Optional[Gio.MenuModel] = ...,
+        extra_menu: Gio.MenuModel | None = ...,
         im_module: str = ...,
         indent: int = ...,
-        input_hints: Gtk.InputHints = ...,
-        input_purpose: Gtk.InputPurpose = ...,
-        justification: Gtk.Justification = ...,
+        input_hints: _Gtk4.InputHints = ...,
+        input_purpose: _Gtk4.InputPurpose = ...,
+        justification: _Gtk4.Justification = ...,
         left_margin: int = ...,
         monospace: bool = ...,
         overwrite: bool = ...,
@@ -2512,43 +2737,44 @@ class Map(
         right_margin: int = ...,
         tabs: Pango.TabArray = ...,
         top_margin: int = ...,
-        wrap_mode: Gtk.WrapMode = ...,
+        wrap_mode: _Gtk4.WrapMode = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-        hadjustment: Optional[Gtk.Adjustment] = ...,
-        hscroll_policy: Gtk.ScrollablePolicy = ...,
-        vadjustment: Optional[Gtk.Adjustment] = ...,
-        vscroll_policy: Gtk.ScrollablePolicy = ...,
-    ): ...
-    def get_view(self) -> Optional[View]: ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+        hadjustment: _Gtk4.Adjustment | None = ...,
+        hscroll_policy: _Gtk4.ScrollablePolicy = ...,
+        vadjustment: _Gtk4.Adjustment | None = ...,
+        vscroll_policy: _Gtk4.ScrollablePolicy = ...,
+    ) -> None: ...
+    def get_view(self) -> View | None: ...
     @classmethod
     def new(cls) -> Map: ...
     def set_view(self, view: View) -> None: ...
@@ -2561,11 +2787,10 @@ class MapClass(GObject.GPointer):
 
         MapClass()
     """
+    @property
+    def parent_class(self) -> ViewClass: ...
 
-    parent_class: ViewClass = ...
-    _reserved: list[None] = ...
-
-class Mark(Gtk.TextMark):
+class Mark(_Gtk4.TextMark):
     """
     :Constructors:
 
@@ -2587,22 +2812,23 @@ class Mark(Gtk.TextMark):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.TextMark.Props):
         category: str
         left_gravity: bool
-        name: Optional[str]
+        name: str | None
 
-    props: Props = ...
-    parent_instance: Gtk.TextMark = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.TextMark: ...
     def __init__(
         self, category: str = ..., left_gravity: bool = ..., name: str = ...
-    ): ...
+    ) -> None: ...
     def get_category(self) -> str: ...
     @classmethod
-    def new(cls, name: Optional[str], category: str) -> Mark: ...
-    def next(self, category: Optional[str] = None) -> Optional[Mark]: ...
-    def prev(self, category: Optional[str] = None) -> Optional[Mark]: ...
+    def new(cls, name: str | None, category: str) -> Mark: ...
+    def next(self, category: str | None = None) -> Mark | None: ...
+    def prev(self, category: str | None = None) -> Mark | None: ...
 
 class MarkAttributes(GObject.Object):
     """
@@ -2632,22 +2858,22 @@ class MarkAttributes(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        background: Gdk.RGBA
+    class Props(GObject.Object.Props):
+        background: _Gdk4.RGBA
         gicon: Gio.Icon
         icon_name: str
         pixbuf: GdkPixbuf.Pixbuf
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        background: Gdk.RGBA = ...,
+        background: _Gdk4.RGBA = ...,
         gicon: Gio.Icon = ...,
         icon_name: str = ...,
         pixbuf: GdkPixbuf.Pixbuf = ...,
-    ): ...
-    def get_background(self) -> Tuple[bool, Gdk.RGBA]: ...
+    ) -> None: ...
+    def get_background(self) -> tuple[bool, _Gdk4.RGBA]: ...
     def get_gicon(self) -> Gio.Icon: ...
     def get_icon_name(self) -> str: ...
     def get_pixbuf(self) -> GdkPixbuf.Pixbuf: ...
@@ -2655,8 +2881,8 @@ class MarkAttributes(GObject.Object):
     def get_tooltip_text(self, mark: Mark) -> str: ...
     @classmethod
     def new(cls) -> MarkAttributes: ...
-    def render_icon(self, widget: Gtk.Widget, size: int) -> Gdk.Paintable: ...
-    def set_background(self, background: Gdk.RGBA) -> None: ...
+    def render_icon(self, widget: _Gtk4.Widget, size: int) -> _Gdk4.Paintable: ...
+    def set_background(self, background: _Gdk4.RGBA) -> None: ...
     def set_gicon(self, gicon: Gio.Icon) -> None: ...
     def set_icon_name(self, icon_name: str) -> None: ...
     def set_pixbuf(self, pixbuf: GdkPixbuf.Pixbuf) -> None: ...
@@ -2669,8 +2895,8 @@ class MarkAttributesClass(GObject.GPointer):
 
         MarkAttributesClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class MarkClass(GObject.GPointer):
     """
@@ -2680,9 +2906,8 @@ class MarkClass(GObject.GPointer):
 
         MarkClass()
     """
-
-    parent_class: Gtk.TextMarkClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> _Gtk4.TextMarkClass: ...
 
 class PrintCompositor(GObject.Object):
     """
@@ -2725,8 +2950,7 @@ class PrintCompositor(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         body_font_name: str
         buffer: Buffer
         footer_font_name: str
@@ -2738,76 +2962,78 @@ class PrintCompositor(GObject.Object):
         print_header: bool
         print_line_numbers: int
         tab_width: int
-        wrap_mode: Gtk.WrapMode
+        wrap_mode: _Gtk4.WrapMode
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
         self,
         body_font_name: str = ...,
         buffer: Buffer = ...,
-        footer_font_name: Optional[str] = ...,
-        header_font_name: Optional[str] = ...,
+        footer_font_name: str | None = ...,
+        header_font_name: str | None = ...,
         highlight_syntax: bool = ...,
-        line_numbers_font_name: Optional[str] = ...,
+        line_numbers_font_name: str | None = ...,
         print_footer: bool = ...,
         print_header: bool = ...,
         print_line_numbers: int = ...,
         tab_width: int = ...,
-        wrap_mode: Gtk.WrapMode = ...,
-    ): ...
-    def draw_page(self, context: Gtk.PrintContext, page_nr: int) -> None: ...
+        wrap_mode: _Gtk4.WrapMode = ...,
+    ) -> None: ...
+    def draw_page(self, context: _Gtk4.PrintContext, page_nr: int) -> None: ...
     def get_body_font_name(self) -> str: ...
-    def get_bottom_margin(self, unit: Gtk.Unit) -> float: ...
+    def get_bottom_margin(self, unit: _Gtk4.Unit) -> float: ...
     def get_buffer(self) -> Buffer: ...
     def get_footer_font_name(self) -> str: ...
     def get_header_font_name(self) -> str: ...
     def get_highlight_syntax(self) -> bool: ...
-    def get_left_margin(self, unit: Gtk.Unit) -> float: ...
+    def get_left_margin(self, unit: _Gtk4.Unit) -> float: ...
     def get_line_numbers_font_name(self) -> str: ...
     def get_n_pages(self) -> int: ...
     def get_pagination_progress(self) -> float: ...
     def get_print_footer(self) -> bool: ...
     def get_print_header(self) -> bool: ...
     def get_print_line_numbers(self) -> int: ...
-    def get_right_margin(self, unit: Gtk.Unit) -> float: ...
+    def get_right_margin(self, unit: _Gtk4.Unit) -> float: ...
     def get_tab_width(self) -> int: ...
-    def get_top_margin(self, unit: Gtk.Unit) -> float: ...
-    def get_wrap_mode(self) -> Gtk.WrapMode: ...
-    def ignore_tag(self, tag: Gtk.TextTag) -> None: ...
+    def get_top_margin(self, unit: _Gtk4.Unit) -> float: ...
+    def get_wrap_mode(self) -> _Gtk4.WrapMode: ...
+    def ignore_tag(self, tag: _Gtk4.TextTag) -> None: ...
     @classmethod
     def new(cls, buffer: Buffer) -> PrintCompositor: ...
     @classmethod
     def new_from_view(cls, view: View) -> PrintCompositor: ...
-    def paginate(self, context: Gtk.PrintContext) -> bool: ...
+    def paginate(self, context: _Gtk4.PrintContext) -> bool: ...
     def set_body_font_name(self, font_name: str) -> None: ...
-    def set_bottom_margin(self, margin: float, unit: Gtk.Unit) -> None: ...
-    def set_footer_font_name(self, font_name: Optional[str] = None) -> None: ...
+    def set_bottom_margin(self, margin: float, unit: _Gtk4.Unit) -> None: ...
+    def set_footer_font_name(self, font_name: str | None = None) -> None: ...
     def set_footer_format(
         self,
         separator: bool,
-        left: Optional[str] = None,
-        center: Optional[str] = None,
-        right: Optional[str] = None,
+        left: str | None = None,
+        center: str | None = None,
+        right: str | None = None,
     ) -> None: ...
-    def set_header_font_name(self, font_name: Optional[str] = None) -> None: ...
+    def set_header_font_name(self, font_name: str | None = None) -> None: ...
     def set_header_format(
         self,
         separator: bool,
-        left: Optional[str] = None,
-        center: Optional[str] = None,
-        right: Optional[str] = None,
+        left: str | None = None,
+        center: str | None = None,
+        right: str | None = None,
     ) -> None: ...
     def set_highlight_syntax(self, highlight: bool) -> None: ...
-    def set_left_margin(self, margin: float, unit: Gtk.Unit) -> None: ...
-    def set_line_numbers_font_name(self, font_name: Optional[str] = None) -> None: ...
+    def set_left_margin(self, margin: float, unit: _Gtk4.Unit) -> None: ...
+    def set_line_numbers_font_name(self, font_name: str | None = None) -> None: ...
     def set_print_footer(self, print_: bool) -> None: ...
     def set_print_header(self, print_: bool) -> None: ...
     def set_print_line_numbers(self, interval: int) -> None: ...
-    def set_right_margin(self, margin: float, unit: Gtk.Unit) -> None: ...
+    def set_right_margin(self, margin: float, unit: _Gtk4.Unit) -> None: ...
     def set_tab_width(self, width: int) -> None: ...
-    def set_top_margin(self, margin: float, unit: Gtk.Unit) -> None: ...
-    def set_wrap_mode(self, wrap_mode: Gtk.WrapMode) -> None: ...
+    def set_top_margin(self, margin: float, unit: _Gtk4.Unit) -> None: ...
+    def set_wrap_mode(self, wrap_mode: _Gtk4.WrapMode) -> None: ...
 
 class PrintCompositorClass(GObject.GPointer):
     """
@@ -2817,9 +3043,8 @@ class PrintCompositorClass(GObject.GPointer):
 
         PrintCompositorClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Region(GObject.Object):
     """
@@ -2839,30 +3064,31 @@ class Region(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    class Props(GObject.Object.Props):
+        buffer: _Gtk4.TextBuffer | None
 
-    class Props:
-        buffer: Optional[Gtk.TextBuffer]
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    def __init__(self, buffer: Gtk.TextBuffer = ...): ...
-    def add_region(self, region_to_add: Optional[Region] = None) -> None: ...
-    def add_subregion(self, _start: Gtk.TextIter, _end: Gtk.TextIter) -> None: ...
-    def get_bounds(self) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter]: ...
-    def get_buffer(self) -> Optional[Gtk.TextBuffer]: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def __init__(self, buffer: _Gtk4.TextBuffer = ...) -> None: ...
+    def add_region(self, region_to_add: Region | None = None) -> None: ...
+    def add_subregion(self, _start: _Gtk4.TextIter, _end: _Gtk4.TextIter) -> None: ...
+    def get_bounds(self) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter]: ...
+    def get_buffer(self) -> _Gtk4.TextBuffer | None: ...
     def get_start_region_iter(self) -> RegionIter: ...
-    def intersect_region(
-        self, region2: Optional[Region] = None
-    ) -> Optional[Region]: ...
+    def intersect_region(self, region2: Region | None = None) -> Region | None: ...
     def intersect_subregion(
-        self, _start: Gtk.TextIter, _end: Gtk.TextIter
-    ) -> Optional[Region]: ...
+        self, _start: _Gtk4.TextIter, _end: _Gtk4.TextIter
+    ) -> Region | None: ...
     def is_empty(self) -> bool: ...
     @classmethod
-    def new(cls, buffer: Gtk.TextBuffer) -> Region: ...
-    def subtract_region(self, region_to_subtract: Optional[Region] = None) -> None: ...
-    def subtract_subregion(self, _start: Gtk.TextIter, _end: Gtk.TextIter) -> None: ...
-    def to_string(self) -> Optional[str]: ...
+    def new(cls, buffer: _Gtk4.TextBuffer) -> Region: ...
+    def subtract_region(self, region_to_subtract: Region | None = None) -> None: ...
+    def subtract_subregion(
+        self, _start: _Gtk4.TextIter, _end: _Gtk4.TextIter
+    ) -> None: ...
+    def to_string(self) -> str | None: ...
 
 class RegionClass(GObject.GPointer):
     """
@@ -2872,9 +3098,8 @@ class RegionClass(GObject.GPointer):
 
         RegionClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class RegionIter(GObject.GPointer):
     """
@@ -2884,11 +3109,13 @@ class RegionIter(GObject.GPointer):
 
         RegionIter()
     """
-
-    dummy1: None = ...
-    dummy2: int = ...
-    dummy3: None = ...
-    def get_subregion(self) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter]: ...
+    @property
+    def dummy1(self) -> None: ...
+    @property
+    def dummy2(self) -> int: ...
+    @property
+    def dummy3(self) -> None: ...
+    def get_subregion(self) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter]: ...
     def is_end(self) -> bool: ...
     def next(self) -> bool: ...
 
@@ -2920,72 +3147,72 @@ class SearchContext(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         buffer: Buffer
         highlight: bool
         match_style: Style
         occurrences_count: int
-        regex_error: Optional[GLib.Error]
+        regex_error: GLib.Error | None
         settings: SearchSettings
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         buffer: Buffer = ...,
         highlight: bool = ...,
-        match_style: Optional[Style] = ...,
+        match_style: Style | None = ...,
         settings: SearchSettings = ...,
-    ): ...
+    ) -> None: ...
     def backward(
-        self, iter: Gtk.TextIter
-    ) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter, bool]: ...
+        self, iter: _Gtk4.TextIter
+    ) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter, bool]: ...
     def backward_async(
         self,
-        iter: Gtk.TextIter,
-        cancellable: Optional[Gio.Cancellable] = None,
-        callback: Optional[Callable[..., None]] = None,
+        iter: _Gtk4.TextIter,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def backward_finish(
         self, result: Gio.AsyncResult
-    ) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter, bool]: ...
+    ) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter, bool]: ...
     def forward(
-        self, iter: Gtk.TextIter
-    ) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter, bool]: ...
+        self, iter: _Gtk4.TextIter
+    ) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter, bool]: ...
     def forward_async(
         self,
-        iter: Gtk.TextIter,
-        cancellable: Optional[Gio.Cancellable] = None,
-        callback: Optional[Callable[..., None]] = None,
+        iter: _Gtk4.TextIter,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
         *user_data: Any,
     ) -> None: ...
     def forward_finish(
         self, result: Gio.AsyncResult
-    ) -> Tuple[bool, Gtk.TextIter, Gtk.TextIter, bool]: ...
+    ) -> tuple[bool, _Gtk4.TextIter, _Gtk4.TextIter, bool]: ...
     def get_buffer(self) -> Buffer: ...
     def get_highlight(self) -> bool: ...
     def get_match_style(self) -> Style: ...
     def get_occurrence_position(
-        self, match_start: Gtk.TextIter, match_end: Gtk.TextIter
+        self, match_start: _Gtk4.TextIter, match_end: _Gtk4.TextIter
     ) -> int: ...
     def get_occurrences_count(self) -> int: ...
-    def get_regex_error(self) -> Optional[GLib.Error]: ...
+    def get_regex_error(self) -> GLib.Error | None: ...
     def get_settings(self) -> SearchSettings: ...
     @classmethod
     def new(
-        cls, buffer: Buffer, settings: Optional[SearchSettings] = None
+        cls, buffer: Buffer, settings: SearchSettings | None = None
     ) -> SearchContext: ...
     def replace(
         self,
-        match_start: Gtk.TextIter,
-        match_end: Gtk.TextIter,
+        match_start: _Gtk4.TextIter,
+        match_end: _Gtk4.TextIter,
         replace: str,
         replace_length: int,
     ) -> bool: ...
     def replace_all(self, replace: str, replace_length: int) -> int: ...
     def set_highlight(self, highlight: bool) -> None: ...
-    def set_match_style(self, match_style: Optional[Style] = None) -> None: ...
+    def set_match_style(self, match_style: Style | None = None) -> None: ...
 
 class SearchContextClass(GObject.GPointer):
     """
@@ -2995,8 +3222,8 @@ class SearchContextClass(GObject.GPointer):
 
         SearchContextClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SearchSettings(GObject.Object):
     """
@@ -3026,30 +3253,31 @@ class SearchSettings(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         at_word_boundaries: bool
         case_sensitive: bool
         regex_enabled: bool
-        search_text: Optional[str]
+        search_text: str | None
         visible_only: bool
         wrap_around: bool
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
         self,
         at_word_boundaries: bool = ...,
         case_sensitive: bool = ...,
         regex_enabled: bool = ...,
-        search_text: Optional[str] = ...,
+        search_text: str | None = ...,
         visible_only: bool = ...,
         wrap_around: bool = ...,
-    ): ...
+    ) -> None: ...
     def get_at_word_boundaries(self) -> bool: ...
     def get_case_sensitive(self) -> bool: ...
     def get_regex_enabled(self) -> bool: ...
-    def get_search_text(self) -> Optional[str]: ...
+    def get_search_text(self) -> str | None: ...
     def get_visible_only(self) -> bool: ...
     def get_wrap_around(self) -> bool: ...
     @classmethod
@@ -3057,7 +3285,7 @@ class SearchSettings(GObject.Object):
     def set_at_word_boundaries(self, at_word_boundaries: bool) -> None: ...
     def set_case_sensitive(self, case_sensitive: bool) -> None: ...
     def set_regex_enabled(self, regex_enabled: bool) -> None: ...
-    def set_search_text(self, search_text: Optional[str] = None) -> None: ...
+    def set_search_text(self, search_text: str | None = None) -> None: ...
     def set_visible_only(self, visible_only: bool) -> None: ...
     def set_wrap_around(self, wrap_around: bool) -> None: ...
 
@@ -3069,9 +3297,8 @@ class SearchSettingsClass(GObject.GPointer):
 
         SearchSettingsClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Snippet(GObject.Object):
     """
@@ -3102,36 +3329,38 @@ class Snippet(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        buffer: Gtk.TextBuffer
+    class Props(GObject.Object.Props):
+        buffer: _Gtk4.TextBuffer
         description: str
         focus_position: int
         language_id: str
         name: str
-        trigger: Optional[str]
+        trigger: str | None
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         description: str = ...,
         language_id: str = ...,
         name: str = ...,
         trigger: str = ...,
-    ): ...
+    ) -> None: ...
     def add_chunk(self, chunk: SnippetChunk) -> None: ...
     def copy(self) -> Snippet: ...
-    def get_context(self) -> Optional[SnippetContext]: ...
+    def get_context(self) -> SnippetContext | None: ...
     def get_description(self) -> str: ...
     def get_focus_position(self) -> int: ...
     def get_language_id(self) -> str: ...
     def get_n_chunks(self) -> int: ...
     def get_name(self) -> str: ...
     def get_nth_chunk(self, nth: int) -> SnippetChunk: ...
-    def get_trigger(self) -> Optional[str]: ...
+    def get_trigger(self) -> str | None: ...
     @classmethod
     def new(
-        cls, trigger: Optional[str] = None, language_id: Optional[str] = None
+        cls,
+        trigger: str | None = None,
+        language_id: str | None = None,
     ) -> Snippet: ...
     @classmethod
     def new_parsed(cls, text: str) -> Snippet: ...
@@ -3168,16 +3397,16 @@ class SnippetChunk(GObject.InitiallyUnowned):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.InitiallyUnowned.Props):
         context: SnippetContext
         focus_position: int
-        spec: Optional[str]
+        spec: str | None
         text: str
         text_set: bool
         tooltip_text: str
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         context: SnippetContext = ...,
@@ -3186,11 +3415,11 @@ class SnippetChunk(GObject.InitiallyUnowned):
         text: str = ...,
         text_set: bool = ...,
         tooltip_text: str = ...,
-    ): ...
+    ) -> None: ...
     def copy(self) -> SnippetChunk: ...
     def get_context(self) -> SnippetContext: ...
     def get_focus_position(self) -> int: ...
-    def get_spec(self) -> Optional[str]: ...
+    def get_spec(self) -> str | None: ...
     def get_text(self) -> str: ...
     def get_text_set(self) -> bool: ...
     def get_tooltip_text(self) -> str: ...
@@ -3211,8 +3440,8 @@ class SnippetChunkClass(GObject.GPointer):
 
         SnippetChunkClass()
     """
-
-    parent_class: GObject.InitiallyUnownedClass = ...
+    @property
+    def parent_class(self) -> GObject.InitiallyUnownedClass: ...
 
 class SnippetClass(GObject.GPointer):
     """
@@ -3222,8 +3451,8 @@ class SnippetClass(GObject.GPointer):
 
         SnippetClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SnippetContext(GObject.Object):
     """
@@ -3242,10 +3471,9 @@ class SnippetContext(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def clear_variables(self) -> None: ...
     def expand(self, input: str) -> str: ...
-    def get_variable(self, key: str) -> Optional[str]: ...
+    def get_variable(self, key: str) -> str | None: ...
     @classmethod
     def new(cls) -> SnippetContext: ...
     def set_constant(self, key: str, value: str) -> None: ...
@@ -3262,8 +3490,8 @@ class SnippetContextClass(GObject.GPointer):
 
         SnippetContextClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SnippetManager(GObject.Object):
     """
@@ -3282,27 +3510,30 @@ class SnippetManager(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         search_path: list[str]
 
-    props: Props = ...
-    def __init__(self, search_path: Optional[Sequence[str]] = ...): ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, search_path: Sequence[str] | None = ...) -> None: ...
     @staticmethod
     def get_default() -> SnippetManager: ...
     def get_search_path(self) -> list[str]: ...
     def get_snippet(
-        self, group: Optional[str], language_id: Optional[str], trigger: str
-    ) -> Optional[Snippet]: ...
+        self,
+        group: str | None,
+        language_id: str | None,
+        trigger: str,
+    ) -> Snippet | None: ...
     def list_all(self) -> Gio.ListModel: ...
     def list_groups(self) -> list[str]: ...
     def list_matching(
         self,
-        group: Optional[str] = None,
-        language_id: Optional[str] = None,
-        trigger_prefix: Optional[str] = None,
+        group: str | None = None,
+        language_id: str | None = None,
+        trigger_prefix: str | None = None,
     ) -> Gio.ListModel: ...
-    def set_search_path(self, dirs: Optional[Sequence[str]] = None) -> None: ...
+    def set_search_path(self, dirs: Sequence[str] | None = None) -> None: ...
 
 class SnippetManagerClass(GObject.GPointer):
     """
@@ -3312,8 +3543,8 @@ class SnippetManagerClass(GObject.GPointer):
 
         SnippetManagerClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SpaceDrawer(GObject.Object):
     """
@@ -3335,15 +3566,15 @@ class SpaceDrawer(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         enable_matrix: bool
         matrix: GLib.Variant
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
-        self, enable_matrix: bool = ..., matrix: Optional[GLib.Variant] = ...
-    ): ...
+        self, enable_matrix: bool = ..., matrix: GLib.Variant | None = ...
+    ) -> None: ...
     def bind_matrix_setting(
         self, settings: Gio.Settings, key: str, flags: Gio.SettingsBindFlags
     ) -> None: ...
@@ -3355,7 +3586,7 @@ class SpaceDrawer(GObject.Object):
     @classmethod
     def new(cls) -> SpaceDrawer: ...
     def set_enable_matrix(self, enable_matrix: bool) -> None: ...
-    def set_matrix(self, matrix: Optional[GLib.Variant] = None) -> None: ...
+    def set_matrix(self, matrix: GLib.Variant | None = None) -> None: ...
     def set_types_for_locations(
         self, locations: SpaceLocationFlags, types: SpaceTypeFlags
     ) -> None: ...
@@ -3368,8 +3599,8 @@ class SpaceDrawerClass(GObject.GPointer):
 
         SpaceDrawerClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Style(GObject.Object):
     """
@@ -3426,8 +3657,7 @@ class Style(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(GObject.Object.Props):
         background: str
         background_set: bool
         bold: bool
@@ -3449,7 +3679,8 @@ class Style(GObject.Object):
         weight: Pango.Weight
         weight_set: bool
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         background: str = ...,
@@ -3472,8 +3703,8 @@ class Style(GObject.Object):
         underline_set: bool = ...,
         weight: Pango.Weight = ...,
         weight_set: bool = ...,
-    ): ...
-    def apply(self, tag: Gtk.TextTag) -> None: ...
+    ) -> None: ...
+    def apply(self, tag: _Gtk4.TextTag) -> None: ...
     def copy(self) -> Style: ...
 
 class StyleClass(GObject.GPointer):
@@ -3484,8 +3715,8 @@ class StyleClass(GObject.GPointer):
 
         StyleClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class StyleScheme(GObject.Object):
     """
@@ -3510,40 +3741,39 @@ class StyleScheme(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        description: Optional[str]
-        filename: Optional[str]
+    class Props(GObject.Object.Props):
+        description: str | None
+        filename: str | None
         id: str
         name: str
 
-    props: Props = ...
-    def __init__(self, id: str = ...): ...
-    def get_authors(self) -> Optional[list[str]]: ...
-    def get_description(self) -> Optional[str]: ...
-    def get_filename(self) -> Optional[str]: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, id: str = ...) -> None: ...
+    def get_authors(self) -> list[str] | None: ...
+    def get_description(self) -> str | None: ...
+    def get_filename(self) -> str | None: ...
     def get_id(self) -> str: ...
-    def get_metadata(self, name: str) -> Optional[str]: ...
+    def get_metadata(self, name: str) -> str | None: ...
     def get_name(self) -> str: ...
-    def get_style(self, style_id: str) -> Optional[Style]: ...
+    def get_style(self, style_id: str) -> Style | None: ...
 
-class StyleSchemeChooser(GObject.GInterface):
+class StyleSchemeChooser(GObject.GInterface, Protocol):
     """
     Interface GtkSourceStyleSchemeChooser
 
     Signals from GObject:
       notify (GParam)
     """
-
     def get_style_scheme(self) -> StyleScheme: ...
     def set_style_scheme(self, scheme: StyleScheme) -> None: ...
 
 class StyleSchemeChooserButton(
-    Gtk.Button,
-    Gtk.Accessible,
-    Gtk.Actionable,
-    Gtk.Buildable,
-    Gtk.ConstraintTarget,
+    _Gtk4.Button,
+    _Gtk4.Accessible,
+    _Gtk4.Actionable,
+    _Gtk4.Buildable,
+    _Gtk4.ConstraintTarget,
     StyleSchemeChooser,
 ):
     """
@@ -3569,6 +3799,7 @@ class StyleSchemeChooserButton(
       can-shrink -> gboolean: can-shrink
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -3577,7 +3808,6 @@ class StyleSchemeChooserButton(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -3618,63 +3848,66 @@ class StyleSchemeChooserButton(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Button.Props):
         can_shrink: bool
-        child: Optional[Gtk.Widget]
+        child: _Gtk4.Widget | None
         has_frame: bool
-        icon_name: Optional[str]
-        label: Optional[str]
+        icon_name: str | None
+        label: str | None
         use_underline: bool
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
-        action_name: Optional[str]
+        accessible_role: _Gtk4.AccessibleRole
+        action_name: str | None
         action_target: GLib.Variant
         style_scheme: StyleScheme
 
-    props: Props = ...
-    parent_instance: Gtk.Button = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.Button: ...
     def __init__(
         self,
         can_shrink: bool = ...,
-        child: Optional[Gtk.Widget] = ...,
+        child: _Gtk4.Widget | None = ...,
         has_frame: bool = ...,
         icon_name: str = ...,
         label: str = ...,
@@ -3683,36 +3916,37 @@ class StyleSchemeChooserButton(
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-        action_name: Optional[str] = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
+        action_name: str | None = ...,
         action_target: GLib.Variant = ...,
         style_scheme: StyleScheme = ...,
-    ): ...
+    ) -> None: ...
     @classmethod
     def new(cls) -> StyleSchemeChooserButton: ...
 
@@ -3724,9 +3958,8 @@ class StyleSchemeChooserButtonClass(GObject.GPointer):
 
         StyleSchemeChooserButtonClass()
     """
-
-    parent: Gtk.ButtonClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent(self) -> _Gtk4.ButtonClass: ...
 
 class StyleSchemeChooserInterface(GObject.GPointer):
     """
@@ -3736,14 +3969,19 @@ class StyleSchemeChooserInterface(GObject.GPointer):
 
         StyleSchemeChooserInterface()
     """
-
-    base_interface: GObject.TypeInterface = ...
-    get_style_scheme: Callable[[StyleSchemeChooser], StyleScheme] = ...
-    set_style_scheme: Callable[[StyleSchemeChooser, StyleScheme], None] = ...
-    _reserved: list[None] = ...
+    @property
+    def base_interface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_style_scheme(self) -> Callable[[StyleSchemeChooser], StyleScheme]: ...
+    @property
+    def set_style_scheme(self) -> Callable[[StyleSchemeChooser, StyleScheme], None]: ...
 
 class StyleSchemeChooserWidget(
-    Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, StyleSchemeChooser
+    _Gtk4.Widget,
+    _Gtk4.Accessible,
+    _Gtk4.Buildable,
+    _Gtk4.ConstraintTarget,
+    StyleSchemeChooser,
 ):
     """
     :Constructors:
@@ -3756,6 +3994,7 @@ class StyleSchemeChooserWidget(
     Object GtkSourceStyleSchemeChooserWidget
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -3764,7 +4003,6 @@ class StyleSchemeChooserWidget(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -3805,85 +4043,89 @@ class StyleSchemeChooserWidget(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
         style_scheme: StyleScheme
 
-    props: Props = ...
-    parent_instance: Gtk.Widget = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.Widget: ...
     def __init__(
         self,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
         style_scheme: StyleScheme = ...,
-    ): ...
+    ) -> None: ...
     @classmethod
     def new(cls) -> StyleSchemeChooserWidget: ...
 
@@ -3895,9 +4137,8 @@ class StyleSchemeChooserWidgetClass(GObject.GPointer):
 
         StyleSchemeChooserWidgetClass()
     """
-
-    parent: Gtk.WidgetClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent(self) -> _Gtk4.WidgetClass: ...
 
 class StyleSchemeClass(GObject.GPointer):
     """
@@ -3907,8 +4148,8 @@ class StyleSchemeClass(GObject.GPointer):
 
         StyleSchemeClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class StyleSchemeManager(GObject.Object):
     """
@@ -3930,24 +4171,24 @@ class StyleSchemeManager(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        scheme_ids: Optional[list[str]]
+    class Props(GObject.Object.Props):
+        scheme_ids: list[str] | None
         search_path: list[str]
 
-    props: Props = ...
-    def __init__(self, search_path: Optional[Sequence[str]] = ...): ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, search_path: Sequence[str] | None = ...) -> None: ...
     def append_search_path(self, path: str) -> None: ...
     def force_rescan(self) -> None: ...
     @staticmethod
     def get_default() -> StyleSchemeManager: ...
-    def get_scheme(self, scheme_id: str) -> Optional[StyleScheme]: ...
-    def get_scheme_ids(self) -> Optional[list[str]]: ...
+    def get_scheme(self, scheme_id: str) -> StyleScheme | None: ...
+    def get_scheme_ids(self) -> list[str] | None: ...
     def get_search_path(self) -> list[str]: ...
     @classmethod
     def new(cls) -> StyleSchemeManager: ...
     def prepend_search_path(self, path: str) -> None: ...
-    def set_search_path(self, path: Optional[Sequence[str]] = None) -> None: ...
+    def set_search_path(self, path: Sequence[str] | None = None) -> None: ...
 
 class StyleSchemeManagerClass(GObject.GPointer):
     """
@@ -3957,11 +4198,15 @@ class StyleSchemeManagerClass(GObject.GPointer):
 
         StyleSchemeManagerClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class StyleSchemePreview(
-    Gtk.Widget, Gtk.Accessible, Gtk.Actionable, Gtk.Buildable, Gtk.ConstraintTarget
+    _Gtk4.Widget,
+    _Gtk4.Accessible,
+    _Gtk4.Actionable,
+    _Gtk4.Buildable,
+    _Gtk4.ConstraintTarget,
 ):
     """
     :Constructors:
@@ -3983,6 +4228,7 @@ class StyleSchemePreview(
         If the preview should have the selected state
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -3991,7 +4237,6 @@ class StyleSchemePreview(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -4032,53 +4277,55 @@ class StyleSchemePreview(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         scheme: StyleScheme
         selected: bool
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
-        action_name: Optional[str]
+        accessible_role: _Gtk4.AccessibleRole
+        action_name: str | None
         action_target: GLib.Variant
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         scheme: StyleScheme = ...,
@@ -4087,35 +4334,36 @@ class StyleSchemePreview(
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-        action_name: Optional[str] = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
+        action_name: str | None = ...,
         action_target: GLib.Variant = ...,
-    ): ...
+    ) -> None: ...
     def get_scheme(self) -> StyleScheme: ...
     def get_selected(self) -> bool: ...
     @classmethod
@@ -4130,10 +4378,10 @@ class StyleSchemePreviewClass(GObject.GPointer):
 
         StyleSchemePreviewClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
-    parent_class: Gtk.WidgetClass = ...
-
-class Tag(Gtk.TextTag):
+class Tag(_Gtk4.TextTag):
     """
     :Constructors:
 
@@ -4244,8 +4492,7 @@ class Tag(Gtk.TextTag):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.TextTag.Props):
         draw_spaces: bool
         draw_spaces_set: bool
         accumulative_margin: bool
@@ -4253,9 +4500,9 @@ class Tag(Gtk.TextTag):
         allow_breaks_set: bool
         background_full_height: bool
         background_full_height_set: bool
-        background_rgba: Gdk.RGBA
+        background_rgba: _Gdk4.RGBA
         background_set: bool
-        direction: Gtk.TextDirection
+        direction: _Gtk4.TextDirection
         editable: bool
         editable_set: bool
         fallback: bool
@@ -4266,7 +4513,7 @@ class Tag(Gtk.TextTag):
         font_desc: Pango.FontDescription
         font_features: str
         font_features_set: bool
-        foreground_rgba: Gdk.RGBA
+        foreground_rgba: _Gdk4.RGBA
         foreground_set: bool
         indent: int
         indent_set: bool
@@ -4274,7 +4521,7 @@ class Tag(Gtk.TextTag):
         insert_hyphens_set: bool
         invisible: bool
         invisible_set: bool
-        justification: Gtk.Justification
+        justification: _Gtk4.Justification
         justification_set: bool
         language: str
         language_set: bool
@@ -4286,10 +4533,10 @@ class Tag(Gtk.TextTag):
         line_height_set: bool
         name: str
         overline: Pango.Overline
-        overline_rgba: Gdk.RGBA
+        overline_rgba: _Gdk4.RGBA
         overline_rgba_set: bool
         overline_set: bool
-        paragraph_background_rgba: Gdk.RGBA
+        paragraph_background_rgba: _Gdk4.RGBA
         paragraph_background_set: bool
         pixels_above_lines: int
         pixels_above_lines_set: bool
@@ -4313,7 +4560,7 @@ class Tag(Gtk.TextTag):
         stretch: Pango.Stretch
         stretch_set: bool
         strikethrough: bool
-        strikethrough_rgba: Gdk.RGBA
+        strikethrough_rgba: _Gdk4.RGBA
         strikethrough_rgba_set: bool
         strikethrough_set: bool
         style: Pango.Style
@@ -4323,7 +4570,7 @@ class Tag(Gtk.TextTag):
         text_transform: Pango.TextTransform
         text_transform_set: bool
         underline: Pango.Underline
-        underline_rgba: Gdk.RGBA
+        underline_rgba: _Gdk4.RGBA
         underline_rgba_set: bool
         underline_set: bool
         variant: Pango.Variant
@@ -4332,14 +4579,16 @@ class Tag(Gtk.TextTag):
         weight_set: bool
         word: bool
         word_set: bool
-        wrap_mode: Gtk.WrapMode
+        wrap_mode: _Gtk4.WrapMode
         wrap_mode_set: bool
         background: str
         foreground: str
         paragraph_background: str
 
-    props: Props = ...
-    parent_instance: Gtk.TextTag = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.TextTag: ...
     def __init__(
         self,
         draw_spaces: bool = ...,
@@ -4350,9 +4599,9 @@ class Tag(Gtk.TextTag):
         background: str = ...,
         background_full_height: bool = ...,
         background_full_height_set: bool = ...,
-        background_rgba: Gdk.RGBA = ...,
+        background_rgba: _Gdk4.RGBA = ...,
         background_set: bool = ...,
-        direction: Gtk.TextDirection = ...,
+        direction: _Gtk4.TextDirection = ...,
         editable: bool = ...,
         editable_set: bool = ...,
         fallback: bool = ...,
@@ -4364,7 +4613,7 @@ class Tag(Gtk.TextTag):
         font_features: str = ...,
         font_features_set: bool = ...,
         foreground: str = ...,
-        foreground_rgba: Gdk.RGBA = ...,
+        foreground_rgba: _Gdk4.RGBA = ...,
         foreground_set: bool = ...,
         indent: int = ...,
         indent_set: bool = ...,
@@ -4372,7 +4621,7 @@ class Tag(Gtk.TextTag):
         insert_hyphens_set: bool = ...,
         invisible: bool = ...,
         invisible_set: bool = ...,
-        justification: Gtk.Justification = ...,
+        justification: _Gtk4.Justification = ...,
         justification_set: bool = ...,
         language: str = ...,
         language_set: bool = ...,
@@ -4384,11 +4633,11 @@ class Tag(Gtk.TextTag):
         line_height_set: bool = ...,
         name: str = ...,
         overline: Pango.Overline = ...,
-        overline_rgba: Gdk.RGBA = ...,
+        overline_rgba: _Gdk4.RGBA = ...,
         overline_rgba_set: bool = ...,
         overline_set: bool = ...,
         paragraph_background: str = ...,
-        paragraph_background_rgba: Gdk.RGBA = ...,
+        paragraph_background_rgba: _Gdk4.RGBA = ...,
         paragraph_background_set: bool = ...,
         pixels_above_lines: int = ...,
         pixels_above_lines_set: bool = ...,
@@ -4412,7 +4661,7 @@ class Tag(Gtk.TextTag):
         stretch: Pango.Stretch = ...,
         stretch_set: bool = ...,
         strikethrough: bool = ...,
-        strikethrough_rgba: Gdk.RGBA = ...,
+        strikethrough_rgba: _Gdk4.RGBA = ...,
         strikethrough_rgba_set: bool = ...,
         strikethrough_set: bool = ...,
         style: Pango.Style = ...,
@@ -4422,7 +4671,7 @@ class Tag(Gtk.TextTag):
         text_transform: Pango.TextTransform = ...,
         text_transform_set: bool = ...,
         underline: Pango.Underline = ...,
-        underline_rgba: Gdk.RGBA = ...,
+        underline_rgba: _Gdk4.RGBA = ...,
         underline_rgba_set: bool = ...,
         underline_set: bool = ...,
         variant: Pango.Variant = ...,
@@ -4431,11 +4680,11 @@ class Tag(Gtk.TextTag):
         weight_set: bool = ...,
         word: bool = ...,
         word_set: bool = ...,
-        wrap_mode: Gtk.WrapMode = ...,
+        wrap_mode: _Gtk4.WrapMode = ...,
         wrap_mode_set: bool = ...,
-    ): ...
+    ) -> None: ...
     @classmethod
-    def new(cls, name: Optional[str] = None) -> Tag: ...
+    def new(cls, name: str | None = None) -> Tag: ...
 
 class TagClass(GObject.GPointer):
     """
@@ -4445,18 +4694,17 @@ class TagClass(GObject.GPointer):
 
         TagClass()
     """
-
-    parent_class: Gtk.TextTagClass = ...
-    _reserved: list[None] = ...
+    @property
+    def parent_class(self) -> _Gtk4.TextTagClass: ...
 
 # override
 class View(
-    Gtk.TextView,
-    Gtk.Accessible,
-    Gtk.AccessibleText,
-    Gtk.Buildable,
-    Gtk.ConstraintTarget,
-    Gtk.Scrollable,
+    _Gtk4.TextView,
+    _Gtk4.Accessible,
+    _Gtk4.AccessibleText,
+    _Gtk4.Buildable,
+    _Gtk4.ConstraintTarget,
+    _Gtk4.Scrollable,
 ):
     """
     :Constructors:
@@ -4514,6 +4762,7 @@ class View(
         HOME and END keys move to first/last non whitespace characters on line before going to the start/end of the line
       space-drawer -> GtkSourceSpaceDrawer: Space Drawer
 
+      annotations -> GtkSourceAnnotations: annotations
       tab-width -> guint: Tab Width
         Width of a tab character expressed in spaces
 
@@ -4548,6 +4797,7 @@ class View(
       indent -> gint: indent
       tabs -> PangoTabArray: tabs
       cursor-visible -> gboolean: cursor-visible
+      buffer -> GtkTextBuffer: buffer
       overwrite -> gboolean: overwrite
       accepts-tab -> gboolean: accepts-tab
       im-module -> gchararray: im-module
@@ -4557,6 +4807,7 @@ class View(
       extra-menu -> GMenuModel: extra-menu
 
     Signals from GtkWidget:
+      direction-changed (GtkTextDirection)
       hide ()
       show ()
       destroy ()
@@ -4565,7 +4816,6 @@ class View(
       realize ()
       unrealize ()
       state-flags-changed (GtkStateFlags)
-      direction-changed (GtkTextDirection)
       mnemonic-activate (gboolean) -> gboolean
       move-focus (GtkDirectionType)
       keynav-failed (GtkDirectionType) -> gboolean
@@ -4606,12 +4856,13 @@ class View(
       css-name -> gchararray: css-name
       css-classes -> GStrv: css-classes
       layout-manager -> GtkLayoutManager: layout-manager
+      limit-events -> gboolean: limit-events
 
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.TextView.Props):
+        annotations: Annotations
         auto_indent: bool
         background_pattern: BackgroundPatternType
         completion: Completion
@@ -4619,7 +4870,7 @@ class View(
         highlight_current_line: bool
         indent_on_tab: bool
         indent_width: int
-        indenter: Optional[Indenter]
+        indenter: Indenter | None
         insert_spaces_instead_of_tabs: bool
         right_margin_position: int
         show_line_marks: bool
@@ -4637,9 +4888,9 @@ class View(
         extra_menu: Gio.MenuModel
         im_module: str
         indent: int
-        input_hints: Gtk.InputHints
-        input_purpose: Gtk.InputPurpose
-        justification: Gtk.Justification
+        input_hints: _Gtk4.InputHints
+        input_purpose: _Gtk4.InputPurpose
+        justification: _Gtk4.Justification
         left_margin: int
         monospace: bool
         overwrite: bool
@@ -4647,52 +4898,54 @@ class View(
         pixels_below_lines: int
         pixels_inside_wrap: int
         right_margin: int
-        tabs: Optional[Pango.TabArray]
+        tabs: Pango.TabArray | None
         top_margin: int
-        wrap_mode: Gtk.WrapMode
+        wrap_mode: _Gtk4.WrapMode
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
+        limit_events: bool
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: Optional[str]
-        tooltip_text: Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
-        hadjustment: Optional[Gtk.Adjustment]
-        hscroll_policy: Gtk.ScrollablePolicy
-        vadjustment: Optional[Gtk.Adjustment]
-        vscroll_policy: Gtk.ScrollablePolicy
+        accessible_role: _Gtk4.AccessibleRole
+        hadjustment: _Gtk4.Adjustment | None
+        hscroll_policy: _Gtk4.ScrollablePolicy
+        vadjustment: _Gtk4.Adjustment | None
+        vscroll_policy: _Gtk4.ScrollablePolicy
 
-    props: Props = ...
-    parent_instance: Gtk.TextView = ...
-
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.TextView: ...
     def __init__(
         self,
         auto_indent: bool = ...,
@@ -4701,7 +4954,7 @@ class View(
         highlight_current_line: bool = ...,
         indent_on_tab: bool = ...,
         indent_width: int = ...,
-        indenter: Optional[Indenter] = ...,
+        indenter: Indenter | None = ...,
         insert_spaces_instead_of_tabs: bool = ...,
         right_margin_position: int = ...,
         show_line_marks: bool = ...,
@@ -4712,15 +4965,15 @@ class View(
         tab_width: int = ...,
         accepts_tab: bool = ...,
         bottom_margin: int = ...,
-        buffer: Optional[Gtk.TextBuffer] = ...,
+        buffer: Buffer | None = ...,
         cursor_visible: bool = ...,
         editable: bool = ...,
-        extra_menu: Optional[Gio.MenuModel] = ...,
+        extra_menu: Gio.MenuModel | None = ...,
         im_module: str = ...,
         indent: int = ...,
-        input_hints: Gtk.InputHints = ...,
-        input_purpose: Gtk.InputPurpose = ...,
-        justification: Gtk.Justification = ...,
+        input_hints: _Gtk4.InputHints = ...,
+        input_purpose: _Gtk4.InputPurpose = ...,
+        justification: _Gtk4.Justification = ...,
         left_margin: int = ...,
         monospace: bool = ...,
         overwrite: bool = ...,
@@ -4730,62 +4983,68 @@ class View(
         right_margin: int = ...,
         tabs: Pango.TabArray = ...,
         top_margin: int = ...,
-        wrap_mode: Gtk.WrapMode = ...,
+        wrap_mode: _Gtk4.WrapMode = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
         css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
+        limit_events: bool = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: Optional[str] = ...,
-        tooltip_text: Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
-        hadjustment: Optional[Gtk.Adjustment] = ...,
-        hscroll_policy: Gtk.ScrollablePolicy = ...,
-        vadjustment: Optional[Gtk.Adjustment] = ...,
-        vscroll_policy: Gtk.ScrollablePolicy = ...,
-    ): ...
+        accessible_role: _Gtk4.AccessibleRole = ...,
+        hadjustment: _Gtk4.Adjustment | None = ...,
+        hscroll_policy: _Gtk4.ScrollablePolicy = ...,
+        vadjustment: _Gtk4.Adjustment | None = ...,
+        vscroll_policy: _Gtk4.ScrollablePolicy = ...,
+    ) -> None: ...
     def do_line_mark_activated(
-        self, iter: Gtk.TextIter, button: int, state: Gdk.ModifierType, n_presses: int
+        self,
+        iter: _Gtk4.TextIter,
+        button: int,
+        state: _Gdk4.ModifierType,
+        n_presses: int,
     ) -> None: ...
     def do_move_lines(self, down: bool) -> None: ...
     def do_move_words(self, step: int) -> None: ...
     def do_push_snippet(
-        self, snippet: Snippet, location: Optional[Gtk.TextIter] = None
+        self, snippet: Snippet, location: _Gtk4.TextIter | None = None
     ) -> None: ...
     def do_show_completion(self) -> None: ...
+    def get_annotations(self) -> Annotations: ...
     def get_auto_indent(self) -> bool: ...
     def get_background_pattern(self) -> BackgroundPatternType: ...
     def get_buffer(self) -> Buffer: ...
     def get_completion(self) -> Completion: ...
     def get_enable_snippets(self) -> bool: ...
-    def get_gutter(self, window_type: Gtk.TextWindowType) -> Gutter: ...
+    def get_gutter(self, window_type: _Gtk4.TextWindowType) -> Gutter: ...
     def get_highlight_current_line(self) -> bool: ...
     def get_hover(self) -> Hover: ...
     def get_indent_on_tab(self) -> bool: ...
     def get_indent_width(self) -> int: ...
-    def get_indenter(self) -> Optional[Indenter]: ...
+    def get_indenter(self) -> Indenter | None: ...
     def get_insert_spaces_instead_of_tabs(self) -> bool: ...
     def get_mark_attributes(self, category: str, priority: int) -> MarkAttributes: ...
     def get_right_margin_position(self) -> int: ...
@@ -4796,14 +5055,14 @@ class View(
     def get_smart_home_end(self) -> SmartHomeEndType: ...
     def get_space_drawer(self) -> SpaceDrawer: ...
     def get_tab_width(self) -> int: ...
-    def get_visual_column(self, iter: Gtk.TextIter) -> int: ...
-    def indent_lines(self, start: Gtk.TextIter, end: Gtk.TextIter) -> None: ...
+    def get_visual_column(self, iter: _Gtk4.TextIter) -> int: ...
+    def indent_lines(self, start: _Gtk4.TextIter, end: _Gtk4.TextIter) -> None: ...
     @classmethod
     def new(cls) -> View: ...
     @classmethod
     def new_with_buffer(cls, buffer: Buffer) -> View: ...
     def push_snippet(
-        self, snippet: Snippet, location: Optional[Gtk.TextIter] = None
+        self, snippet: Snippet, location: _Gtk4.TextIter | None = None
     ) -> None: ...
     def set_auto_indent(self, enable: bool) -> None: ...
     def set_background_pattern(
@@ -4813,7 +5072,7 @@ class View(
     def set_highlight_current_line(self, highlight: bool) -> None: ...
     def set_indent_on_tab(self, enable: bool) -> None: ...
     def set_indent_width(self, width: int) -> None: ...
-    def set_indenter(self, indenter: Optional[Indenter] = None) -> None: ...
+    def set_indenter(self, indenter: Indenter | None = None) -> None: ...
     def set_insert_spaces_instead_of_tabs(self, enable: bool) -> None: ...
     def set_mark_attributes(
         self, category: str, attributes: MarkAttributes, priority: int
@@ -4825,7 +5084,7 @@ class View(
     def set_smart_backspace(self, smart_backspace: bool) -> None: ...
     def set_smart_home_end(self, smart_home_end: SmartHomeEndType) -> None: ...
     def set_tab_width(self, width: int) -> None: ...
-    def unindent_lines(self, start: Gtk.TextIter, end: Gtk.TextIter) -> None: ...
+    def unindent_lines(self, start: _Gtk4.TextIter, end: _Gtk4.TextIter) -> None: ...
 
 class ViewClass(GObject.GPointer):
     """
@@ -4835,18 +5094,24 @@ class ViewClass(GObject.GPointer):
 
         ViewClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.TextViewClass: ...
+    @property
+    def line_mark_activated(
+        self,
+    ) -> Callable[[View, _Gtk4.TextIter, int, _Gdk4.ModifierType, int], None]: ...
+    @property
+    def show_completion(self) -> Callable[[View], None]: ...
+    @property
+    def move_lines(self) -> Callable[[View, bool], None]: ...
+    @property
+    def move_words(self) -> Callable[[View, int], None]: ...
+    @property
+    def push_snippet(
+        self,
+    ) -> Callable[[View, Snippet, _Gtk4.TextIter | None], None]: ...
 
-    parent_class: Gtk.TextViewClass = ...
-    line_mark_activated: Callable[
-        [View, Gtk.TextIter, int, Gdk.ModifierType, int], None
-    ] = ...
-    show_completion: Callable[[View], None] = ...
-    move_lines: Callable[[View, bool], None] = ...
-    move_words: Callable[[View, int], None] = ...
-    push_snippet: Callable[[View, Snippet, Optional[Gtk.TextIter]], None] = ...
-    _reserved: list[None] = ...
-
-class VimIMContext(Gtk.IMContext):
+class VimIMContext(_Gtk4.IMContext):
     """
     :Constructors:
 
@@ -4884,17 +5149,19 @@ class VimIMContext(Gtk.IMContext):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    class Props(_Gtk4.IMContext.Props):
         command_bar_text: str
         command_text: str
-        input_hints: Gtk.InputHints
-        input_purpose: Gtk.InputPurpose
+        input_hints: _Gtk4.InputHints
+        input_purpose: _Gtk4.InputPurpose
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
-        self, input_hints: Gtk.InputHints = ..., input_purpose: Gtk.InputPurpose = ...
-    ): ...
+        self,
+        input_hints: _Gtk4.InputHints = ...,
+        input_purpose: _Gtk4.InputPurpose = ...,
+    ) -> None: ...
     def execute_command(self, command: str) -> None: ...
     def get_command_bar_text(self) -> str: ...
     def get_command_text(self) -> str: ...
@@ -4909,8 +5176,8 @@ class VimIMContextClass(GObject.GPointer):
 
         VimIMContextClass()
     """
-
-    parent_class: Gtk.IMContextClass = ...
+    @property
+    def parent_class(self) -> _Gtk4.IMContextClass: ...
 
 class FileSaverFlags(GObject.GFlags):
     CREATE_BACKUP = 4
@@ -4920,6 +5187,7 @@ class FileSaverFlags(GObject.GFlags):
 
 class SortFlags(GObject.GFlags):
     CASE_SENSITIVE = 1
+    FILENAME = 8
     NONE = 0
     REMOVE_DUPLICATES = 4
     REVERSE_ORDER = 2
@@ -4938,6 +5206,12 @@ class SpaceTypeFlags(GObject.GFlags):
     NONE = 0
     SPACE = 1
     TAB = 2
+
+class AnnotationStyle(GObject.GEnum):
+    ACCENT = 3
+    ERROR = 2
+    NONE = 0
+    WARNING = 1
 
 class BackgroundPatternType(GObject.GEnum):
     GRID = 1

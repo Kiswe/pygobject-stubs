@@ -21,7 +21,7 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "PyGObject>=3.55.0",
+    "PyGObject>=3.50.2",
     "typing_extensions",
 ]
 

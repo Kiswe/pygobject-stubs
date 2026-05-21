@@ -1,16 +1,13 @@
-import typing
+from typing import Any
+from typing import TypeVar
 
 from gi.repository import Gio
 from gi.repository import GObject
 
-T = typing.TypeVar("T")
-
-_lock = ...  # FIXME Constant
-_namespace: str = "GioWin32"
-_version: str = "2.0"
+T = TypeVar("T")
 
 def registry_settings_backend_new(
-    registry_key: typing.Optional[str] = None,
+    registry_key: str | None = None,
 ) -> Gio.SettingsBackend: ...
 
 class InputStream(Gio.InputStream):
@@ -32,15 +29,15 @@ class InputStream(Gio.InputStream):
       notify (GParam)
     """
 
-    parent_instance: Gio.InputStream = ...
-    priv: InputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> Gio.InputStream: ...
+    @property
+    def priv(self) -> InputStreamPrivate: ...
     @staticmethod
     def get_close_handle(stream: InputStream) -> bool: ...
     @staticmethod
     def get_handle(stream: InputStream) -> None: ...
-    def new(
-        handle: typing.Any, close_handle: bool
-    ) -> InputStream: ...  # FIXME Function
+    def new(handle: Any, close_handle: bool) -> InputStream: ...  # FIXME Function
     @staticmethod
     def set_close_handle(stream: InputStream, close_handle: bool) -> None: ...
 
@@ -53,12 +50,12 @@ class InputStreamClass(GObject.GPointer):
         InputStreamClass()
     """
 
-    parent_class: Gio.InputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+    parent_class: Gio.InputStreamClass
+    _g_reserved1: None
+    _g_reserved2: None
+    _g_reserved3: None
+    _g_reserved4: None
+    _g_reserved5: None
 
 class InputStreamPrivate(GObject.GPointer): ...
 
@@ -71,8 +68,10 @@ class NetworkMonitor(GObject.GPointer):
         NetworkMonitor()
     """
 
-    parent_instance: None = ...
-    priv: NetworkMonitorPrivate = ...
+    @property
+    def parent_instance(self) -> None: ...
+    @property
+    def priv(self) -> NetworkMonitorPrivate: ...
 
 class NetworkMonitorClass(GObject.GPointer):
     """
@@ -83,7 +82,7 @@ class NetworkMonitorClass(GObject.GPointer):
         NetworkMonitorClass()
     """
 
-    parent_class: None = ...
+    parent_class: None
 
 class NetworkMonitorPrivate(GObject.GPointer): ...
 
@@ -106,15 +105,15 @@ class OutputStream(Gio.OutputStream):
       notify (GParam)
     """
 
-    parent_instance: Gio.OutputStream = ...
-    priv: OutputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> Gio.OutputStream: ...
+    @property
+    def priv(self) -> OutputStreamPrivate: ...
     @staticmethod
     def get_close_handle(stream: OutputStream) -> bool: ...
     @staticmethod
     def get_handle(stream: OutputStream) -> None: ...
-    def new(
-        handle: typing.Any, close_handle: bool
-    ) -> OutputStream: ...  # FIXME Function
+    def new(handle: Any, close_handle: bool) -> OutputStream: ...  # FIXME Function
     @staticmethod
     def set_close_handle(stream: OutputStream, close_handle: bool) -> None: ...
 
@@ -127,11 +126,11 @@ class OutputStreamClass(GObject.GPointer):
         OutputStreamClass()
     """
 
-    parent_class: Gio.OutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+    parent_class: Gio.OutputStreamClass
+    _g_reserved1: None
+    _g_reserved2: None
+    _g_reserved3: None
+    _g_reserved4: None
+    _g_reserved5: None
 
 class OutputStreamPrivate(GObject.GPointer): ...

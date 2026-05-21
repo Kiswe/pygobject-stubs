@@ -1,9 +1,19 @@
-from typing import Optional
+from __future__ import annotations
+
+from typing import TypeAlias
 
 import ast
 import re
 
-ParseResult = dict[str, str]
+from .import_info import FromImportInfo
+from .import_info import ImportInfo
+from .type_var_info import TypeVarInfo
+from .type_var_info import TypeVarTupleInfo
+
+Overrides: TypeAlias = dict[str, str]
+Imports: TypeAlias = list[ImportInfo | FromImportInfo]
+TypeVars: TypeAlias = list[TypeVarInfo | TypeVarTupleInfo]
+ParseResult: TypeAlias = tuple[Overrides, Imports, TypeVars]
 
 OVERRIDE_PATTERN = r"^.*#\s*override.*$"
 CLASS_PATTERN = r"^\s*class\s(?P<symbol>\w*)\s*(\(|:)"
@@ -11,9 +21,9 @@ CONSTANT_INDEX = 2
 SYMBOLS_PATTERNS = [
     r"^\s*def\s+(?P<symbol>\w*)\s*\(",  # Functions
     CLASS_PATTERN,
-    r"^\s*(?P<symbol>\w*)\s*(:|=)[^,)]*$",  # Constants
+    r"^\s*(?P<symbol>\w*)\s*(:|=).*[^,)\s]\s*$",  # Constants
 ]
-DOCUMENTATION_PATTERN = r'^\s*"""\s*$'
+DOCUMENTATION_PATTERN = r'^\s*""".*$'
 INDENTATION_SPACES = 4
 
 OverridableSymbols = ast.ClassDef | ast.FunctionDef | ast.AnnAssign | ast.Assign
@@ -27,7 +37,7 @@ def _search_overridden_symbols(input: str) -> list[str]:
     symbols: list[str] = []
     parents: list[str] = []
 
-    last_class: Optional[str] = None
+    last_class: str | None = None
     last_indentation_level: int = 0
 
     is_override: bool = False
@@ -54,7 +64,9 @@ def _search_overridden_symbols(input: str) -> list[str]:
                 ) / INDENTATION_SPACES
                 if indentation_level != int(indentation_level):
                     raise ParseError(
-                        f"Wrong indentation at line: {i}, {indentation_level} != {int(indentation_level)}"
+                        f"Wrong indentation at line: {i}, {indentation_level} != {
+                            int(indentation_level)
+                        }"
                     )
                 indentation_level = int(indentation_level)
 
@@ -65,12 +77,10 @@ def _search_overridden_symbols(input: str) -> list[str]:
                     else:
                         if index != CONSTANT_INDEX:
                             raise ParseError(f"Wrong indentation at line: {i}")
-                        else:
-                            # Regex for constant trigger also on functions arguments
-                            print(
-                                f"Wrong indentation for constant at line {i}, skipping"
-                            )
-                            continue
+
+                        # Regex for constant trigger also on functions arguments
+                        print(f"Wrong indentation for constant at line {i}, skipping")
+                        continue
                 elif indentation_level < last_indentation_level:
                     while indentation_level < last_indentation_level:
                         parents.pop()
@@ -79,11 +89,12 @@ def _search_overridden_symbols(input: str) -> list[str]:
 
                 if is_override:
                     is_override = False
-                    full_list = parents + [symbol]
+                    full_list = [*parents, symbol]
                     symbols.append(".".join(full_list))
 
                 break
-            elif res:
+
+            if res:
                 raise ParseError(f"Unable to parse line {i}: '{line}'")
 
         class_res = re.match(CLASS_PATTERN, line)
@@ -99,7 +110,10 @@ def _generate_result_node(
     parents: list[str],
     node: OverridableSymbols,
     overridden_symbols: list[str],
-    result: ParseResult,
+    result: Overrides,
+    /,
+    *,
+    typevars: TypeVars | None = None,
 ) -> None:
     parents = parents[:]
     if isinstance(node, ast.FunctionDef | ast.ClassDef):
@@ -107,7 +121,21 @@ def _generate_result_node(
         parents.append(name)
         full_name = ".".join(parents)
         if full_name in overridden_symbols:
-            result[full_name] = ast.unparse(node)
+            unparsed = ast.unparse(node)
+            if (
+                full_name in result
+                and isinstance(node, ast.FunctionDef)
+                and any(
+                    (isinstance(deco, ast.Name) and deco.id == "overload")
+                    or (isinstance(deco, ast.Attribute) and deco.attr == "overload")
+                    for deco in node.decorator_list
+                )
+            ):
+                # Function overloads share a single override block; append
+                # subsequent overloads to the existing entry.
+                result[full_name] = result[full_name] + "\n" + unparsed
+            else:
+                result[full_name] = unparsed
             return
 
         if isinstance(node, ast.ClassDef):
@@ -139,6 +167,17 @@ def _generate_result_node(
             return
 
     if isinstance(node, ast.Assign):
+        if (
+            typevars is not None
+            and isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Name)
+        ):
+            if node.value.func.id == "TypeVar":
+                typevars.append(TypeVarInfo.from_call(node.value))
+
+            if node.value.func.id == "TypeVarTuple":
+                typevars.append(TypeVarTupleInfo.from_call(node.value))
+
         if not hasattr(node.targets[0], "id"):
             print(f"Skipping {'.'.join(parents)} {node} no id attribute")
             return
@@ -150,21 +189,33 @@ def _generate_result_node(
             return
 
 
-def _generate_result(root: ast.Module, overridden_symbols: list[str]) -> ParseResult:
-    result: ParseResult = {}
+def _generate_result(root: ast.Module, overridden_symbols: list[str], /) -> ParseResult:
+    result: Overrides = {}
+    imports: Imports = []
+    typevars: list[TypeVarInfo | TypeVarTupleInfo] = []
     parents: list[str] = []
     body = root.body
 
     for child in body:
+        if isinstance(child, ast.Import):
+            imports.extend(
+                ImportInfo(module.name, module.asname) for module in child.names
+            )
+        if isinstance(child, ast.ImportFrom):
+            imports.extend(
+                FromImportInfo.from_ast(child, alias) for alias in child.names
+            )
         if not isinstance(child, OverridableSymbols):
             print(f"Skipped root.{child}")
             continue
-        _generate_result_node(parents, child, overridden_symbols, result)
+        _generate_result_node(
+            parents, child, overridden_symbols, result, typevars=typevars
+        )
 
-    return result
+    return result, imports, typevars
 
 
-def parse(input: str) -> ParseResult:
+def parse(input: str, /) -> ParseResult:
     overridden_symbols = _search_overridden_symbols(input)
     root = ast.parse(input)
     return _generate_result(root, overridden_symbols)

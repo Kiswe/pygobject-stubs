@@ -1,285 +1,368 @@
-import typing
+from typing import Any
+from typing import Final
+from typing import Generic
+from typing import Literal
+from typing import overload
+from typing import Protocol
+from typing import type_check_only
+from typing import TypeAlias
+from typing_extensions import Never
+from typing_extensions import Self
+from typing_extensions import TypeVar
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
 
+import asyncio
+from collections.abc import Callable
+from collections.abc import Iterator
+from collections.abc import Sequence
+
+from gi import _gi
+from gi.repository import GioUnix
 from gi.repository import GLib
 from gi.repository import GObject
 
-T = typing.TypeVar("T")
+_T = TypeVar("_T")
+ObjectItemType = TypeVar("ObjectItemType", bound=GObject.Object, default=Any)
+ObjectPropsItemType = TypeVar("ObjectPropsItemType", bound=GObject.Object, default=Any)
+_DataTs = TypeVarTuple("_DataTs", default=Unpack[tuple[()]])
+_SourceObjectT = TypeVar("_SourceObjectT", bound=GObject.ObjectProtocol | None)
+_T_co = TypeVar("_T_co", covariant=True, default=Any)
 
-DBUS_METHOD_INVOCATION_HANDLED: bool = True
-DBUS_METHOD_INVOCATION_UNHANDLED: bool = False
-DEBUG_CONTROLLER_EXTENSION_POINT_NAME: str = "gio-debug-controller"
-DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME: str = "gio-desktop-app-info-lookup"
-DRIVE_IDENTIFIER_KIND_UNIX_DEVICE: str = "unix-device"
-FILE_ATTRIBUTE_ACCESS_CAN_DELETE: str = "access::can-delete"
-FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE: str = "access::can-execute"
-FILE_ATTRIBUTE_ACCESS_CAN_READ: str = "access::can-read"
-FILE_ATTRIBUTE_ACCESS_CAN_RENAME: str = "access::can-rename"
-FILE_ATTRIBUTE_ACCESS_CAN_TRASH: str = "access::can-trash"
-FILE_ATTRIBUTE_ACCESS_CAN_WRITE: str = "access::can-write"
-FILE_ATTRIBUTE_DOS_IS_ARCHIVE: str = "dos::is-archive"
-FILE_ATTRIBUTE_DOS_IS_MOUNTPOINT: str = "dos::is-mountpoint"
-FILE_ATTRIBUTE_DOS_IS_SYSTEM: str = "dos::is-system"
-FILE_ATTRIBUTE_DOS_REPARSE_POINT_TAG: str = "dos::reparse-point-tag"
-FILE_ATTRIBUTE_ETAG_VALUE: str = "etag::value"
-FILE_ATTRIBUTE_FILESYSTEM_FREE: str = "filesystem::free"
-FILE_ATTRIBUTE_FILESYSTEM_READONLY: str = "filesystem::readonly"
-FILE_ATTRIBUTE_FILESYSTEM_REMOTE: str = "filesystem::remote"
-FILE_ATTRIBUTE_FILESYSTEM_SIZE: str = "filesystem::size"
-FILE_ATTRIBUTE_FILESYSTEM_TYPE: str = "filesystem::type"
-FILE_ATTRIBUTE_FILESYSTEM_USED: str = "filesystem::used"
-FILE_ATTRIBUTE_FILESYSTEM_USE_PREVIEW: str = "filesystem::use-preview"
-FILE_ATTRIBUTE_GVFS_BACKEND: str = "gvfs::backend"
-FILE_ATTRIBUTE_ID_FILE: str = "id::file"
-FILE_ATTRIBUTE_ID_FILESYSTEM: str = "id::filesystem"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_EJECT: str = "mountable::can-eject"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_MOUNT: str = "mountable::can-mount"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_POLL: str = "mountable::can-poll"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_START: str = "mountable::can-start"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_START_DEGRADED: str = "mountable::can-start-degraded"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_STOP: str = "mountable::can-stop"
-FILE_ATTRIBUTE_MOUNTABLE_CAN_UNMOUNT: str = "mountable::can-unmount"
-FILE_ATTRIBUTE_MOUNTABLE_HAL_UDI: str = "mountable::hal-udi"
-FILE_ATTRIBUTE_MOUNTABLE_IS_MEDIA_CHECK_AUTOMATIC: str = (
+_AsyncReadyCallback: TypeAlias = Callable[[_SourceObjectT, AsyncResult, _T_co], None]
+_AsyncReadyVarArgsCallback: TypeAlias = Callable[
+    [_SourceObjectT, AsyncResult, Unpack[_DataTs]], None
+]
+
+DBUS_METHOD_INVOCATION_HANDLED: Final = True
+DBUS_METHOD_INVOCATION_UNHANDLED: Final = False
+DEBUG_CONTROLLER_EXTENSION_POINT_NAME: Final = "gio-debug-controller"
+DESKTOP_APP_INFO_LOOKUP_EXTENSION_POINT_NAME: Final = "gio-desktop-app-info-lookup"
+DRIVE_IDENTIFIER_KIND_UNIX_DEVICE: Final = "unix-device"
+FILE_ATTRIBUTE_ACCESS_CAN_DELETE: Final = "access::can-delete"
+FILE_ATTRIBUTE_ACCESS_CAN_EXECUTE: Final = "access::can-execute"
+FILE_ATTRIBUTE_ACCESS_CAN_READ: Final = "access::can-read"
+FILE_ATTRIBUTE_ACCESS_CAN_RENAME: Final = "access::can-rename"
+FILE_ATTRIBUTE_ACCESS_CAN_TRASH: Final = "access::can-trash"
+FILE_ATTRIBUTE_ACCESS_CAN_WRITE: Final = "access::can-write"
+FILE_ATTRIBUTE_DOS_IS_ARCHIVE: Final = "dos::is-archive"
+FILE_ATTRIBUTE_DOS_IS_MOUNTPOINT: Final = "dos::is-mountpoint"
+FILE_ATTRIBUTE_DOS_IS_SYSTEM: Final = "dos::is-system"
+FILE_ATTRIBUTE_DOS_REPARSE_POINT_TAG: Final = "dos::reparse-point-tag"
+FILE_ATTRIBUTE_ETAG_VALUE: Final = "etag::value"
+FILE_ATTRIBUTE_FILESYSTEM_FREE: Final = "filesystem::free"
+FILE_ATTRIBUTE_FILESYSTEM_READONLY: Final = "filesystem::readonly"
+FILE_ATTRIBUTE_FILESYSTEM_REMOTE: Final = "filesystem::remote"
+FILE_ATTRIBUTE_FILESYSTEM_SIZE: Final = "filesystem::size"
+FILE_ATTRIBUTE_FILESYSTEM_TYPE: Final = "filesystem::type"
+FILE_ATTRIBUTE_FILESYSTEM_USED: Final = "filesystem::used"
+FILE_ATTRIBUTE_FILESYSTEM_USE_PREVIEW: Final = "filesystem::use-preview"
+FILE_ATTRIBUTE_GVFS_BACKEND: Final = "gvfs::backend"
+FILE_ATTRIBUTE_ID_FILE: Final = "id::file"
+FILE_ATTRIBUTE_ID_FILESYSTEM: Final = "id::filesystem"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_EJECT: Final = "mountable::can-eject"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_MOUNT: Final = "mountable::can-mount"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_POLL: Final = "mountable::can-poll"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_START: Final = "mountable::can-start"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_START_DEGRADED: Final = "mountable::can-start-degraded"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_STOP: Final = "mountable::can-stop"
+FILE_ATTRIBUTE_MOUNTABLE_CAN_UNMOUNT: Final = "mountable::can-unmount"
+FILE_ATTRIBUTE_MOUNTABLE_HAL_UDI: Final = "mountable::hal-udi"
+FILE_ATTRIBUTE_MOUNTABLE_IS_MEDIA_CHECK_AUTOMATIC: Final = (
     "mountable::is-media-check-automatic"
 )
-FILE_ATTRIBUTE_MOUNTABLE_START_STOP_TYPE: str = "mountable::start-stop-type"
-FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE: str = "mountable::unix-device"
-FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE_FILE: str = "mountable::unix-device-file"
-FILE_ATTRIBUTE_OWNER_GROUP: str = "owner::group"
-FILE_ATTRIBUTE_OWNER_USER: str = "owner::user"
-FILE_ATTRIBUTE_OWNER_USER_REAL: str = "owner::user-real"
-FILE_ATTRIBUTE_PREVIEW_ICON: str = "preview::icon"
-FILE_ATTRIBUTE_RECENT_MODIFIED: str = "recent::modified"
-FILE_ATTRIBUTE_SELINUX_CONTEXT: str = "selinux::context"
-FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE: str = "standard::allocated-size"
-FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE: str = "standard::content-type"
-FILE_ATTRIBUTE_STANDARD_COPY_NAME: str = "standard::copy-name"
-FILE_ATTRIBUTE_STANDARD_DESCRIPTION: str = "standard::description"
-FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME: str = "standard::display-name"
-FILE_ATTRIBUTE_STANDARD_EDIT_NAME: str = "standard::edit-name"
-FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE: str = "standard::fast-content-type"
-FILE_ATTRIBUTE_STANDARD_ICON: str = "standard::icon"
-FILE_ATTRIBUTE_STANDARD_IS_BACKUP: str = "standard::is-backup"
-FILE_ATTRIBUTE_STANDARD_IS_HIDDEN: str = "standard::is-hidden"
-FILE_ATTRIBUTE_STANDARD_IS_SYMLINK: str = "standard::is-symlink"
-FILE_ATTRIBUTE_STANDARD_IS_VIRTUAL: str = "standard::is-virtual"
-FILE_ATTRIBUTE_STANDARD_IS_VOLATILE: str = "standard::is-volatile"
-FILE_ATTRIBUTE_STANDARD_NAME: str = "standard::name"
-FILE_ATTRIBUTE_STANDARD_SIZE: str = "standard::size"
-FILE_ATTRIBUTE_STANDARD_SORT_ORDER: str = "standard::sort-order"
-FILE_ATTRIBUTE_STANDARD_SYMBOLIC_ICON: str = "standard::symbolic-icon"
-FILE_ATTRIBUTE_STANDARD_SYMLINK_TARGET: str = "standard::symlink-target"
-FILE_ATTRIBUTE_STANDARD_TARGET_URI: str = "standard::target-uri"
-FILE_ATTRIBUTE_STANDARD_TYPE: str = "standard::type"
-FILE_ATTRIBUTE_THUMBNAILING_FAILED: str = "thumbnail::failed"
-FILE_ATTRIBUTE_THUMBNAILING_FAILED_LARGE: str = "thumbnail::failed-large"
-FILE_ATTRIBUTE_THUMBNAILING_FAILED_NORMAL: str = "thumbnail::failed-normal"
-FILE_ATTRIBUTE_THUMBNAILING_FAILED_XLARGE: str = "thumbnail::failed-xlarge"
-FILE_ATTRIBUTE_THUMBNAILING_FAILED_XXLARGE: str = "thumbnail::failed-xxlarge"
-FILE_ATTRIBUTE_THUMBNAIL_IS_VALID: str = "thumbnail::is-valid"
-FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_LARGE: str = "thumbnail::is-valid-large"
-FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_NORMAL: str = "thumbnail::is-valid-normal"
-FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_XLARGE: str = "thumbnail::is-valid-xlarge"
-FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_XXLARGE: str = "thumbnail::is-valid-xxlarge"
-FILE_ATTRIBUTE_THUMBNAIL_PATH: str = "thumbnail::path"
-FILE_ATTRIBUTE_THUMBNAIL_PATH_LARGE: str = "thumbnail::path-large"
-FILE_ATTRIBUTE_THUMBNAIL_PATH_NORMAL: str = "thumbnail::path-normal"
-FILE_ATTRIBUTE_THUMBNAIL_PATH_XLARGE: str = "thumbnail::path-xlarge"
-FILE_ATTRIBUTE_THUMBNAIL_PATH_XXLARGE: str = "thumbnail::path-xxlarge"
-FILE_ATTRIBUTE_TIME_ACCESS: str = "time::access"
-FILE_ATTRIBUTE_TIME_ACCESS_NSEC: str = "time::access-nsec"
-FILE_ATTRIBUTE_TIME_ACCESS_USEC: str = "time::access-usec"
-FILE_ATTRIBUTE_TIME_CHANGED: str = "time::changed"
-FILE_ATTRIBUTE_TIME_CHANGED_NSEC: str = "time::changed-nsec"
-FILE_ATTRIBUTE_TIME_CHANGED_USEC: str = "time::changed-usec"
-FILE_ATTRIBUTE_TIME_CREATED: str = "time::created"
-FILE_ATTRIBUTE_TIME_CREATED_NSEC: str = "time::created-nsec"
-FILE_ATTRIBUTE_TIME_CREATED_USEC: str = "time::created-usec"
-FILE_ATTRIBUTE_TIME_MODIFIED: str = "time::modified"
-FILE_ATTRIBUTE_TIME_MODIFIED_NSEC: str = "time::modified-nsec"
-FILE_ATTRIBUTE_TIME_MODIFIED_USEC: str = "time::modified-usec"
-FILE_ATTRIBUTE_TRASH_DELETION_DATE: str = "trash::deletion-date"
-FILE_ATTRIBUTE_TRASH_ITEM_COUNT: str = "trash::item-count"
-FILE_ATTRIBUTE_TRASH_ORIG_PATH: str = "trash::orig-path"
-FILE_ATTRIBUTE_UNIX_BLOCKS: str = "unix::blocks"
-FILE_ATTRIBUTE_UNIX_BLOCK_SIZE: str = "unix::block-size"
-FILE_ATTRIBUTE_UNIX_DEVICE: str = "unix::device"
-FILE_ATTRIBUTE_UNIX_GID: str = "unix::gid"
-FILE_ATTRIBUTE_UNIX_INODE: str = "unix::inode"
-FILE_ATTRIBUTE_UNIX_IS_MOUNTPOINT: str = "unix::is-mountpoint"
-FILE_ATTRIBUTE_UNIX_MODE: str = "unix::mode"
-FILE_ATTRIBUTE_UNIX_NLINK: str = "unix::nlink"
-FILE_ATTRIBUTE_UNIX_RDEV: str = "unix::rdev"
-FILE_ATTRIBUTE_UNIX_UID: str = "unix::uid"
-MEMORY_MONITOR_EXTENSION_POINT_NAME: str = "gio-memory-monitor"
-MENU_ATTRIBUTE_ACTION: str = "action"
-MENU_ATTRIBUTE_ACTION_NAMESPACE: str = "action-namespace"
-MENU_ATTRIBUTE_ICON: str = "icon"
-MENU_ATTRIBUTE_LABEL: str = "label"
-MENU_ATTRIBUTE_TARGET: str = "target"
-MENU_EXPORTER_MAX_SECTION_SIZE: int = 1000
-MENU_LINK_SECTION: str = "section"
-MENU_LINK_SUBMENU: str = "submenu"
-NATIVE_VOLUME_MONITOR_EXTENSION_POINT_NAME: str = "gio-native-volume-monitor"
-NETWORK_MONITOR_EXTENSION_POINT_NAME: str = "gio-network-monitor"
-POWER_PROFILE_MONITOR_EXTENSION_POINT_NAME: str = "gio-power-profile-monitor"
-PROXY_EXTENSION_POINT_NAME: str = "gio-proxy"
-PROXY_RESOLVER_EXTENSION_POINT_NAME: str = "gio-proxy-resolver"
-SETTINGS_BACKEND_EXTENSION_POINT_NAME: str = "gsettings-backend"
-TLS_BACKEND_EXTENSION_POINT_NAME: str = "gio-tls-backend"
-TLS_DATABASE_PURPOSE_AUTHENTICATE_CLIENT: str = "1.3.6.1.5.5.7.3.2"
-TLS_DATABASE_PURPOSE_AUTHENTICATE_SERVER: str = "1.3.6.1.5.5.7.3.1"
-VFS_EXTENSION_POINT_NAME: str = "gio-vfs"
-VOLUME_IDENTIFIER_KIND_CLASS: str = "class"
-VOLUME_IDENTIFIER_KIND_HAL_UDI: str = "hal-udi"
-VOLUME_IDENTIFIER_KIND_LABEL: str = "label"
-VOLUME_IDENTIFIER_KIND_NFS_MOUNT: str = "nfs-mount"
-VOLUME_IDENTIFIER_KIND_UNIX_DEVICE: str = "unix-device"
-VOLUME_IDENTIFIER_KIND_UUID: str = "uuid"
-VOLUME_MONITOR_EXTENSION_POINT_NAME: str = "gio-volume-monitor"
-_introspection_module = ...  # FIXME Constant
-_lock = ...  # FIXME Constant
-_namespace: str = "Gio"
-_overrides_module = ...  # FIXME Constant
-_version: str = "2.0"
+FILE_ATTRIBUTE_MOUNTABLE_START_STOP_TYPE: Final = "mountable::start-stop-type"
+FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE: Final = "mountable::unix-device"
+FILE_ATTRIBUTE_MOUNTABLE_UNIX_DEVICE_FILE: Final = "mountable::unix-device-file"
+FILE_ATTRIBUTE_OWNER_GROUP: Final = "owner::group"
+FILE_ATTRIBUTE_OWNER_USER: Final = "owner::user"
+FILE_ATTRIBUTE_OWNER_USER_REAL: Final = "owner::user-real"
+FILE_ATTRIBUTE_PREVIEW_ICON: Final = "preview::icon"
+FILE_ATTRIBUTE_RECENT_MODIFIED: Final = "recent::modified"
+FILE_ATTRIBUTE_SELINUX_CONTEXT: Final = "selinux::context"
+FILE_ATTRIBUTE_STANDARD_ALLOCATED_SIZE: Final = "standard::allocated-size"
+FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE: Final = "standard::content-type"
+FILE_ATTRIBUTE_STANDARD_COPY_NAME: Final = "standard::copy-name"
+FILE_ATTRIBUTE_STANDARD_DESCRIPTION: Final = "standard::description"
+FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME: Final = "standard::display-name"
+FILE_ATTRIBUTE_STANDARD_EDIT_NAME: Final = "standard::edit-name"
+FILE_ATTRIBUTE_STANDARD_FAST_CONTENT_TYPE: Final = "standard::fast-content-type"
+FILE_ATTRIBUTE_STANDARD_ICON: Final = "standard::icon"
+FILE_ATTRIBUTE_STANDARD_IS_BACKUP: Final = "standard::is-backup"
+FILE_ATTRIBUTE_STANDARD_IS_HIDDEN: Final = "standard::is-hidden"
+FILE_ATTRIBUTE_STANDARD_IS_SYMLINK: Final = "standard::is-symlink"
+FILE_ATTRIBUTE_STANDARD_IS_VIRTUAL: Final = "standard::is-virtual"
+FILE_ATTRIBUTE_STANDARD_IS_VOLATILE: Final = "standard::is-volatile"
+FILE_ATTRIBUTE_STANDARD_NAME: Final = "standard::name"
+FILE_ATTRIBUTE_STANDARD_SIZE: Final = "standard::size"
+FILE_ATTRIBUTE_STANDARD_SORT_ORDER: Final = "standard::sort-order"
+FILE_ATTRIBUTE_STANDARD_SYMBOLIC_ICON: Final = "standard::symbolic-icon"
+FILE_ATTRIBUTE_STANDARD_SYMLINK_TARGET: Final = "standard::symlink-target"
+FILE_ATTRIBUTE_STANDARD_TARGET_URI: Final = "standard::target-uri"
+FILE_ATTRIBUTE_STANDARD_TYPE: Final = "standard::type"
+FILE_ATTRIBUTE_THUMBNAILING_FAILED: Final = "thumbnail::failed"
+FILE_ATTRIBUTE_THUMBNAILING_FAILED_LARGE: Final = "thumbnail::failed-large"
+FILE_ATTRIBUTE_THUMBNAILING_FAILED_NORMAL: Final = "thumbnail::failed-normal"
+FILE_ATTRIBUTE_THUMBNAILING_FAILED_XLARGE: Final = "thumbnail::failed-xlarge"
+FILE_ATTRIBUTE_THUMBNAILING_FAILED_XXLARGE: Final = "thumbnail::failed-xxlarge"
+FILE_ATTRIBUTE_THUMBNAIL_IS_VALID: Final = "thumbnail::is-valid"
+FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_LARGE: Final = "thumbnail::is-valid-large"
+FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_NORMAL: Final = "thumbnail::is-valid-normal"
+FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_XLARGE: Final = "thumbnail::is-valid-xlarge"
+FILE_ATTRIBUTE_THUMBNAIL_IS_VALID_XXLARGE: Final = "thumbnail::is-valid-xxlarge"
+FILE_ATTRIBUTE_THUMBNAIL_PATH: Final = "thumbnail::path"
+FILE_ATTRIBUTE_THUMBNAIL_PATH_LARGE: Final = "thumbnail::path-large"
+FILE_ATTRIBUTE_THUMBNAIL_PATH_NORMAL: Final = "thumbnail::path-normal"
+FILE_ATTRIBUTE_THUMBNAIL_PATH_XLARGE: Final = "thumbnail::path-xlarge"
+FILE_ATTRIBUTE_THUMBNAIL_PATH_XXLARGE: Final = "thumbnail::path-xxlarge"
+FILE_ATTRIBUTE_TIME_ACCESS: Final = "time::access"
+FILE_ATTRIBUTE_TIME_ACCESS_NSEC: Final = "time::access-nsec"
+FILE_ATTRIBUTE_TIME_ACCESS_USEC: Final = "time::access-usec"
+FILE_ATTRIBUTE_TIME_CHANGED: Final = "time::changed"
+FILE_ATTRIBUTE_TIME_CHANGED_NSEC: Final = "time::changed-nsec"
+FILE_ATTRIBUTE_TIME_CHANGED_USEC: Final = "time::changed-usec"
+FILE_ATTRIBUTE_TIME_CREATED: Final = "time::created"
+FILE_ATTRIBUTE_TIME_CREATED_NSEC: Final = "time::created-nsec"
+FILE_ATTRIBUTE_TIME_CREATED_USEC: Final = "time::created-usec"
+FILE_ATTRIBUTE_TIME_MODIFIED: Final = "time::modified"
+FILE_ATTRIBUTE_TIME_MODIFIED_NSEC: Final = "time::modified-nsec"
+FILE_ATTRIBUTE_TIME_MODIFIED_USEC: Final = "time::modified-usec"
+FILE_ATTRIBUTE_TRASH_DELETION_DATE: Final = "trash::deletion-date"
+FILE_ATTRIBUTE_TRASH_ITEM_COUNT: Final = "trash::item-count"
+FILE_ATTRIBUTE_TRASH_ORIG_PATH: Final = "trash::orig-path"
+FILE_ATTRIBUTE_UNIX_BLOCKS: Final = "unix::blocks"
+FILE_ATTRIBUTE_UNIX_BLOCK_SIZE: Final = "unix::block-size"
+FILE_ATTRIBUTE_UNIX_DEVICE: Final = "unix::device"
+FILE_ATTRIBUTE_UNIX_GID: Final = "unix::gid"
+FILE_ATTRIBUTE_UNIX_INODE: Final = "unix::inode"
+FILE_ATTRIBUTE_UNIX_IS_MOUNTPOINT: Final = "unix::is-mountpoint"
+FILE_ATTRIBUTE_UNIX_MODE: Final = "unix::mode"
+FILE_ATTRIBUTE_UNIX_NLINK: Final = "unix::nlink"
+FILE_ATTRIBUTE_UNIX_RDEV: Final = "unix::rdev"
+FILE_ATTRIBUTE_UNIX_UID: Final = "unix::uid"
+MEMORY_MONITOR_EXTENSION_POINT_NAME: Final = "gio-memory-monitor"
+MENU_ATTRIBUTE_ACTION: Final = "action"
+MENU_ATTRIBUTE_ACTION_NAMESPACE: Final = "action-namespace"
+MENU_ATTRIBUTE_ICON: Final = "icon"
+MENU_ATTRIBUTE_LABEL: Final = "label"
+MENU_ATTRIBUTE_TARGET: Final = "target"
+MENU_EXPORTER_MAX_SECTION_SIZE: Final[int]
+MENU_LINK_SECTION: Final = "section"
+MENU_LINK_SUBMENU: Final = "submenu"
+NATIVE_VOLUME_MONITOR_EXTENSION_POINT_NAME: Final = "gio-native-volume-monitor"
+NETWORK_MONITOR_EXTENSION_POINT_NAME: Final = "gio-network-monitor"
+POWER_PROFILE_MONITOR_EXTENSION_POINT_NAME: Final = "gio-power-profile-monitor"
+PROXY_EXTENSION_POINT_NAME: Final = "gio-proxy"
+PROXY_RESOLVER_EXTENSION_POINT_NAME: Final = "gio-proxy-resolver"
+SETTINGS_BACKEND_EXTENSION_POINT_NAME: Final = "gsettings-backend"
+TLS_BACKEND_EXTENSION_POINT_NAME: Final = "gio-tls-backend"
+TLS_DATABASE_PURPOSE_AUTHENTICATE_CLIENT: Final = "1.3.6.1.5.5.7.3.2"
+TLS_DATABASE_PURPOSE_AUTHENTICATE_SERVER: Final = "1.3.6.1.5.5.7.3.1"
+VFS_EXTENSION_POINT_NAME: Final = "gio-vfs"
+VOLUME_IDENTIFIER_KIND_CLASS: Final = "class"
+VOLUME_IDENTIFIER_KIND_HAL_UDI: Final = "hal-udi"
+VOLUME_IDENTIFIER_KIND_LABEL: Final = "label"
+VOLUME_IDENTIFIER_KIND_NFS_MOUNT: Final = "nfs-mount"
+VOLUME_IDENTIFIER_KIND_UNIX_DEVICE: Final = "unix-device"
+VOLUME_IDENTIFIER_KIND_UUID: Final = "uuid"
+VOLUME_MONITOR_EXTENSION_POINT_NAME: Final = "gio-volume-monitor"
 
 def action_name_is_valid(action_name: str) -> bool: ...
 def action_parse_detailed_name(
     detailed_name: str,
-) -> typing.Tuple[bool, str, GLib.Variant]: ...
+) -> tuple[bool, str, GLib.Variant | None]: ...
 def action_print_detailed_name(
-    action_name: str, target_value: typing.Optional[GLib.Variant] = None
+    action_name: str, target_value: GLib.Variant | None = None
 ) -> str: ...
 def app_info_create_from_commandline(
-    commandline: str, application_name: typing.Optional[str], flags: AppInfoCreateFlags
+    commandline: str, application_name: str | None, flags: _AppInfoCreateFlagsValueType
 ) -> AppInfo: ...
 def app_info_get_all() -> list[AppInfo]: ...
 def app_info_get_all_for_type(content_type: str) -> list[AppInfo]: ...
 def app_info_get_default_for_type(
     content_type: str, must_support_uris: bool
-) -> typing.Optional[AppInfo]: ...
+) -> AppInfo | None: ...
+@overload
+def app_info_get_default_for_type_async(
+    content_type: str, must_support_uris: bool, cancellable: Cancellable | None = None
+) -> _gi.Async[AppInfo]: ...
+@overload
 def app_info_get_default_for_type_async(
     content_type: str,
     must_support_uris: bool,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
+) -> None: ...
+@overload
+def app_info_get_default_for_type_async(
+    content_type: str,
+    must_support_uris: bool,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
 ) -> None: ...
 def app_info_get_default_for_type_finish(result: AsyncResult) -> AppInfo: ...
-def app_info_get_default_for_uri_scheme(
-    uri_scheme: str,
-) -> typing.Optional[AppInfo]: ...
+def app_info_get_default_for_uri_scheme(uri_scheme: str) -> AppInfo | None: ...
+@overload
+def app_info_get_default_for_uri_scheme_async(
+    uri_scheme: str, cancellable: Cancellable | None = None
+) -> _gi.Async[AppInfo]: ...
+@overload
 def app_info_get_default_for_uri_scheme_async(
     uri_scheme: str,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
+) -> None: ...
+@overload
+def app_info_get_default_for_uri_scheme_async(
+    uri_scheme: str,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
 ) -> None: ...
 def app_info_get_default_for_uri_scheme_finish(result: AsyncResult) -> AppInfo: ...
 def app_info_get_fallback_for_type(content_type: str) -> list[AppInfo]: ...
 def app_info_get_recommended_for_type(content_type: str) -> list[AppInfo]: ...
 def app_info_launch_default_for_uri(
-    uri: str, context: typing.Optional[AppLaunchContext] = None
+    uri: str, context: AppLaunchContext | None = None
 ) -> bool: ...
+@overload
 def app_info_launch_default_for_uri_async(
     uri: str,
-    context: typing.Optional[AppLaunchContext] = None,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    context: AppLaunchContext | None = None,
+    cancellable: Cancellable | None = None,
+) -> _gi.Async[bool]: ...
+@overload
+def app_info_launch_default_for_uri_async(
+    uri: str,
+    context: AppLaunchContext | None,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
+) -> None: ...
+@overload
+def app_info_launch_default_for_uri_async(
+    uri: str,
+    context: AppLaunchContext | None = None,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
 ) -> None: ...
 def app_info_launch_default_for_uri_finish(result: AsyncResult) -> bool: ...
 def app_info_reset_type_associations(content_type: str) -> None: ...
 def async_initable_newv_async(
-    object_type: typing.Type[typing.Any],
+    object_type: type[Any],
     n_parameters: int,
     parameters: GObject.Parameter,
     io_priority: int,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None = None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None = None,
+    *user_data: Unpack[_DataTs],
 ) -> None: ...
+@overload
 def bus_get(
-    bus_type: BusType,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    bus_type: _BusTypeValueType, cancellable: Cancellable | None = None
+) -> _gi.Async[DBusConnection]: ...
+@overload
+def bus_get(
+    bus_type: _BusTypeValueType,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
+) -> None: ...
+@overload
+def bus_get(
+    bus_type: _BusTypeValueType,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
 ) -> None: ...
 def bus_get_finish(res: AsyncResult) -> DBusConnection: ...
 def bus_get_sync(
-    bus_type: BusType, cancellable: typing.Optional[Cancellable] = None
+    bus_type: _BusTypeValueType, cancellable: Cancellable | None = None
 ) -> DBusConnection: ...
 def bus_own_name(
-    bus_type: BusType,
+    bus_type: _BusTypeValueType,
     name: str,
-    flags: BusNameOwnerFlags,
-    bus_acquired_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-    name_acquired_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-    name_lost_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
+    flags: _BusNameOwnerFlagsValueType,
+    bus_acquired_closure: Callable[..., Any] | None = None,
+    name_acquired_closure: Callable[..., Any] | None = None,
+    name_lost_closure: Callable[..., Any] | None = None,
 ) -> int: ...
 def bus_own_name_on_connection(
     connection: DBusConnection,
     name: str,
-    flags: BusNameOwnerFlags,
-    name_acquired_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-    name_lost_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
+    flags: _BusNameOwnerFlagsValueType,
+    name_acquired_closure: Callable[..., Any] | None = None,
+    name_lost_closure: Callable[..., Any] | None = None,
 ) -> int: ...
 def bus_unown_name(owner_id: int) -> None: ...
 def bus_unwatch_name(watcher_id: int) -> None: ...
 def bus_watch_name(
-    bus_type: BusType,
+    bus_type: _BusTypeValueType,
     name: str,
-    flags: BusNameWatcherFlags,
-    name_appeared_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-    name_vanished_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
+    flags: _BusNameWatcherFlagsValueType,
+    name_appeared_closure: Callable[..., Any] | None = None,
+    name_vanished_closure: Callable[..., Any] | None = None,
 ) -> int: ...
 def bus_watch_name_on_connection(
     connection: DBusConnection,
     name: str,
-    flags: BusNameWatcherFlags,
-    name_appeared_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-    name_vanished_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
+    flags: _BusNameWatcherFlagsValueType,
+    name_appeared_closure: Callable[..., Any] | None = None,
+    name_vanished_closure: Callable[..., Any] | None = None,
 ) -> int: ...
 def content_type_can_be_executable(type: str) -> bool: ...
 def content_type_equals(type1: str, type2: str) -> bool: ...
-def content_type_from_mime_type(mime_type: str) -> typing.Optional[str]: ...
+def content_type_from_mime_type(mime_type: str) -> str | None: ...
 def content_type_get_description(type: str) -> str: ...
-def content_type_get_generic_icon_name(type: str) -> typing.Optional[str]: ...
+def content_type_get_generic_icon_name(type: str) -> str | None: ...
 def content_type_get_icon(type: str) -> Icon: ...
 def content_type_get_mime_dirs() -> list[str]: ...
-def content_type_get_mime_type(type: str) -> typing.Optional[str]: ...
+def content_type_get_mime_type(type: str) -> str | None: ...
 def content_type_get_symbolic_icon(type: str) -> Icon: ...
 def content_type_guess(
-    filename: typing.Optional[str] = None,
-    data: typing.Optional[typing.Sequence[int]] = None,
-) -> typing.Tuple[str, bool]: ...
+    filename: str | None = None, data: Sequence[int] | None = None
+) -> tuple[str, bool]: ...
 def content_type_guess_for_tree(root: File) -> list[str]: ...
 def content_type_is_a(type: str, supertype: str) -> bool: ...
 def content_type_is_mime_type(type: str, mime_type: str) -> bool: ...
 def content_type_is_unknown(type: str) -> bool: ...
-def content_type_set_mime_dirs(
-    dirs: typing.Optional[typing.Sequence[str]] = None,
-) -> None: ...
+def content_type_set_mime_dirs(dirs: Sequence[str] | None = None) -> None: ...
 def content_types_get_registered() -> list[str]: ...
 def dbus_address_escape_value(string: str) -> str: ...
 def dbus_address_get_for_bus_sync(
-    bus_type: BusType, cancellable: typing.Optional[Cancellable] = None
+    bus_type: _BusTypeValueType, cancellable: Cancellable | None = None
 ) -> str: ...
+@overload
+def dbus_address_get_stream(
+    address: str, cancellable: Cancellable | None = None
+) -> _gi.Async[tuple[IOStream, str | None]]: ...
+@overload
 def dbus_address_get_stream(
     address: str,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
 ) -> None: ...
-def dbus_address_get_stream_finish(res: AsyncResult) -> typing.Tuple[IOStream, str]: ...
+@overload
+def dbus_address_get_stream(
+    address: str,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
+) -> None: ...
+def dbus_address_get_stream_finish(res: AsyncResult) -> tuple[IOStream, str | None]: ...
 def dbus_address_get_stream_sync(
-    address: str, cancellable: typing.Optional[Cancellable] = None
-) -> typing.Tuple[IOStream, str]: ...
+    address: str, cancellable: Cancellable | None = None
+) -> tuple[IOStream, str | None]: ...
 def dbus_annotation_info_lookup(
-    annotations: typing.Optional[typing.Sequence[DBusAnnotationInfo]], name: str
-) -> typing.Optional[str]: ...
+    annotations: Sequence[DBusAnnotationInfo] | None, name: str
+) -> str | None: ...
 def dbus_error_encode_gerror(error: GLib.Error) -> str: ...
-def dbus_error_get_remote_error(error: GLib.Error) -> typing.Optional[str]: ...
+def dbus_error_get_remote_error(error: GLib.Error) -> str | None: ...
 def dbus_error_is_remote_error(error: GLib.Error) -> bool: ...
 def dbus_error_new_for_dbus_error(
     dbus_error_name: str, dbus_error_message: str
@@ -289,21 +372,17 @@ def dbus_error_register_error(
     error_domain: int, error_code: int, dbus_error_name: str
 ) -> bool: ...
 def dbus_error_register_error_domain(
-    error_domain_quark_name: str,
-    quark_volatile: int,
-    entries: typing.Sequence[DBusErrorEntry],
+    error_domain_quark_name: str, quark_volatile: int, entries: Sequence[DBusErrorEntry]
 ) -> None: ...
 def dbus_error_strip_remote_error(error: GLib.Error) -> bool: ...
 def dbus_error_unregister_error(
     error_domain: int, error_code: int, dbus_error_name: str
 ) -> bool: ...
 def dbus_escape_object_path(s: str) -> str: ...
-def dbus_escape_object_path_bytestring(bytes: typing.Sequence[int]) -> str: ...
+def dbus_escape_object_path_bytestring(bytes: Sequence[int]) -> str: ...
 def dbus_generate_guid() -> str: ...
-def dbus_gvalue_to_gvariant(
-    gvalue: typing.Any, type: GLib.VariantType
-) -> GLib.Variant: ...
-def dbus_gvariant_to_gvalue(value: GLib.Variant) -> typing.Any: ...
+def dbus_gvalue_to_gvariant(gvalue: Any, type: GLib.VariantType) -> GLib.Variant: ...
+def dbus_gvariant_to_gvalue(value: GLib.Variant) -> Any: ...
 def dbus_is_address(string: str) -> bool: ...
 def dbus_is_error_name(string: str) -> bool: ...
 def dbus_is_guid(string: str) -> bool: ...
@@ -312,54 +391,74 @@ def dbus_is_member_name(string: str) -> bool: ...
 def dbus_is_name(string: str) -> bool: ...
 def dbus_is_supported_address(string: str) -> bool: ...
 def dbus_is_unique_name(string: str) -> bool: ...
-def dbus_unescape_object_path(s: str) -> typing.Optional[bytes]: ...
+def dbus_unescape_object_path(s: str) -> bytes: ...
 def dtls_client_connection_new(
-    base_socket: DatagramBased,
-    server_identity: typing.Optional[SocketConnectable] = None,
+    base_socket: DatagramBased, server_identity: SocketConnectable | None = None
 ) -> DtlsClientConnection: ...
 def dtls_server_connection_new(
-    base_socket: DatagramBased, certificate: typing.Optional[TlsCertificate] = None
+    base_socket: DatagramBased, certificate: TlsCertificate | None = None
 ) -> DtlsServerConnection: ...
-def file_new_build_filenamev(args: typing.Sequence[str]) -> File: ...
+def file_new_build_filenamev(args: Sequence[str]) -> File: ...
 def file_new_for_commandline_arg(arg: str) -> File: ...
 def file_new_for_commandline_arg_and_cwd(arg: str, cwd: str) -> File: ...
 def file_new_for_path(path: str) -> File: ...
 def file_new_for_uri(uri: str) -> File: ...
-def file_new_tmp(
-    tmpl: typing.Optional[str] = None,
-) -> typing.Tuple[File, FileIOStream]: ...
+def file_new_tmp(tmpl: str | None = None) -> tuple[File, FileIOStream]: ...
+@overload
 def file_new_tmp_async(
-    tmpl: typing.Optional[str],
+    tmpl: str | None, io_priority: int, cancellable: Cancellable | None = None
+) -> _gi.Async[tuple[File, FileIOStream]]: ...
+@overload
+def file_new_tmp_async(
+    tmpl: str | None,
     io_priority: int,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
 ) -> None: ...
-def file_new_tmp_dir_async(
-    tmpl: typing.Optional[str],
+@overload
+def file_new_tmp_async(
+    tmpl: str | None,
     io_priority: int,
-    cancellable: typing.Optional[Cancellable] = None,
-    callback: typing.Optional[typing.Callable[..., None]] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
+) -> None: ...
+@overload
+def file_new_tmp_dir_async(
+    tmpl: str | None, io_priority: int, cancellable: Cancellable | None = None
+) -> _gi.Async[File]: ...
+@overload
+def file_new_tmp_dir_async(
+    tmpl: str | None,
+    io_priority: int,
+    cancellable: Cancellable | None,
+    callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+    *user_data: Unpack[_DataTs],
+) -> None: ...
+@overload
+def file_new_tmp_dir_async(
+    tmpl: str | None,
+    io_priority: int,
+    cancellable: Cancellable | None = None,
+    *,
+    callback: _AsyncReadyVarArgsCallback[None] | None,
 ) -> None: ...
 def file_new_tmp_dir_finish(result: AsyncResult) -> File: ...
-def file_new_tmp_finish(result: AsyncResult) -> typing.Tuple[File, FileIOStream]: ...
+def file_new_tmp_finish(result: AsyncResult) -> tuple[File, FileIOStream]: ...
 def file_parse_name(parse_name: str) -> File: ...
-def icon_deserialize(value: GLib.Variant) -> typing.Optional[Icon]: ...
+def icon_deserialize(value: GLib.Variant) -> Icon | None: ...
 def icon_new_for_string(str: str) -> Icon: ...
 def initable_newv(
-    object_type: typing.Type[typing.Any],
-    parameters: typing.Sequence[GObject.Parameter],
-    cancellable: typing.Optional[Cancellable] = None,
+    object_type: type[Any],
+    parameters: Sequence[GObject.Parameter],
+    cancellable: Cancellable | None = None,
 ) -> GObject.Object: ...
 def io_error_from_errno(err_no: int) -> IOErrorEnum: ...
 def io_error_from_file_error(file_error: GLib.FileError) -> IOErrorEnum: ...
 def io_error_quark() -> int: ...
 def io_extension_point_implement(
-    extension_point_name: str,
-    type: typing.Type[typing.Any],
-    extension_name: str,
-    priority: int,
+    extension_point_name: str, type: type[Any], extension_name: str, priority: int
 ) -> IOExtension: ...
 def io_extension_point_lookup(name: str) -> IOExtensionPoint: ...
 def io_extension_point_register(name: str) -> IOExtensionPoint: ...
@@ -373,13 +472,13 @@ def io_modules_scan_all_in_directory_with_scope(
 ) -> None: ...
 def io_scheduler_cancel_all_jobs() -> None: ...
 def io_scheduler_push_job(
-    job_func: typing.Callable[..., bool],
+    job_func: Callable[[IOSchedulerJob, Cancellable | None, Any | None], bool],
+    user_data: Any | None,
     io_priority: int,
-    cancellable: typing.Optional[Cancellable] = None,
-    *user_data: typing.Any,
+    cancellable: Cancellable | None = None,
 ) -> None: ...
 def keyfile_settings_backend_new(
-    filename: str, root_path: str, root_group: typing.Optional[str] = None
+    filename: str, root_path: str, root_group: str | None = None
 ) -> SettingsBackend: ...
 def memory_monitor_dup_default() -> MemoryMonitor: ...
 def memory_settings_backend_new() -> SettingsBackend: ...
@@ -389,142 +488,126 @@ def null_settings_backend_new() -> SettingsBackend: ...
 def pollable_source_new(pollable_stream: GObject.Object) -> GLib.Source: ...
 def pollable_source_new_full(
     pollable_stream: GObject.Object,
-    child_source: typing.Optional[GLib.Source] = None,
-    cancellable: typing.Optional[Cancellable] = None,
+    child_source: GLib.Source | None = None,
+    cancellable: Cancellable | None = None,
 ) -> GLib.Source: ...
 def pollable_stream_read(
     stream: InputStream,
-    buffer: typing.Sequence[int],
+    buffer: Sequence[int],
     blocking: bool,
-    cancellable: typing.Optional[Cancellable] = None,
+    cancellable: Cancellable | None = None,
 ) -> int: ...
 def pollable_stream_write(
     stream: OutputStream,
-    buffer: typing.Sequence[int],
+    buffer: Sequence[int],
     blocking: bool,
-    cancellable: typing.Optional[Cancellable] = None,
+    cancellable: Cancellable | None = None,
 ) -> int: ...
 def pollable_stream_write_all(
     stream: OutputStream,
-    buffer: typing.Sequence[int],
+    buffer: Sequence[int],
     blocking: bool,
-    cancellable: typing.Optional[Cancellable] = None,
-) -> typing.Tuple[bool, int]: ...
+    cancellable: Cancellable | None = None,
+) -> tuple[bool, int]: ...
 def power_profile_monitor_dup_default() -> PowerProfileMonitor: ...
-def proxy_get_default_for_protocol(protocol: str) -> typing.Optional[Proxy]: ...
+def proxy_get_default_for_protocol(protocol: str) -> Proxy | None: ...
 def proxy_resolver_get_default() -> ProxyResolver: ...
 def resolver_error_quark() -> int: ...
 def resource_error_quark() -> int: ...
 def resource_load(filename: str) -> Resource: ...
 def resources_enumerate_children(
-    path: str, lookup_flags: ResourceLookupFlags
+    path: str, lookup_flags: _ResourceLookupFlagsValueType
 ) -> list[str]: ...
 def resources_get_info(
-    path: str, lookup_flags: ResourceLookupFlags
-) -> typing.Tuple[bool, int, int]: ...
+    path: str, lookup_flags: _ResourceLookupFlagsValueType
+) -> tuple[bool, int, int]: ...
 def resources_has_children(path: str) -> bool: ...
 def resources_lookup_data(
-    path: str, lookup_flags: ResourceLookupFlags
+    path: str, lookup_flags: _ResourceLookupFlagsValueType
 ) -> GLib.Bytes: ...
 def resources_open_stream(
-    path: str, lookup_flags: ResourceLookupFlags
+    path: str, lookup_flags: _ResourceLookupFlagsValueType
 ) -> InputStream: ...
 def resources_register(resource: Resource) -> None: ...
 def resources_unregister(resource: Resource) -> None: ...
-def settings_schema_source_get_default() -> typing.Optional[SettingsSchemaSource]: ...
+def settings_schema_source_get_default() -> SettingsSchemaSource | None: ...
 def simple_async_report_gerror_in_idle(
-    object: typing.Optional[GObject.Object],
-    callback: typing.Optional[typing.Callable[..., None]],
+    object: GObject.Object | None,
+    callback: _AsyncReadyCallback[None, Any | None] | None,
+    user_data: Any | None,
     error: GLib.Error,
-    *user_data: typing.Any,
 ) -> None: ...
 def tls_backend_get_default() -> TlsBackend: ...
 def tls_channel_binding_error_quark() -> int: ...
 def tls_client_connection_new(
-    base_io_stream: IOStream, server_identity: typing.Optional[SocketConnectable] = None
+    base_io_stream: IOStream, server_identity: SocketConnectable | None = None
 ) -> TlsClientConnection: ...
 def tls_error_quark() -> int: ...
 def tls_file_database_new(anchors: str) -> TlsFileDatabase: ...
 def tls_server_connection_new(
-    base_io_stream: IOStream, certificate: typing.Optional[TlsCertificate] = None
+    base_io_stream: IOStream, certificate: TlsCertificate | None = None
 ) -> TlsServerConnection: ...
-def unix_is_mount_path_system_internal(mount_path: str) -> bool: ...
-def unix_is_system_device_path(device_path: str) -> bool: ...
-def unix_is_system_fs_type(fs_type: str) -> bool: ...
-def unix_mount_at(
-    mount_path: str,
-) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-def unix_mount_compare(mount1: UnixMountEntry, mount2: UnixMountEntry) -> int: ...
-def unix_mount_copy(mount_entry: UnixMountEntry) -> UnixMountEntry: ...
-def unix_mount_entries_changed_since(time: int) -> bool: ...
-def unix_mount_entries_get() -> typing.Tuple[list[UnixMountEntry], int]: ...
-def unix_mount_entries_get_from_file(
-    table_path: str,
-) -> typing.Tuple[typing.Optional[list[UnixMountEntry]], int]: ...
-def unix_mount_entry_at(
-    mount_path: str,
-) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-def unix_mount_entry_for(
-    file_path: str,
-) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-def unix_mount_for(
-    file_path: str,
-) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-def unix_mount_free(mount_entry: UnixMountEntry) -> None: ...
-def unix_mount_get_device_path(mount_entry: UnixMountEntry) -> str: ...
-def unix_mount_get_fs_type(mount_entry: UnixMountEntry) -> str: ...
-def unix_mount_get_mount_path(mount_entry: UnixMountEntry) -> str: ...
-def unix_mount_get_options(mount_entry: UnixMountEntry) -> typing.Optional[str]: ...
-def unix_mount_get_root_path(mount_entry: UnixMountEntry) -> typing.Optional[str]: ...
-def unix_mount_guess_can_eject(mount_entry: UnixMountEntry) -> bool: ...
-def unix_mount_guess_icon(mount_entry: UnixMountEntry) -> Icon: ...
-def unix_mount_guess_name(mount_entry: UnixMountEntry) -> str: ...
-def unix_mount_guess_should_display(mount_entry: UnixMountEntry) -> bool: ...
-def unix_mount_guess_symbolic_icon(mount_entry: UnixMountEntry) -> Icon: ...
-def unix_mount_is_readonly(mount_entry: UnixMountEntry) -> bool: ...
-def unix_mount_is_system_internal(mount_entry: UnixMountEntry) -> bool: ...
-def unix_mount_point_at(
-    mount_path: str,
-) -> typing.Tuple[typing.Optional[UnixMountPoint], int]: ...
-def unix_mount_points_changed_since(time: int) -> bool: ...
-def unix_mount_points_get() -> typing.Tuple[list[UnixMountPoint], int]: ...
-def unix_mount_points_get_from_file(
-    table_path: str,
-) -> typing.Tuple[typing.Optional[list[UnixMountPoint]], int]: ...
-def unix_mounts_changed_since(time: int) -> bool: ...
-def unix_mounts_get() -> typing.Tuple[list[UnixMountEntry], int]: ...
-def unix_mounts_get_from_file(
-    table_path: str,
-) -> typing.Tuple[typing.Optional[list[UnixMountEntry]], int]: ...
 
-class Action(GObject.GInterface):
+unix_is_mount_path_system_internal: Final = GioUnix.is_mount_path_system_internal
+unix_is_system_device_path: Final = GioUnix.is_system_device_path
+unix_is_system_fs_type: Final = GioUnix.is_system_fs_type
+unix_mount_at: Final = GioUnix.mount_at
+unix_mount_compare: Final = GioUnix.mount_compare
+unix_mount_copy: Final = GioUnix.mount_copy
+unix_mount_entries_changed_since: Final = GioUnix.mount_entries_changed_since
+unix_mount_entries_get: Final = GioUnix.mount_entries_get
+unix_mount_entries_get_from_file: Final = GioUnix.mount_entries_get_from_file
+unix_mount_entry_at: Final = GioUnix.mount_entry_at
+unix_mount_entry_for: Final = GioUnix.mount_entry_for
+unix_mount_for: Final = GioUnix.mount_for
+unix_mount_free: Final = GioUnix.mount_free
+unix_mount_get_device_path: Final = GioUnix.mount_get_device_path
+unix_mount_get_fs_type: Final = GioUnix.mount_get_fs_type
+unix_mount_get_mount_path: Final = GioUnix.mount_get_mount_path
+unix_mount_get_options: Final = GioUnix.mount_get_options
+unix_mount_get_root_path: Final = GioUnix.mount_get_root_path
+unix_mount_guess_can_eject: Final = GioUnix.mount_guess_can_eject
+unix_mount_guess_icon: Final = GioUnix.mount_guess_icon
+unix_mount_guess_name: Final = GioUnix.mount_guess_name
+unix_mount_guess_should_display: Final = GioUnix.mount_guess_should_display
+unix_mount_guess_symbolic_icon: Final = GioUnix.mount_guess_symbolic_icon
+unix_mount_is_readonly: Final = GioUnix.mount_is_readonly
+unix_mount_is_system_internal: Final = GioUnix.mount_is_system_internal
+unix_mount_point_at: Final = GioUnix.mount_point_at
+unix_mount_points_changed_since: Final = GioUnix.mount_points_changed_since
+unix_mount_points_get: Final = GioUnix.mount_points_get
+unix_mount_points_get_from_file: Final = GioUnix.mount_points_get_from_file
+unix_mounts_changed_since: Final = GioUnix.mounts_changed_since
+unix_mounts_get: Final = GioUnix.mounts_get
+unix_mounts_get_from_file: Final = GioUnix.mounts_get_from_file
+
+class Action(GObject.GInterface, Protocol):
     """
     Interface GAction
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def activate(self, parameter: typing.Optional[GLib.Variant] = None) -> None: ...
+    def activate(self, parameter: GLib.Variant | None = None) -> None: ...
     def change_state(self, value: GLib.Variant) -> None: ...
     def get_enabled(self) -> bool: ...
     def get_name(self) -> str: ...
-    def get_parameter_type(self) -> typing.Optional[GLib.VariantType]: ...
-    def get_state(self) -> typing.Optional[GLib.Variant]: ...
-    def get_state_hint(self) -> typing.Optional[GLib.Variant]: ...
-    def get_state_type(self) -> typing.Optional[GLib.VariantType]: ...
+    def get_parameter_type(self) -> GLib.VariantType | None: ...
+    def get_state(self) -> GLib.Variant | None: ...
+    def get_state_hint(self) -> GLib.Variant | None: ...
+    def get_state_type(self) -> GLib.VariantType | None: ...
     @staticmethod
     def name_is_valid(action_name: str) -> bool: ...
     @staticmethod
     def parse_detailed_name(
         detailed_name: str,
-    ) -> typing.Tuple[bool, str, GLib.Variant]: ...
+    ) -> tuple[bool, str, GLib.Variant | None]: ...
     @staticmethod
     def print_detailed_name(
-        action_name: str, target_value: typing.Optional[GLib.Variant] = None
+        action_name: str, target_value: GLib.Variant | None = None
     ) -> str: ...
 
-class ActionEntry(GObject.GPointer):
+class ActionEntry(_gi.Struct):
     """
     :Constructors:
 
@@ -533,49 +616,49 @@ class ActionEntry(GObject.GPointer):
         ActionEntry()
     """
 
-    name: str = ...
-    activate: typing.Callable[..., None] = ...
-    parameter_type: str = ...
-    state: str = ...
-    change_state: typing.Callable[..., None] = ...
-    padding: list[int] = ...
+    name: str
+    @property
+    def activate(self) -> Callable[[SimpleAction, GLib.Variant, Any | None], None]: ...
+    parameter_type: str
+    state: str
+    @property
+    def change_state(
+        self,
+    ) -> Callable[[SimpleAction, GLib.Variant, Any | None], None]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class ActionGroup(GObject.GInterface):
+class ActionGroup(GObject.GInterface, Protocol):
     """
     Interface GActionGroup
 
     Signals from GObject:
       notify (GParam)
     """
-
     def action_added(self, action_name: str) -> None: ...
     def action_enabled_changed(self, action_name: str, enabled: bool) -> None: ...
     def action_removed(self, action_name: str) -> None: ...
     def action_state_changed(self, action_name: str, state: GLib.Variant) -> None: ...
     def activate_action(
-        self, action_name: str, parameter: typing.Optional[GLib.Variant] = None
+        self, action_name: str, parameter: GLib.Variant | None = None
     ) -> None: ...
     def change_action_state(self, action_name: str, value: GLib.Variant) -> None: ...
     def get_action_enabled(self, action_name: str) -> bool: ...
     def get_action_parameter_type(
         self, action_name: str
-    ) -> typing.Optional[GLib.VariantType]: ...
-    def get_action_state(self, action_name: str) -> typing.Optional[GLib.Variant]: ...
-    def get_action_state_hint(
-        self, action_name: str
-    ) -> typing.Optional[GLib.Variant]: ...
-    def get_action_state_type(
-        self, action_name: str
-    ) -> typing.Optional[GLib.VariantType]: ...
+    ) -> GLib.VariantType | None: ...
+    def get_action_state(self, action_name: str) -> GLib.Variant | None: ...
+    def get_action_state_hint(self, action_name: str) -> GLib.Variant | None: ...
+    def get_action_state_type(self, action_name: str) -> GLib.VariantType | None: ...
     def has_action(self, action_name: str) -> bool: ...
     def list_actions(self) -> list[str]: ...
     def query_action(
         self, action_name: str
-    ) -> typing.Tuple[
+    ) -> tuple[
         bool, bool, GLib.VariantType, GLib.VariantType, GLib.Variant, GLib.Variant
     ]: ...
 
-class ActionGroupInterface(GObject.GPointer):
+class ActionGroupInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -583,39 +666,57 @@ class ActionGroupInterface(GObject.GPointer):
 
         ActionGroupInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    has_action: typing.Callable[[ActionGroup, str], bool] = ...
-    list_actions: typing.Callable[[ActionGroup], list[str]] = ...
-    get_action_enabled: typing.Callable[[ActionGroup, str], bool] = ...
-    get_action_parameter_type: typing.Callable[
-        [ActionGroup, str], typing.Optional[GLib.VariantType]
-    ] = ...
-    get_action_state_type: typing.Callable[
-        [ActionGroup, str], typing.Optional[GLib.VariantType]
-    ] = ...
-    get_action_state_hint: typing.Callable[
-        [ActionGroup, str], typing.Optional[GLib.Variant]
-    ] = ...
-    get_action_state: typing.Callable[
-        [ActionGroup, str], typing.Optional[GLib.Variant]
-    ] = ...
-    change_action_state: typing.Callable[[ActionGroup, str, GLib.Variant], None] = ...
-    activate_action: typing.Callable[
-        [ActionGroup, str, typing.Optional[GLib.Variant]], None
-    ] = ...
-    action_added: typing.Callable[[ActionGroup, str], None] = ...
-    action_removed: typing.Callable[[ActionGroup, str], None] = ...
-    action_enabled_changed: typing.Callable[[ActionGroup, str, bool], None] = ...
-    action_state_changed: typing.Callable[[ActionGroup, str, GLib.Variant], None] = ...
-    query_action: typing.Callable[
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def has_action(self) -> Callable[[ActionGroup, str], bool]: ...
+    @property
+    def list_actions(self) -> Callable[[ActionGroup], list[str]]: ...
+    @property
+    def get_action_enabled(self) -> Callable[[ActionGroup, str], bool]: ...
+    @property
+    def get_action_parameter_type(
+        self,
+    ) -> Callable[[ActionGroup, str], GLib.VariantType | None]: ...
+    @property
+    def get_action_state_type(
+        self,
+    ) -> Callable[[ActionGroup, str], GLib.VariantType | None]: ...
+    @property
+    def get_action_state_hint(
+        self,
+    ) -> Callable[[ActionGroup, str], GLib.Variant | None]: ...
+    @property
+    def get_action_state(self) -> Callable[[ActionGroup, str], GLib.Variant | None]: ...
+    @property
+    def change_action_state(
+        self,
+    ) -> Callable[[ActionGroup, str, GLib.Variant], None]: ...
+    @property
+    def activate_action(
+        self,
+    ) -> Callable[[ActionGroup, str, GLib.Variant | None], None]: ...
+    @property
+    def action_added(self) -> Callable[[ActionGroup, str], None]: ...
+    @property
+    def action_removed(self) -> Callable[[ActionGroup, str], None]: ...
+    @property
+    def action_enabled_changed(self) -> Callable[[ActionGroup, str, bool], None]: ...
+    @property
+    def action_state_changed(
+        self,
+    ) -> Callable[[ActionGroup, str, GLib.Variant], None]: ...
+    @property
+    def query_action(
+        self,
+    ) -> Callable[
         [ActionGroup, str],
-        typing.Tuple[
+        tuple[
             bool, bool, GLib.VariantType, GLib.VariantType, GLib.Variant, GLib.Variant
         ],
-    ] = ...
+    ]: ...
 
-class ActionInterface(GObject.GPointer):
+class ActionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -623,34 +724,71 @@ class ActionInterface(GObject.GPointer):
 
         ActionInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_name(self) -> Callable[[Action], str]: ...
+    @property
+    def get_parameter_type(self) -> Callable[[Action], GLib.VariantType | None]: ...
+    @property
+    def get_state_type(self) -> Callable[[Action], GLib.VariantType | None]: ...
+    @property
+    def get_state_hint(self) -> Callable[[Action], GLib.Variant | None]: ...
+    @property
+    def get_enabled(self) -> Callable[[Action], bool]: ...
+    @property
+    def get_state(self) -> Callable[[Action], GLib.Variant | None]: ...
+    @property
+    def change_state(self) -> Callable[[Action, GLib.Variant], None]: ...
+    @property
+    def activate(self) -> Callable[[Action, GLib.Variant | None], None]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    get_name: typing.Callable[[Action], str] = ...
-    get_parameter_type: typing.Callable[
-        [Action], typing.Optional[GLib.VariantType]
-    ] = ...
-    get_state_type: typing.Callable[[Action], typing.Optional[GLib.VariantType]] = ...
-    get_state_hint: typing.Callable[[Action], typing.Optional[GLib.Variant]] = ...
-    get_enabled: typing.Callable[[Action], bool] = ...
-    get_state: typing.Callable[[Action], typing.Optional[GLib.Variant]] = ...
-    change_state: typing.Callable[[Action, GLib.Variant], None] = ...
-    activate: typing.Callable[[Action, typing.Optional[GLib.Variant]], None] = ...
-
-class ActionMap(GObject.GInterface):
+class ActionMap(GObject.GInterface, Protocol):
     """
     Interface GActionMap
 
     Signals from GObject:
       notify (GParam)
     """
-
     def add_action(self, action: Action) -> None: ...
-    def add_action_entries(self, entries, user_data=None): ...  # FIXME Function
-    def lookup_action(self, action_name: str) -> typing.Optional[Action]: ...
-    def remove_action(self, action_name: str) -> None: ...
-    def remove_action_entries(self, entries: typing.Sequence[ActionEntry]) -> None: ...
+    def add_action_entries(self, entries, user_data=None):
+        """
+        The ``add_action_entries()`` method is a convenience function for creating
+        multiple :class:`~gi.repository.Gio.SimpleAction` instances and adding them
+        to a :class:`~gi.repository.Gio.ActionMap`.
+        Each action is constructed as per one entry.
 
-class ActionMapInterface(GObject.GPointer):
+        :param list entries:
+            List of entry tuples for :meth:`add_action` method. The entry tuple can
+            vary in size with the following information:
+
+            * The name of the action. Must be specified.
+            * The callback to connect to the "activate" signal of the
+              action. Since GLib 2.40, this can be ``None`` for stateful
+              actions, in which case the default handler is used. For
+              boolean-stated actions with no parameter, this is a toggle.
+              For other state types (and parameter type equal to the state
+              type) this will be a function that just calls change_state
+              (which you should provide).
+            * The type of the parameter that must be passed to the activate
+              function for this action, given as a single :class:`~gi.repository.GLib.Variant` type
+              string (or ``None`` for no parameter)
+            * The initial state for this action, given in GLib.Variant text
+              format. The state is parsed with no extra type information, so
+              type tags must be added to the string if they are necessary.
+              Stateless actions should give ``None`` here.
+            * The callback to connect to the "change-state" signal of the
+              action. All stateful actions should provide a handler here;
+              stateless actions should not.
+
+        :param user_data:
+            The user data for signal connections, or ``None``
+        """  # FIXME: Override is missing typing annotation
+    def lookup_action(self, action_name: str) -> Action | None: ...
+    def remove_action(self, action_name: str) -> None: ...
+    def remove_action_entries(self, entries: Sequence[ActionEntry]) -> None: ...
+
+class ActionMapInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -658,28 +796,30 @@ class ActionMapInterface(GObject.GPointer):
 
         ActionMapInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def lookup_action(self) -> Callable[[ActionMap, str], Action | None]: ...
+    @property
+    def add_action(self) -> Callable[[ActionMap, Action], None]: ...
+    @property
+    def remove_action(self) -> Callable[[ActionMap, str], None]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    lookup_action: typing.Callable[[ActionMap, str], typing.Optional[Action]] = ...
-    add_action: typing.Callable[[ActionMap, Action], None] = ...
-    remove_action: typing.Callable[[ActionMap, str], None] = ...
-
-class AppInfo(GObject.GInterface):
+class AppInfo(GObject.GInterface, Protocol):
     """
     Interface GAppInfo
 
     Signals from GObject:
       notify (GParam)
     """
-
     def add_supports_type(self, content_type: str) -> bool: ...
     def can_delete(self) -> bool: ...
     def can_remove_supports_type(self) -> bool: ...
     @staticmethod
     def create_from_commandline(
         commandline: str,
-        application_name: typing.Optional[str],
-        flags: AppInfoCreateFlags,
+        application_name: str | None,
+        flags: _AppInfoCreateFlagsValueType,
     ) -> AppInfo: ...
     def delete(self) -> bool: ...
     def dup(self) -> AppInfo: ...
@@ -688,74 +828,135 @@ class AppInfo(GObject.GInterface):
     def get_all() -> list[AppInfo]: ...
     @staticmethod
     def get_all_for_type(content_type: str) -> list[AppInfo]: ...
-    def get_commandline(self) -> typing.Optional[str]: ...
+    def get_commandline(self) -> str | None: ...
     @staticmethod
     def get_default_for_type(
         content_type: str, must_support_uris: bool
-    ) -> typing.Optional[AppInfo]: ...
+    ) -> AppInfo | None: ...
+    @overload
     @staticmethod
     def get_default_for_type_async(
         content_type: str,
         must_support_uris: bool,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[AppInfo]: ...
+    @overload
+    @staticmethod
+    def get_default_for_type_async(
+        content_type: str,
+        must_support_uris: bool,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def get_default_for_type_async(
+        content_type: str,
+        must_support_uris: bool,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @staticmethod
     def get_default_for_type_finish(result: AsyncResult) -> AppInfo: ...
     @staticmethod
-    def get_default_for_uri_scheme(uri_scheme: str) -> typing.Optional[AppInfo]: ...
+    def get_default_for_uri_scheme(uri_scheme: str) -> AppInfo | None: ...
+    @overload
+    @staticmethod
+    def get_default_for_uri_scheme_async(
+        uri_scheme: str, cancellable: Cancellable | None = None
+    ) -> _gi.Async[AppInfo]: ...
+    @overload
     @staticmethod
     def get_default_for_uri_scheme_async(
         uri_scheme: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def get_default_for_uri_scheme_async(
+        uri_scheme: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @staticmethod
     def get_default_for_uri_scheme_finish(result: AsyncResult) -> AppInfo: ...
-    def get_description(self) -> typing.Optional[str]: ...
+    def get_description(self) -> str | None: ...
     def get_display_name(self) -> str: ...
     def get_executable(self) -> str: ...
     @staticmethod
     def get_fallback_for_type(content_type: str) -> list[AppInfo]: ...
-    def get_icon(self) -> typing.Optional[Icon]: ...
-    def get_id(self) -> typing.Optional[str]: ...
+    def get_icon(self) -> Icon | None: ...
+    def get_id(self) -> str | None: ...
     def get_name(self) -> str: ...
     @staticmethod
     def get_recommended_for_type(content_type: str) -> list[AppInfo]: ...
     def get_supported_types(self) -> list[str]: ...
     def launch(
-        self,
-        files: typing.Optional[list[File]] = None,
-        context: typing.Optional[AppLaunchContext] = None,
+        self, files: list[File] | None = None, context: AppLaunchContext | None = None
     ) -> bool: ...
     @staticmethod
     def launch_default_for_uri(
-        uri: str, context: typing.Optional[AppLaunchContext] = None
+        uri: str, context: AppLaunchContext | None = None
     ) -> bool: ...
+    @overload
     @staticmethod
     def launch_default_for_uri_async(
         uri: str,
-        context: typing.Optional[AppLaunchContext] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        context: AppLaunchContext | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    @staticmethod
+    def launch_default_for_uri_async(
+        uri: str,
+        context: AppLaunchContext | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def launch_default_for_uri_async(
+        uri: str,
+        context: AppLaunchContext | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @staticmethod
     def launch_default_for_uri_finish(result: AsyncResult) -> bool: ...
     def launch_uris(
-        self,
-        uris: typing.Optional[list[str]] = None,
-        context: typing.Optional[AppLaunchContext] = None,
+        self, uris: list[str] | None = None, context: AppLaunchContext | None = None
     ) -> bool: ...
+    @overload
     def launch_uris_async(
         self,
-        uris: typing.Optional[list[str]] = None,
-        context: typing.Optional[AppLaunchContext] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        uris: list[str] | None = None,
+        context: AppLaunchContext | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def launch_uris_async(
+        self,
+        uris: list[str] | None,
+        context: AppLaunchContext | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[AppInfo, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def launch_uris_async(
+        self,
+        uris: list[str] | None = None,
+        context: AppLaunchContext | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[AppInfo] | None,
     ) -> None: ...
     def launch_uris_finish(self, result: AsyncResult) -> bool: ...
     def remove_supports_type(self, content_type: str) -> bool: ...
@@ -768,7 +969,7 @@ class AppInfo(GObject.GInterface):
     def supports_files(self) -> bool: ...
     def supports_uris(self) -> bool: ...
 
-class AppInfoIface(GObject.GPointer):
+class AppInfoIface(_gi.Struct):
     """
     :Constructors:
 
@@ -776,37 +977,74 @@ class AppInfoIface(GObject.GPointer):
 
         AppInfoIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    dup: typing.Callable[[AppInfo], AppInfo] = ...
-    equal: typing.Callable[[AppInfo, AppInfo], bool] = ...
-    get_id: typing.Callable[[AppInfo], typing.Optional[str]] = ...
-    get_name: typing.Callable[[AppInfo], str] = ...
-    get_description: typing.Callable[[AppInfo], typing.Optional[str]] = ...
-    get_executable: typing.Callable[[AppInfo], str] = ...
-    get_icon: typing.Callable[[AppInfo], typing.Optional[Icon]] = ...
-    launch: typing.Callable[
-        [AppInfo, typing.Optional[list[File]], typing.Optional[AppLaunchContext]], bool
-    ] = ...
-    supports_uris: typing.Callable[[AppInfo], bool] = ...
-    supports_files: typing.Callable[[AppInfo], bool] = ...
-    launch_uris: typing.Callable[
-        [AppInfo, typing.Optional[list[str]], typing.Optional[AppLaunchContext]], bool
-    ] = ...
-    should_show: typing.Callable[[AppInfo], bool] = ...
-    set_as_default_for_type: typing.Callable[[AppInfo, str], bool] = ...
-    set_as_default_for_extension: typing.Callable[[AppInfo, str], bool] = ...
-    add_supports_type: typing.Callable[[AppInfo, str], bool] = ...
-    can_remove_supports_type: typing.Callable[[AppInfo], bool] = ...
-    remove_supports_type: typing.Callable[[AppInfo, str], bool] = ...
-    can_delete: typing.Callable[[AppInfo], bool] = ...
-    do_delete: typing.Callable[[AppInfo], bool] = ...
-    get_commandline: typing.Callable[[AppInfo], typing.Optional[str]] = ...
-    get_display_name: typing.Callable[[AppInfo], str] = ...
-    set_as_last_used_for_type: typing.Callable[[AppInfo, str], bool] = ...
-    get_supported_types: typing.Callable[[AppInfo], list[str]] = ...
-    launch_uris_async: typing.Callable[..., None] = ...
-    launch_uris_finish: typing.Callable[[AppInfo, AsyncResult], bool] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def dup(self) -> Callable[[AppInfo], AppInfo]: ...
+    @property
+    def equal(self) -> Callable[[AppInfo, AppInfo], bool]: ...
+    @property
+    def get_id(self) -> Callable[[AppInfo], str | None]: ...
+    @property
+    def get_name(self) -> Callable[[AppInfo], str]: ...
+    @property
+    def get_description(self) -> Callable[[AppInfo], str | None]: ...
+    @property
+    def get_executable(self) -> Callable[[AppInfo], str]: ...
+    @property
+    def get_icon(self) -> Callable[[AppInfo], Icon | None]: ...
+    @property
+    def launch(
+        self,
+    ) -> Callable[[AppInfo, list[File] | None, AppLaunchContext | None], bool]: ...
+    @property
+    def supports_uris(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def supports_files(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def launch_uris(
+        self,
+    ) -> Callable[[AppInfo, list[str] | None, AppLaunchContext | None], bool]: ...
+    @property
+    def should_show(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def set_as_default_for_type(self) -> Callable[[AppInfo, str], bool]: ...
+    @property
+    def set_as_default_for_extension(self) -> Callable[[AppInfo, str], bool]: ...
+    @property
+    def add_supports_type(self) -> Callable[[AppInfo, str], bool]: ...
+    @property
+    def can_remove_supports_type(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def remove_supports_type(self) -> Callable[[AppInfo, str], bool]: ...
+    @property
+    def can_delete(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def do_delete(self) -> Callable[[AppInfo], bool]: ...
+    @property
+    def get_commandline(self) -> Callable[[AppInfo], str | None]: ...
+    @property
+    def get_display_name(self) -> Callable[[AppInfo], str]: ...
+    @property
+    def set_as_last_used_for_type(self) -> Callable[[AppInfo, str], bool]: ...
+    @property
+    def get_supported_types(self) -> Callable[[AppInfo], list[str]]: ...
+    @property
+    def launch_uris_async(
+        self,
+    ) -> Callable[
+        [
+            AppInfo,
+            list[str] | None,
+            AppLaunchContext | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def launch_uris_finish(self) -> Callable[[AppInfo, AsyncResult], bool]: ...
 
 class AppInfoMonitor(GObject.Object):
     """
@@ -824,7 +1062,6 @@ class AppInfoMonitor(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def get() -> AppInfoMonitor: ...
 
@@ -847,34 +1084,31 @@ class AppLaunchContext(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: AppLaunchContextPrivate = ...
-    def do_get_display(
-        self, info: AppInfo, files: list[File]
-    ) -> typing.Optional[str]: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> AppLaunchContextPrivate: ...
+    def do_get_display(self, info: AppInfo, files: list[File], /) -> str | None: ...
     def do_get_startup_notify_id(
-        self,
-        info: typing.Optional[AppInfo] = None,
-        files: typing.Optional[list[File]] = None,
-    ) -> typing.Optional[str]: ...
-    def do_launch_failed(self, startup_notify_id: str) -> None: ...
-    def do_launch_started(self, info: AppInfo, platform_data: GLib.Variant) -> None: ...
-    def do_launched(self, info: AppInfo, platform_data: GLib.Variant) -> None: ...
-    def get_display(self, info: AppInfo, files: list[File]) -> typing.Optional[str]: ...
+        self, info: AppInfo | None, files: list[File] | None, /
+    ) -> str | None: ...
+    def do_launch_failed(self, startup_notify_id: str, /) -> None: ...
+    def do_launch_started(
+        self, info: AppInfo, platform_data: GLib.Variant, /
+    ) -> None: ...
+    def do_launched(self, info: AppInfo, platform_data: GLib.Variant, /) -> None: ...
+    def get_display(self, info: AppInfo, files: list[File]) -> str | None: ...
     def get_environment(self) -> list[str]: ...
     def get_startup_notify_id(
-        self,
-        info: typing.Optional[AppInfo] = None,
-        files: typing.Optional[list[File]] = None,
-    ) -> typing.Optional[str]: ...
+        self, info: AppInfo | None = None, files: list[File] | None = None
+    ) -> str | None: ...
     def launch_failed(self, startup_notify_id: str) -> None: ...
     @classmethod
     def new(cls) -> AppLaunchContext: ...
     def setenv(self, variable: str, value: str) -> None: ...
     def unsetenv(self, variable: str) -> None: ...
 
-class AppLaunchContextClass(GObject.GPointer):
+class AppLaunchContextClass(_gi.Struct):
     """
     :Constructors:
 
@@ -882,25 +1116,28 @@ class AppLaunchContextClass(GObject.GPointer):
 
         AppLaunchContextClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_display(
+        self,
+    ) -> Callable[[AppLaunchContext, AppInfo, list[File]], str | None]: ...
+    @property
+    def get_startup_notify_id(
+        self,
+    ) -> Callable[
+        [AppLaunchContext, AppInfo | None, list[File] | None], str | None
+    ]: ...
+    @property
+    def launch_failed(self) -> Callable[[AppLaunchContext, str], None]: ...
+    @property
+    def launched(self) -> Callable[[AppLaunchContext, AppInfo, GLib.Variant], None]: ...
+    @property
+    def launch_started(
+        self,
+    ) -> Callable[[AppLaunchContext, AppInfo, GLib.Variant], None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_display: typing.Callable[
-        [AppLaunchContext, AppInfo, list[File]], typing.Optional[str]
-    ] = ...
-    get_startup_notify_id: typing.Callable[
-        [AppLaunchContext, typing.Optional[AppInfo], typing.Optional[list[File]]],
-        typing.Optional[str],
-    ] = ...
-    launch_failed: typing.Callable[[AppLaunchContext, str], None] = ...
-    launched: typing.Callable[[AppLaunchContext, AppInfo, GLib.Variant], None] = ...
-    launch_started: typing.Callable[
-        [AppLaunchContext, AppInfo, GLib.Variant], None
-    ] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-
-class AppLaunchContextPrivate(GObject.GPointer): ...
+class AppLaunchContextPrivate(_gi.Struct): ...
 
 class Application(GObject.Object, ActionGroup, ActionMap):
     """
@@ -942,28 +1179,44 @@ class Application(GObject.Object, ActionGroup, ActionMap):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        application_id: typing.Optional[str]
-        flags: ApplicationFlags
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def action_group(self) -> Never: ...
+        @action_group.setter
+        def action_group(self, value: ActionGroup | None) -> None: ...
+        application_id: str | None
+        @property
+        def flags(self) -> ApplicationFlags: ...
+        @flags.setter
+        def flags(self, value: _ApplicationFlagsValueType) -> None: ...
         inactivity_timeout: int
-        is_busy: bool
-        is_registered: bool
-        is_remote: bool
-        resource_base_path: typing.Optional[str]
-        version: typing.Optional[str]
-        action_group: typing.Optional[ActionGroup]
+        @property
+        def is_busy(self) -> bool: ...
+        @property
+        def is_registered(self) -> bool: ...
+        @property
+        def is_remote(self) -> bool: ...
+        resource_base_path: str | None
+        @property
+        def version(self) -> str | None: ...
+        @version.setter
+        def version(self, value: str) -> None: ...
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: ApplicationPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> ApplicationPrivate: ...
     def __init__(
         self,
-        action_group: typing.Optional[ActionGroup] = ...,
-        application_id: typing.Optional[str] = ...,
-        flags: ApplicationFlags = ...,
+        *,
+        action_group: ActionGroup | None = ...,
+        application_id: str | None = ...,
+        flags: _ApplicationFlagsValueType = ...,
         inactivity_timeout: int = ...,
-        resource_base_path: typing.Optional[str] = ...,
+        resource_base_path: str | None = ...,
         version: str = ...,
     ) -> None: ...
     def activate(self) -> None: ...
@@ -974,91 +1227,96 @@ class Application(GObject.Object, ActionGroup, ActionMap):
         flags: GLib.OptionFlags,
         arg: GLib.OptionArg,
         description: str,
-        arg_description: typing.Optional[str] = None,
+        arg_description: str | None = None,
     ) -> None: ...
-    def add_main_option_entries(
-        self, entries: typing.Sequence[GLib.OptionEntry]
-    ) -> None: ...
+    def add_main_option_entries(self, entries: Sequence[GLib.OptionEntry]) -> None: ...
     def add_option_group(self, group: GLib.OptionGroup) -> None: ...
     def bind_busy_property(self, object: GObject.Object, property: str) -> None: ...
+    # override
+    def create_asyncio_task(self, coro: asyncio._CoroutineLike[_T]) -> asyncio.Task[_T]:
+        """
+        Safely create an asyncio task. The application will not quit until the
+        task completes. For potentially longer running tasks, you should add
+        cancellation logic to abort a task when it is not needed anymore (e.g.
+        cancelling it from the Gtk.Window.do_unmap event).
+
+        Note that python will only log a raised exception if the Task is
+        destroyed without the result having been collected. However, this does
+        also not happen when the task is cancelled. As such, be careful to not
+        cancel tasks that are already finished.
+
+        You can deal with this by either only storing a weak reference to the
+        Task, by explicitly collecting the result, or by only cancelling it if
+        it is not done already.
+        """
     def do_activate(self) -> None: ...
-    def do_add_platform_data(self, builder: GLib.VariantBuilder) -> None: ...
-    def do_after_emit(self, platform_data: GLib.Variant) -> None: ...
-    def do_before_emit(self, platform_data: GLib.Variant) -> None: ...
-    def do_command_line(self, command_line: ApplicationCommandLine) -> int: ...
+    def do_add_platform_data(self, builder: GLib.VariantBuilder, /) -> None: ...
+    def do_after_emit(self, platform_data: GLib.Variant, /) -> None: ...
+    def do_before_emit(self, platform_data: GLib.Variant, /) -> None: ...
+    def do_command_line(self, command_line: ApplicationCommandLine, /) -> int: ...
     def do_dbus_register(
-        self, connection: DBusConnection, object_path: str
+        self, connection: DBusConnection, object_path: str, /
     ) -> bool: ...
     def do_dbus_unregister(
-        self, connection: DBusConnection, object_path: str
+        self, connection: DBusConnection, object_path: str, /
     ) -> None: ...
-    def do_handle_local_options(self, options: GLib.VariantDict) -> int: ...
-    def do_local_command_line(self) -> typing.Tuple[bool, list[str], int]: ...
+    def do_handle_local_options(self, options: GLib.VariantDict, /) -> int: ...
+    def do_local_command_line(
+        self, arguments: Sequence[str], /
+    ) -> tuple[bool, list[str], int]: ...
     def do_name_lost(self) -> bool: ...
     # override
-    def do_open(
-        self, files: typing.Sequence[File], n_files: int, hint: str
-    ) -> None: ...
+    def do_open(self, files: Sequence[File], n_files: int, hint: str) -> None: ...
     def do_quit_mainloop(self) -> None: ...
     def do_run_mainloop(self) -> None: ...
     def do_shutdown(self) -> None: ...
     def do_startup(self) -> None: ...
-    def get_application_id(self) -> typing.Optional[str]: ...
-    def get_dbus_connection(self) -> typing.Optional[DBusConnection]: ...
-    def get_dbus_object_path(self) -> typing.Optional[str]: ...
+    def get_application_id(self) -> str | None: ...
+    def get_dbus_connection(self) -> DBusConnection | None: ...
+    def get_dbus_object_path(self) -> str | None: ...
     @staticmethod
-    def get_default() -> typing.Optional[Application]: ...
+    def get_default() -> Application | None: ...
     def get_flags(self) -> ApplicationFlags: ...
     def get_inactivity_timeout(self) -> int: ...
     def get_is_busy(self) -> bool: ...
     def get_is_registered(self) -> bool: ...
     def get_is_remote(self) -> bool: ...
-    def get_resource_base_path(self) -> typing.Optional[str]: ...
-    def get_version(self) -> typing.Optional[str]: ...
+    def get_resource_base_path(self) -> str | None: ...
+    def get_version(self) -> str | None: ...
     def hold(self) -> None: ...
     @staticmethod
     def id_is_valid(application_id: str) -> bool: ...
     def mark_busy(self) -> None: ...
     @classmethod
     def new(
-        cls, application_id: typing.Optional[str], flags: ApplicationFlags
+        cls, application_id: str | None, flags: _ApplicationFlagsValueType
     ) -> Application: ...
-    def open(self, files: typing.Sequence[File], hint: str) -> None: ...
+    def open(self, files: Sequence[File], hint: str) -> None: ...
     def quit(self) -> None: ...
-    def register(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def register(self, cancellable: Cancellable | None = None) -> bool: ...
     def release(self) -> None: ...
     # override
-    def run(self, argv: typing.Optional[list[str]]) -> int: ...
-    def send_notification(
-        self, id: typing.Optional[str], notification: Notification
-    ) -> None: ...
-    def set_action_group(
-        self, action_group: typing.Optional[ActionGroup] = None
-    ) -> None: ...
-    def set_application_id(
-        self, application_id: typing.Optional[str] = None
-    ) -> None: ...
+    def run(self, argv: list[str] | None = None) -> int: ...
+    def send_notification(self, id: str | None, notification: Notification) -> None: ...
+    def set_action_group(self, action_group: ActionGroup | None = None) -> None: ...
+    def set_application_id(self, application_id: str | None = None) -> None: ...
     def set_default(self) -> None: ...
-    def set_flags(self, flags: ApplicationFlags) -> None: ...
+    def set_flags(self, flags: _ApplicationFlagsValueType) -> None: ...
     def set_inactivity_timeout(self, inactivity_timeout: int) -> None: ...
     def set_option_context_description(
-        self, description: typing.Optional[str] = None
+        self, description: str | None = None
     ) -> None: ...
     def set_option_context_parameter_string(
-        self, parameter_string: typing.Optional[str] = None
+        self, parameter_string: str | None = None
     ) -> None: ...
-    def set_option_context_summary(
-        self, summary: typing.Optional[str] = None
-    ) -> None: ...
-    def set_resource_base_path(
-        self, resource_path: typing.Optional[str] = None
-    ) -> None: ...
+    def set_option_context_summary(self, summary: str | None = None) -> None: ...
+    def set_resource_base_path(self, resource_path: str | None = None) -> None: ...
     def set_version(self, version: str) -> None: ...
     def unbind_busy_property(self, object: GObject.Object, property: str) -> None: ...
     def unmark_busy(self) -> None: ...
     def withdraw_notification(self, id: str) -> None: ...
 
-class ApplicationClass(GObject.GPointer):
+class ApplicationClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1066,26 +1324,46 @@ class ApplicationClass(GObject.GPointer):
 
         ApplicationClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    startup: typing.Callable[[Application], None] = ...
-    activate: typing.Callable[[Application], None] = ...
-    open: typing.Callable[[Application, typing.Sequence[File], str], None] = ...
-    command_line: typing.Callable[[Application, ApplicationCommandLine], int] = ...
-    local_command_line: typing.Callable[
-        [Application], typing.Tuple[bool, list[str], int]
-    ] = ...
-    before_emit: typing.Callable[[Application, GLib.Variant], None] = ...
-    after_emit: typing.Callable[[Application, GLib.Variant], None] = ...
-    add_platform_data: typing.Callable[[Application, GLib.VariantBuilder], None] = ...
-    quit_mainloop: typing.Callable[[Application], None] = ...
-    run_mainloop: typing.Callable[[Application], None] = ...
-    shutdown: typing.Callable[[Application], None] = ...
-    dbus_register: typing.Callable[[Application, DBusConnection, str], bool] = ...
-    dbus_unregister: typing.Callable[[Application, DBusConnection, str], None] = ...
-    handle_local_options: typing.Callable[[Application, GLib.VariantDict], int] = ...
-    name_lost: typing.Callable[[Application], bool] = ...
-    padding: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def startup(self) -> Callable[[Application], None]: ...
+    @property
+    def activate(self) -> Callable[[Application], None]: ...
+    @property
+    def open(self) -> Callable[[Application, Sequence[File], int, str], None]: ...
+    @property
+    def command_line(self) -> Callable[[Application, ApplicationCommandLine], int]: ...
+    @property
+    def local_command_line(
+        self,
+    ) -> Callable[[Application, Sequence[str]], tuple[bool, list[str], int]]: ...
+    @property
+    def before_emit(self) -> Callable[[Application, GLib.Variant], None]: ...
+    @property
+    def after_emit(self) -> Callable[[Application, GLib.Variant], None]: ...
+    @property
+    def add_platform_data(
+        self,
+    ) -> Callable[[Application, GLib.VariantBuilder], None]: ...
+    @property
+    def quit_mainloop(self) -> Callable[[Application], None]: ...
+    @property
+    def run_mainloop(self) -> Callable[[Application], None]: ...
+    @property
+    def shutdown(self) -> Callable[[Application], None]: ...
+    @property
+    def dbus_register(self) -> Callable[[Application, DBusConnection, str], bool]: ...
+    @property
+    def dbus_unregister(self) -> Callable[[Application, DBusConnection, str], None]: ...
+    @property
+    def handle_local_options(
+        self,
+    ) -> Callable[[Application, GLib.VariantDict], int]: ...
+    @property
+    def name_lost(self) -> Callable[[Application], bool]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
 class ApplicationCommandLine(GObject.Object):
     """
@@ -1106,42 +1384,44 @@ class ApplicationCommandLine(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def is_remote(self) -> bool: ...
 
-    class Props:
-        is_remote: bool
-        arguments: GLib.Variant
-        options: GLib.Variant
-        platform_data: GLib.Variant
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: ApplicationCommandLinePrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> ApplicationCommandLinePrivate: ...
     def __init__(
         self,
-        arguments: GLib.Variant = ...,
-        options: GLib.Variant = ...,
-        platform_data: GLib.Variant = ...,
+        *,
+        arguments: GLib.Variant | None = ...,
+        options: GLib.Variant | None = ...,
+        platform_data: GLib.Variant | None = ...,
     ) -> None: ...
     def create_file_for_arg(self, arg: str) -> File: ...
     def do_done(self) -> None: ...
-    def do_get_stdin(self) -> typing.Optional[InputStream]: ...
-    def do_print_literal(self, message: str) -> None: ...
-    def do_printerr_literal(self, message: str) -> None: ...
+    def do_get_stdin(self) -> InputStream | None: ...
+    def do_print_literal(self, message: str, /) -> None: ...
+    def do_printerr_literal(self, message: str, /) -> None: ...
     def done(self) -> None: ...
     def get_arguments(self) -> list[str]: ...
-    def get_cwd(self) -> typing.Optional[str]: ...
+    def get_cwd(self) -> str | None: ...
     def get_environ(self) -> list[str]: ...
     def get_exit_status(self) -> int: ...
     def get_is_remote(self) -> bool: ...
     def get_options_dict(self) -> GLib.VariantDict: ...
-    def get_platform_data(self) -> typing.Optional[GLib.Variant]: ...
-    def get_stdin(self) -> typing.Optional[InputStream]: ...
-    def getenv(self, name: str) -> typing.Optional[str]: ...
+    def get_platform_data(self) -> GLib.Variant | None: ...
+    def get_stdin(self) -> InputStream | None: ...
+    def getenv(self, name: str) -> str | None: ...
     def print_literal(self, message: str) -> None: ...
     def printerr_literal(self, message: str) -> None: ...
     def set_exit_status(self, exit_status: int) -> None: ...
 
-class ApplicationCommandLineClass(GObject.GPointer):
+class ApplicationCommandLineClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1149,48 +1429,63 @@ class ApplicationCommandLineClass(GObject.GPointer):
 
         ApplicationCommandLineClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def print_literal(self) -> Callable[[ApplicationCommandLine, str], None]: ...
+    @property
+    def printerr_literal(self) -> Callable[[ApplicationCommandLine, str], None]: ...
+    @property
+    def get_stdin(self) -> Callable[[ApplicationCommandLine], InputStream | None]: ...
+    @property
+    def done(self) -> Callable[[ApplicationCommandLine], None]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    print_literal: typing.Callable[[ApplicationCommandLine, str], None] = ...
-    printerr_literal: typing.Callable[[ApplicationCommandLine, str], None] = ...
-    get_stdin: typing.Callable[
-        [ApplicationCommandLine], typing.Optional[InputStream]
-    ] = ...
-    done: typing.Callable[[ApplicationCommandLine], None] = ...
-    padding: list[None] = ...
+class ApplicationCommandLinePrivate(_gi.Struct): ...
+class ApplicationPrivate(_gi.Struct): ...
 
-class ApplicationCommandLinePrivate(GObject.GPointer): ...
-class ApplicationPrivate(GObject.GPointer): ...
-
-class AsyncInitable(GObject.GInterface):
+class AsyncInitable(GObject.GInterface, Protocol):
     """
     Interface GAsyncInitable
 
     Signals from GObject:
       notify (GParam)
     """
-
+    @overload
+    def init_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def init_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[AsyncInitable, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def init_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[AsyncInitable] | None,
     ) -> None: ...
     def init_finish(self, res: AsyncResult) -> bool: ...
     def new_finish(self, res: AsyncResult) -> GObject.Object: ...
     @staticmethod
     def newv_async(
-        object_type: typing.Type[typing.Any],
+        object_type: type[Any],
         n_parameters: int,
         parameters: GObject.Parameter,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
 
-class AsyncInitableIface(GObject.GPointer):
+class AsyncInitableIface(_gi.Struct):
     """
     :Constructors:
 
@@ -1198,25 +1493,37 @@ class AsyncInitableIface(GObject.GPointer):
 
         AsyncInitableIface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def init_async(
+        self,
+    ) -> Callable[
+        [
+            AsyncInitable,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def init_finish(self) -> Callable[[AsyncInitable, AsyncResult], bool]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    init_async: typing.Callable[..., None] = ...
-    init_finish: typing.Callable[[AsyncInitable, AsyncResult], bool] = ...
-
-class AsyncResult(GObject.GInterface):
+class AsyncResult(GObject.GInterface, Protocol):
     """
     Interface GAsyncResult
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_source_object(self) -> typing.Optional[GObject.Object]: ...
-    def get_user_data(self) -> None: ...
-    def is_tagged(self, source_tag: None) -> bool: ...
+    def get_source_object(self) -> GObject.Object | None: ...
+    def get_user_data(self) -> int: ...
+    def is_tagged(self, source_tag: int | Any | None = None) -> bool: ...
     def legacy_propagate_error(self) -> bool: ...
 
-class AsyncResultIface(GObject.GPointer):
+class AsyncResultIface(_gi.Struct):
     """
     :Constructors:
 
@@ -1224,13 +1531,14 @@ class AsyncResultIface(GObject.GPointer):
 
         AsyncResultIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    get_user_data: typing.Callable[[AsyncResult], None] = ...
-    get_source_object: typing.Callable[
-        [AsyncResult], typing.Optional[GObject.Object]
-    ] = ...
-    is_tagged: typing.Callable[[AsyncResult, None], bool] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_user_data(self) -> Callable[[AsyncResult], int]: ...
+    @property
+    def get_source_object(self) -> Callable[[AsyncResult], GObject.Object | None]: ...
+    @property
+    def is_tagged(self) -> Callable[[AsyncResult, Any | None], bool]: ...
 
 class BufferedInputStream(FilterInputStream, Seekable):
     """
@@ -1254,43 +1562,57 @@ class BufferedInputStream(FilterInputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(FilterInputStream.Props):
         buffer_size: int
-        base_stream: InputStream
-        close_base_stream: bool
 
-    props: Props = ...
-    parent_instance: FilterInputStream = ...
-    priv: BufferedInputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> FilterInputStream: ...
+    @property
+    def priv(self) -> BufferedInputStreamPrivate: ...
     def __init__(
         self,
+        *,
         buffer_size: int = ...,
-        base_stream: InputStream = ...,
+        base_stream: InputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
-    def do_fill(
-        self, count: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> int: ...
+    def do_fill(self, count: int, cancellable: Cancellable | None, /) -> int: ...
     def do_fill_async(
         self,
         count: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[BufferedInputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_fill_finish(self, result: AsyncResult) -> int: ...
-    def fill(
-        self, count: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> int: ...
+    def do_fill_finish(self, result: AsyncResult, /) -> int: ...
+    def fill(self, count: int, cancellable: Cancellable | None = None) -> int: ...
+    @overload
+    def fill_async(
+        self, count: int, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[int]: ...
+    @overload
     def fill_async(
         self,
         count: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[BufferedInputStream, Unpack[_DataTs]]
+        | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def fill_async(
+        self,
+        count: int,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[BufferedInputStream] | None,
     ) -> None: ...
     def fill_finish(self, result: AsyncResult) -> int: ...
     def get_available(self) -> int: ...
@@ -1299,12 +1621,12 @@ class BufferedInputStream(FilterInputStream, Seekable):
     def new(cls, base_stream: InputStream) -> BufferedInputStream: ...
     @classmethod
     def new_sized(cls, base_stream: InputStream, size: int) -> BufferedInputStream: ...
-    def peek(self, buffer: typing.Sequence[int], offset: int) -> int: ...
+    def peek(self, buffer: Sequence[int], offset: int) -> int: ...
     def peek_buffer(self) -> bytes: ...
-    def read_byte(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
+    def read_byte(self, cancellable: Cancellable | None = None) -> int: ...
     def set_buffer_size(self, size: int) -> None: ...
 
-class BufferedInputStreamClass(GObject.GPointer):
+class BufferedInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1312,20 +1634,28 @@ class BufferedInputStreamClass(GObject.GPointer):
 
         BufferedInputStreamClass()
     """
+    @property
+    def parent_class(self) -> FilterInputStreamClass: ...
+    @property
+    def fill(self) -> Callable[[BufferedInputStream, int, Cancellable | None], int]: ...
+    @property
+    def fill_async(
+        self,
+    ) -> Callable[
+        [
+            BufferedInputStream,
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def fill_finish(self) -> Callable[[BufferedInputStream, AsyncResult], int]: ...
 
-    parent_class: FilterInputStreamClass = ...
-    fill: typing.Callable[
-        [BufferedInputStream, int, typing.Optional[Cancellable]], int
-    ] = ...
-    fill_async: typing.Callable[..., None] = ...
-    fill_finish: typing.Callable[[BufferedInputStream, AsyncResult], int] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class BufferedInputStreamPrivate(GObject.GPointer): ...
+class BufferedInputStreamPrivate(_gi.Struct): ...
 
 class BufferedOutputStream(FilterOutputStream, Seekable):
     """
@@ -1350,21 +1680,23 @@ class BufferedOutputStream(FilterOutputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(FilterOutputStream.Props):
         auto_grow: bool
         buffer_size: int
-        base_stream: OutputStream
-        close_base_stream: bool
 
-    props: Props = ...
-    parent_instance: FilterOutputStream = ...
-    priv: BufferedOutputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> FilterOutputStream: ...
+    @property
+    def priv(self) -> BufferedOutputStreamPrivate: ...
     def __init__(
         self,
+        *,
         auto_grow: bool = ...,
         buffer_size: int = ...,
-        base_stream: OutputStream = ...,
+        base_stream: OutputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
     def get_auto_grow(self) -> bool: ...
@@ -1378,7 +1710,7 @@ class BufferedOutputStream(FilterOutputStream, Seekable):
     def set_auto_grow(self, auto_grow: bool) -> None: ...
     def set_buffer_size(self, size: int) -> None: ...
 
-class BufferedOutputStreamClass(GObject.GPointer):
+class BufferedOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1386,12 +1718,10 @@ class BufferedOutputStreamClass(GObject.GPointer):
 
         BufferedOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> FilterOutputStreamClass: ...
 
-    parent_class: FilterOutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-
-class BufferedOutputStreamPrivate(GObject.GPointer): ...
+class BufferedOutputStreamPrivate(_gi.Struct): ...
 
 class BytesIcon(GObject.Object, Icon, LoadableIcon):
     """
@@ -1410,13 +1740,14 @@ class BytesIcon(GObject.Object, Icon, LoadableIcon):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def bytes(self) -> GLib.Bytes: ...
 
-    class Props:
-        bytes: GLib.Bytes
-
-    props: Props = ...
-    # override
-    def __init__(self, *, bytes: GLib.Bytes = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, bytes: GLib.Bytes | None = ...) -> None: ...
     def get_bytes(self) -> GLib.Bytes: ...
     @classmethod
     def new(cls, bytes: GLib.Bytes) -> BytesIcon: ...
@@ -1438,17 +1769,16 @@ class Cancellable(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: CancellablePrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> CancellablePrivate: ...
     def cancel(self) -> None: ...
-    def connect(
-        self, callback: typing.Callable[..., None], *data: typing.Any
-    ) -> int: ...
+    def connect(self, callback: Callable[[], None], *data: Unpack[_DataTs]) -> int: ...
     def disconnect(self, handler_id: int) -> None: ...
     def do_cancelled(self) -> None: ...
     @staticmethod
-    def get_current() -> typing.Optional[Cancellable]: ...
+    def get_current() -> Cancellable | None: ...
     def get_fd(self) -> int: ...
     def is_cancelled(self) -> bool: ...
     def make_pollfd(self, pollfd: GLib.PollFD) -> bool: ...
@@ -1461,7 +1791,7 @@ class Cancellable(GObject.Object):
     def set_error_if_cancelled(self) -> bool: ...
     def source_new(self) -> GLib.Source: ...
 
-class CancellableClass(GObject.GPointer):
+class CancellableClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1469,16 +1799,12 @@ class CancellableClass(GObject.GPointer):
 
         CancellableClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def cancelled(self) -> Callable[[Cancellable | None], None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    cancelled: typing.Callable[[typing.Optional[Cancellable]], None] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class CancellablePrivate(GObject.GPointer): ...
+class CancellablePrivate(_gi.Struct): ...
 
 class CharsetConverter(GObject.Object, Converter, Initable):
     """
@@ -1499,15 +1825,22 @@ class CharsetConverter(GObject.Object, Converter, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        from_charset: str
-        to_charset: str
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def from_charset(self) -> str | None: ...
+        @property
+        def to_charset(self) -> str | None: ...
         use_fallback: bool
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
-        self, from_charset: str = ..., to_charset: str = ..., use_fallback: bool = ...
+        self,
+        *,
+        from_charset: str | None = ...,
+        to_charset: str | None = ...,
+        use_fallback: bool = ...,
     ) -> None: ...
     def get_num_fallbacks(self) -> int: ...
     def get_use_fallback(self) -> bool: ...
@@ -1515,7 +1848,7 @@ class CharsetConverter(GObject.Object, Converter, Initable):
     def new(cls, to_charset: str, from_charset: str) -> CharsetConverter: ...
     def set_use_fallback(self, use_fallback: bool) -> None: ...
 
-class CharsetConverterClass(GObject.GPointer):
+class CharsetConverterClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1523,27 +1856,26 @@ class CharsetConverterClass(GObject.GPointer):
 
         CharsetConverterClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class Converter(GObject.GInterface):
+class Converter(GObject.GInterface, Protocol):
     """
     Interface GConverter
 
     Signals from GObject:
       notify (GParam)
     """
-
     def convert(
         self,
-        inbuf: typing.Sequence[int],
-        outbuf: typing.Sequence[int],
-        flags: ConverterFlags,
-    ) -> typing.Tuple[ConverterResult, int, int]: ...
+        inbuf: Sequence[int],
+        outbuf: Sequence[int],
+        flags: _ConverterFlagsValueType,
+    ) -> tuple[ConverterResult, int, int]: ...
     def convert_bytes(self, bytes: GLib.Bytes) -> GLib.Bytes: ...
     def reset(self) -> None: ...
 
-class ConverterIface(GObject.GPointer):
+class ConverterIface(_gi.Struct):
     """
     :Constructors:
 
@@ -1551,18 +1883,24 @@ class ConverterIface(GObject.GPointer):
 
         ConverterIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    convert: typing.Callable[
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def convert(
+        self,
+    ) -> Callable[
         [
             Converter,
-            typing.Optional[typing.Sequence[int]],
-            typing.Sequence[int],
-            ConverterFlags,
+            Sequence[int] | None,
+            int,
+            Sequence[int],
+            int,
+            _ConverterFlagsValueType,
         ],
-        typing.Tuple[ConverterResult, int, int],
-    ] = ...
-    reset: typing.Callable[[Converter], None] = ...
+        tuple[ConverterResult, int, int],
+    ]: ...
+    @property
+    def reset(self) -> Callable[[Converter], None]: ...
 
 class ConverterInputStream(FilterInputStream, PollableInputStream):
     """
@@ -1585,19 +1923,22 @@ class ConverterInputStream(FilterInputStream, PollableInputStream):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(FilterInputStream.Props):
+        @property
+        def converter(self) -> Converter: ...
 
-    class Props:
-        converter: Converter
-        base_stream: InputStream
-        close_base_stream: bool
-
-    props: Props = ...
-    parent_instance: FilterInputStream = ...
-    priv: ConverterInputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> FilterInputStream: ...
+    @property
+    def priv(self) -> ConverterInputStreamPrivate: ...
     def __init__(
         self,
-        converter: Converter = ...,
-        base_stream: InputStream = ...,
+        *,
+        converter: Converter | None = ...,
+        base_stream: InputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
     def get_converter(self) -> Converter: ...
@@ -1606,7 +1947,7 @@ class ConverterInputStream(FilterInputStream, PollableInputStream):
         cls, base_stream: InputStream, converter: Converter
     ) -> ConverterInputStream: ...
 
-class ConverterInputStreamClass(GObject.GPointer):
+class ConverterInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1614,15 +1955,10 @@ class ConverterInputStreamClass(GObject.GPointer):
 
         ConverterInputStreamClass()
     """
+    @property
+    def parent_class(self) -> FilterInputStreamClass: ...
 
-    parent_class: FilterInputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class ConverterInputStreamPrivate(GObject.GPointer): ...
+class ConverterInputStreamPrivate(_gi.Struct): ...
 
 class ConverterOutputStream(FilterOutputStream, PollableOutputStream):
     """
@@ -1645,19 +1981,22 @@ class ConverterOutputStream(FilterOutputStream, PollableOutputStream):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(FilterOutputStream.Props):
+        @property
+        def converter(self) -> Converter: ...
 
-    class Props:
-        converter: Converter
-        base_stream: OutputStream
-        close_base_stream: bool
-
-    props: Props = ...
-    parent_instance: FilterOutputStream = ...
-    priv: ConverterOutputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> FilterOutputStream: ...
+    @property
+    def priv(self) -> ConverterOutputStreamPrivate: ...
     def __init__(
         self,
-        converter: Converter = ...,
-        base_stream: OutputStream = ...,
+        *,
+        converter: Converter | None = ...,
+        base_stream: OutputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
     def get_converter(self) -> Converter: ...
@@ -1666,7 +2005,7 @@ class ConverterOutputStream(FilterOutputStream, PollableOutputStream):
         cls, base_stream: OutputStream, converter: Converter
     ) -> ConverterOutputStream: ...
 
-class ConverterOutputStreamClass(GObject.GPointer):
+class ConverterOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -1674,15 +2013,10 @@ class ConverterOutputStreamClass(GObject.GPointer):
 
         ConverterOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> FilterOutputStreamClass: ...
 
-    parent_class: FilterOutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class ConverterOutputStreamPrivate(GObject.GPointer): ...
+class ConverterOutputStreamPrivate(_gi.Struct): ...
 
 class Credentials(GObject.Object):
     """
@@ -1698,17 +2032,18 @@ class Credentials(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def get_unix_pid(self) -> int: ...
     def get_unix_user(self) -> int: ...
     def is_same_user(self, other_credentials: Credentials) -> bool: ...
     @classmethod
     def new(cls) -> Credentials: ...
-    def set_native(self, native_type: CredentialsType, native: None) -> None: ...
+    def set_native(
+        self, native_type: _CredentialsTypeValueType, native: int | Any | None
+    ) -> None: ...
     def set_unix_user(self, uid: int) -> bool: ...
     def to_string(self) -> str: ...
 
-class CredentialsClass(GObject.GPointer): ...
+class CredentialsClass(_gi.Struct): ...
 
 class DBusActionGroup(GObject.Object, ActionGroup, RemoteActionGroup):
     """
@@ -1729,10 +2064,9 @@ class DBusActionGroup(GObject.Object, ActionGroup, RemoteActionGroup):
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def get(
-        connection: DBusConnection, bus_name: typing.Optional[str], object_path: str
+        connection: DBusConnection, bus_name: str | None, object_path: str
     ) -> DBusActionGroup: ...
 
 class DBusAnnotationInfo(GObject.GBoxed):
@@ -1744,14 +2078,17 @@ class DBusAnnotationInfo(GObject.GBoxed):
         DBusAnnotationInfo()
     """
 
-    ref_count: int = ...
-    key: str = ...
-    value: str = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    key: str
+    value: str
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     @staticmethod
     def lookup(
-        annotations: typing.Optional[typing.Sequence[DBusAnnotationInfo]], name: str
-    ) -> typing.Optional[str]: ...
+        annotations: Sequence[DBusAnnotationInfo] | None, name: str
+    ) -> str | None: ...
     def ref(self) -> DBusAnnotationInfo: ...
     def unref(self) -> None: ...
 
@@ -1764,10 +2101,13 @@ class DBusArgInfo(GObject.GBoxed):
         DBusArgInfo()
     """
 
-    ref_count: int = ...
-    name: str = ...
-    signature: str = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    name: str
+    signature: str
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     def ref(self) -> DBusArgInfo: ...
     def unref(self) -> None: ...
 
@@ -1789,10 +2129,9 @@ class DBusAuthObserver(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def allow_mechanism(self, mechanism: str) -> bool: ...
     def authorize_authenticated_peer(
-        self, stream: IOStream, credentials: typing.Optional[Credentials] = None
+        self, stream: IOStream, credentials: Credentials | None = None
     ) -> bool: ...
     @classmethod
     def new(cls) -> DBusAuthObserver: ...
@@ -1828,148 +2167,276 @@ class DBusConnection(GObject.Object, AsyncInitable, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        capabilities: DBusCapabilityFlags
-        closed: bool
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def capabilities(self) -> DBusCapabilityFlags: ...
+        @property
+        def closed(self) -> bool: ...
         exit_on_close: bool
-        flags: DBusConnectionFlags
-        guid: str
-        stream: IOStream
-        unique_name: typing.Optional[str]
-        address: str
-        authentication_observer: DBusAuthObserver
+        @property
+        def flags(self) -> DBusConnectionFlags: ...
+        @property
+        def guid(self) -> str: ...
+        @property
+        def stream(self) -> IOStream: ...
+        @property
+        def unique_name(self) -> str | None: ...
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        address: str = ...,
-        authentication_observer: DBusAuthObserver = ...,
+        *,
+        address: str | None = ...,
+        authentication_observer: DBusAuthObserver | None = ...,
         exit_on_close: bool = ...,
-        flags: DBusConnectionFlags = ...,
-        guid: str = ...,
-        stream: IOStream = ...,
+        flags: _DBusConnectionFlagsValueType = ...,
+        guid: str | None = ...,
+        stream: IOStream | None = ...,
     ) -> None: ...
     def add_filter(
         self,
-        filter_function: typing.Callable[..., typing.Optional[DBusMessage]],
-        *user_data: typing.Any,
+        filter_function: Callable[
+            [DBusConnection, DBusMessage, bool, Unpack[_DataTs]], DBusMessage | None
+        ],
+        *user_data: Unpack[_DataTs],
     ) -> int: ...
+    @overload
     def call(
         self,
-        bus_name: typing.Optional[str],
+        bus_name: str | None,
         object_path: str,
         interface_name: str,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        reply_type: typing.Optional[GLib.VariantType],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[GLib.Variant]: ...
+    @overload
+    def call(
+        self,
+        bus_name: str | None,
+        object_path: str,
+        interface_name: str,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def call(
+        self,
+        bus_name: str | None,
+        object_path: str,
+        interface_name: str,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection] | None,
     ) -> None: ...
     def call_finish(self, res: AsyncResult) -> GLib.Variant: ...
     def call_sync(
         self,
-        bus_name: typing.Optional[str],
+        bus_name: str | None,
         object_path: str,
         interface_name: str,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        reply_type: typing.Optional[GLib.VariantType],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> GLib.Variant: ...
+    @overload
     def call_with_unix_fd_list(
         self,
-        bus_name: typing.Optional[str],
+        bus_name: str | None,
         object_path: str,
         interface_name: str,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        reply_type: typing.Optional[GLib.VariantType],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        fd_list: typing.Optional[UnixFDList] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[GLib.Variant, UnixFDList | None]]: ...
+    @overload
+    def call_with_unix_fd_list(
+        self,
+        bus_name: str | None,
+        object_path: str,
+        interface_name: str,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        fd_list: UnixFDList | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def call_with_unix_fd_list(
+        self,
+        bus_name: str | None,
+        object_path: str,
+        interface_name: str,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection] | None,
     ) -> None: ...
     def call_with_unix_fd_list_finish(
         self, res: AsyncResult
-    ) -> typing.Tuple[GLib.Variant, UnixFDList]: ...
+    ) -> tuple[GLib.Variant, UnixFDList | None]: ...
     def call_with_unix_fd_list_sync(
         self,
-        bus_name: typing.Optional[str],
+        bus_name: str | None,
         object_path: str,
         interface_name: str,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        reply_type: typing.Optional[GLib.VariantType],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        reply_type: GLib.VariantType | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        fd_list: typing.Optional[UnixFDList] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[GLib.Variant, UnixFDList]: ...
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> tuple[GLib.Variant, UnixFDList | None]: ...
+    @overload
+    def close(self, cancellable: Cancellable | None = None) -> _gi.Async[bool]: ...
+    @overload
     def close(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection] | None,
     ) -> None: ...
     def close_finish(self, res: AsyncResult) -> bool: ...
-    def close_sync(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def close_sync(self, cancellable: Cancellable | None = None) -> bool: ...
     def emit_signal(
         self,
-        destination_bus_name: typing.Optional[str],
+        destination_bus_name: str | None,
         object_path: str,
         interface_name: str,
         signal_name: str,
-        parameters: typing.Optional[GLib.Variant] = None,
+        parameters: GLib.Variant | None = None,
     ) -> bool: ...
     def export_action_group(
         self, object_path: str, action_group: ActionGroup
     ) -> int: ...
     def export_menu_model(self, object_path: str, menu: MenuModel) -> int: ...
+    @overload
+    def flush(self, cancellable: Cancellable | None = None) -> _gi.Async[bool]: ...
+    @overload
     def flush(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def flush(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection] | None,
     ) -> None: ...
     def flush_finish(self, res: AsyncResult) -> bool: ...
-    def flush_sync(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def flush_sync(self, cancellable: Cancellable | None = None) -> bool: ...
     def get_capabilities(self) -> DBusCapabilityFlags: ...
     def get_exit_on_close(self) -> bool: ...
     def get_flags(self) -> DBusConnectionFlags: ...
     def get_guid(self) -> str: ...
     def get_last_serial(self) -> int: ...
-    def get_peer_credentials(self) -> typing.Optional[Credentials]: ...
+    def get_peer_credentials(self) -> Credentials | None: ...
     def get_stream(self) -> IOStream: ...
-    def get_unique_name(self) -> typing.Optional[str]: ...
+    def get_unique_name(self) -> str | None: ...
     def is_closed(self) -> bool: ...
+    @overload
     @staticmethod
     def new(
         stream: IOStream,
-        guid: typing.Optional[str],
-        flags: DBusConnectionFlags,
-        observer: typing.Optional[DBusAuthObserver] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        guid: str | None,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusConnection]: ...
+    @overload
+    @staticmethod
+    def new(
+        stream: IOStream,
+        guid: str | None,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new(
+        stream: IOStream,
+        guid: str | None,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_finish(cls, res: AsyncResult) -> DBusConnection: ...
+    @overload
     @staticmethod
     def new_for_address(
         address: str,
-        flags: DBusConnectionFlags,
-        observer: typing.Optional[DBusAuthObserver] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusConnection]: ...
+    @overload
+    @staticmethod
+    def new_for_address(
+        address: str,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new_for_address(
+        address: str,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_for_address_finish(cls, res: AsyncResult) -> DBusConnection: ...
@@ -1977,92 +2444,101 @@ class DBusConnection(GObject.Object, AsyncInitable, Initable):
     def new_for_address_sync(
         cls,
         address: str,
-        flags: DBusConnectionFlags,
-        observer: typing.Optional[DBusAuthObserver] = None,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusConnection: ...
     @classmethod
     def new_sync(
         cls,
         stream: IOStream,
-        guid: typing.Optional[str],
-        flags: DBusConnectionFlags,
-        observer: typing.Optional[DBusAuthObserver] = None,
-        cancellable: typing.Optional[Cancellable] = None,
+        guid: str | None,
+        flags: _DBusConnectionFlagsValueType,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusConnection: ...
     # override
     def register_object(
         self,
         object_path: str,
         interface_info: DBusInterfaceInfo,
-        method_call_closure: (
-            typing.Callable[
-                [
-                    DBusConnection,
-                    str,
-                    str,
-                    str,
-                    str,
-                    GLib.Variant,
-                    DBusMethodInvocation,
-                ],
-                typing.Any,
-            ]
-            | None
-        ) = None,
-        get_property_closure: (
-            typing.Callable[[DBusConnection, str, str, str, str], typing.Any] | None
-        ) = None,
-        set_property_closure: typing.Callable[..., typing.Any] | None = None,
+        method_call_closure: Callable[
+            [DBusConnection, str, str, str, str, GLib.Variant, DBusMethodInvocation],
+            None,
+        ]
+        | None = None,
+        get_property_closure: Callable[
+            [DBusConnection, str, str, str, str], GLib.Variant
+        ]
+        | None = None,
+        set_property_closure: Callable[
+            [DBusConnection, str, str, str, str, GLib.Variant], bool
+        ]
+        | None = None,
     ) -> int: ...
+    # override
     def register_object_with_closures2(
         self,
         object_path: str,
         interface_info: DBusInterfaceInfo,
-        method_call_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-        get_property_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
-        set_property_closure: typing.Optional[typing.Callable[..., typing.Any]] = None,
+        method_call_closure: Callable[
+            [DBusConnection, str, str, str, str, GLib.Variant, DBusMethodInvocation],
+            None,
+        ]
+        | None = None,
+        get_property_closure: Callable[
+            [DBusConnection, str, str, str, str], GLib.Variant
+        ]
+        | None = None,
+        set_property_closure: Callable[
+            [DBusConnection, str, str, str, str, GLib.Variant], bool
+        ]
+        | None = None,
     ) -> int: ...
     def register_subtree(
         self,
         object_path: str,
         vtable: DBusSubtreeVTable,
-        flags: DBusSubtreeFlags,
-        user_data: None,
-        user_data_free_func: typing.Callable[[None], None],
+        flags: _DBusSubtreeFlagsValueType,
+        user_data: int | Any | None,
+        user_data_free_func: Callable[[Any | None], None],
     ) -> int: ...
     def remove_filter(self, filter_id: int) -> None: ...
     def send_message(
-        self, message: DBusMessage, flags: DBusSendMessageFlags
-    ) -> typing.Tuple[bool, int]: ...
+        self, message: DBusMessage, flags: _DBusSendMessageFlagsValueType
+    ) -> tuple[bool, int]: ...
     def send_message_with_reply(
         self,
         message: DBusMessage,
-        flags: DBusSendMessageFlags,
+        flags: _DBusSendMessageFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[DBusConnection, Unpack[_DataTs]]
+        | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> int: ...
     def send_message_with_reply_finish(self, res: AsyncResult) -> DBusMessage: ...
     def send_message_with_reply_sync(
         self,
         message: DBusMessage,
-        flags: DBusSendMessageFlags,
+        flags: _DBusSendMessageFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[DBusMessage, int]: ...
+        cancellable: Cancellable | None = None,
+    ) -> tuple[DBusMessage, int]: ...
     def set_exit_on_close(self, exit_on_close: bool) -> None: ...
     def signal_subscribe(
         self,
-        sender: typing.Optional[str],
-        interface_name: typing.Optional[str],
-        member: typing.Optional[str],
-        object_path: typing.Optional[str],
-        arg0: typing.Optional[str],
-        flags: DBusSignalFlags,
-        callback: typing.Callable[..., None],
-        *user_data: typing.Any,
+        sender: str | None,
+        interface_name: str | None,
+        member: str | None,
+        object_path: str | None,
+        arg0: str | None,
+        flags: _DBusSignalFlagsValueType,
+        callback: Callable[
+            [DBusConnection, str | None, str, str, str, GLib.Variant, Unpack[_DataTs]],
+            None,
+        ],
+        *user_data: Unpack[_DataTs],
     ) -> int: ...
     def signal_unsubscribe(self, subscription_id: int) -> None: ...
     def start_message_processing(self) -> None: ...
@@ -2071,7 +2547,7 @@ class DBusConnection(GObject.Object, AsyncInitable, Initable):
     def unregister_object(self, registration_id: int) -> bool: ...
     def unregister_subtree(self, registration_id: int) -> bool: ...
 
-class DBusErrorEntry(GObject.GPointer):
+class DBusErrorEntry(_gi.Struct):
     """
     :Constructors:
 
@@ -2080,22 +2556,21 @@ class DBusErrorEntry(GObject.GPointer):
         DBusErrorEntry()
     """
 
-    error_code: int = ...
-    dbus_error_name: str = ...
+    error_code: int
+    dbus_error_name: str
 
-class DBusInterface(GObject.GInterface):
+class DBusInterface(GObject.GInterface, Protocol):
     """
     Interface GDBusInterface
 
     Signals from GObject:
       notify (GParam)
     """
-
     def get_info(self) -> DBusInterfaceInfo: ...
-    def get_object(self) -> typing.Optional[DBusObject]: ...
-    def set_object(self, object: typing.Optional[DBusObject] = None) -> None: ...
+    def get_object(self) -> DBusObject | None: ...
+    def set_object(self, object: DBusObject | None = None) -> None: ...
 
-class DBusInterfaceIface(GObject.GPointer):
+class DBusInterfaceIface(_gi.Struct):
     """
     :Constructors:
 
@@ -2103,14 +2578,16 @@ class DBusInterfaceIface(GObject.GPointer):
 
         DBusInterfaceIface()
     """
-
-    parent_iface: GObject.TypeInterface = ...
-    get_info: typing.Callable[[DBusInterface], DBusInterfaceInfo] = ...
-    get_object: typing.Callable[[DBusInterface], typing.Optional[DBusObject]] = ...
-    set_object: typing.Callable[
-        [DBusInterface, typing.Optional[DBusObject]], None
-    ] = ...
-    dup_object: typing.Callable[[DBusInterface], typing.Optional[DBusObject]] = ...
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_info(self) -> Callable[[DBusInterface], DBusInterfaceInfo]: ...
+    @property
+    def get_object(self) -> Callable[[DBusInterface], DBusObject | None]: ...
+    @property
+    def set_object(self) -> Callable[[DBusInterface, DBusObject | None], None]: ...
+    @property
+    def dup_object(self) -> Callable[[DBusInterface], DBusObject | None]: ...
 
 class DBusInterfaceInfo(GObject.GBoxed):
     """
@@ -2121,18 +2598,21 @@ class DBusInterfaceInfo(GObject.GBoxed):
         DBusInterfaceInfo()
     """
 
-    ref_count: int = ...
-    name: str = ...
-    methods: list[DBusMethodInfo] = ...
-    signals: list[DBusSignalInfo] = ...
-    properties: list[DBusPropertyInfo] = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    name: str
+    methods: list[DBusMethodInfo]
+    signals: list[DBusSignalInfo]
+    properties: list[DBusPropertyInfo]
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     def cache_build(self) -> None: ...
     def cache_release(self) -> None: ...
     def generate_xml(self, indent: int, string_builder: GLib.String) -> None: ...
-    def lookup_method(self, name: str) -> typing.Optional[DBusMethodInfo]: ...
-    def lookup_property(self, name: str) -> typing.Optional[DBusPropertyInfo]: ...
-    def lookup_signal(self, name: str) -> typing.Optional[DBusSignalInfo]: ...
+    def lookup_method(self, name: str) -> DBusMethodInfo | None: ...
+    def lookup_property(self, name: str) -> DBusPropertyInfo | None: ...
+    def lookup_signal(self, name: str) -> DBusSignalInfo | None: ...
     def ref(self) -> DBusInterfaceInfo: ...
     def unref(self) -> None: ...
 
@@ -2155,34 +2635,42 @@ class DBusInterfaceSkeleton(GObject.Object, DBusInterface):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def g_flags(self) -> DBusInterfaceSkeletonFlags: ...
+        @g_flags.setter
+        def g_flags(self, value: _DBusInterfaceSkeletonFlagsValueType) -> None: ...
 
-    class Props:
-        g_flags: DBusInterfaceSkeletonFlags
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusInterfaceSkeletonPrivate = ...
-    def __init__(self, g_flags: DBusInterfaceSkeletonFlags = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusInterfaceSkeletonPrivate: ...
+    def __init__(
+        self, *, g_flags: _DBusInterfaceSkeletonFlagsValueType = ...
+    ) -> None: ...
     def do_flush(self) -> None: ...
-    def do_g_authorize_method(self, invocation: DBusMethodInvocation) -> bool: ...
+    def do_g_authorize_method(self, invocation: DBusMethodInvocation, /) -> bool: ...
     def do_get_info(self) -> DBusInterfaceInfo: ...
     def do_get_properties(self) -> GLib.Variant: ...
     def do_get_vtable(self) -> DBusInterfaceVTable: ...
     def export(self, connection: DBusConnection, object_path: str) -> bool: ...
     def flush(self) -> None: ...
-    def get_connection(self) -> typing.Optional[DBusConnection]: ...
+    def get_connection(self) -> DBusConnection | None: ...
     def get_connections(self) -> list[DBusConnection]: ...
     def get_flags(self) -> DBusInterfaceSkeletonFlags: ...
     def get_info(self) -> DBusInterfaceInfo: ...
-    def get_object_path(self) -> typing.Optional[str]: ...
+    def get_object_path(self) -> str | None: ...
     def get_properties(self) -> GLib.Variant: ...
     def get_vtable(self) -> DBusInterfaceVTable: ...
     def has_connection(self, connection: DBusConnection) -> bool: ...
-    def set_flags(self, flags: DBusInterfaceSkeletonFlags) -> None: ...
+    def set_flags(self, flags: _DBusInterfaceSkeletonFlagsValueType) -> None: ...
     def unexport(self) -> None: ...
     def unexport_from_connection(self, connection: DBusConnection) -> None: ...
 
-class DBusInterfaceSkeletonClass(GObject.GPointer):
+class DBusInterfaceSkeletonClass(_gi.Struct):
     """
     :Constructors:
 
@@ -2190,21 +2678,28 @@ class DBusInterfaceSkeletonClass(GObject.GPointer):
 
         DBusInterfaceSkeletonClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_info(self) -> Callable[[DBusInterfaceSkeleton], DBusInterfaceInfo]: ...
+    @property
+    def get_vtable(self) -> Callable[[DBusInterfaceSkeleton], DBusInterfaceVTable]: ...
+    @property
+    def get_properties(self) -> Callable[[DBusInterfaceSkeleton], GLib.Variant]: ...
+    @property
+    def flush(self) -> Callable[[DBusInterfaceSkeleton], None]: ...
+    @property
+    def vfunc_padding(self) -> list[int]: ...
+    @property
+    def g_authorize_method(
+        self,
+    ) -> Callable[[DBusInterfaceSkeleton, DBusMethodInvocation], bool]: ...
+    @property
+    def signal_padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_info: typing.Callable[[DBusInterfaceSkeleton], DBusInterfaceInfo] = ...
-    get_vtable: typing.Callable[[DBusInterfaceSkeleton], DBusInterfaceVTable] = ...
-    get_properties: typing.Callable[[DBusInterfaceSkeleton], GLib.Variant] = ...
-    flush: typing.Callable[[DBusInterfaceSkeleton], None] = ...
-    vfunc_padding: list[None] = ...
-    g_authorize_method: typing.Callable[
-        [DBusInterfaceSkeleton, DBusMethodInvocation], bool
-    ] = ...
-    signal_padding: list[None] = ...
+class DBusInterfaceSkeletonPrivate(_gi.Struct): ...
 
-class DBusInterfaceSkeletonPrivate(GObject.GPointer): ...
-
-class DBusInterfaceVTable(GObject.GPointer):
+class DBusInterfaceVTable(_gi.Struct):
     """
     :Constructors:
 
@@ -2213,10 +2708,38 @@ class DBusInterfaceVTable(GObject.GPointer):
         DBusInterfaceVTable()
     """
 
-    method_call: typing.Callable[..., None] = ...
-    get_property: typing.Callable[..., GLib.Variant] = ...
-    set_property: typing.Callable[..., bool] = ...
-    padding: list[None] = ...
+    method_call: Callable[
+        [
+            DBusConnection,
+            str | None,
+            str,
+            str | None,
+            str,
+            GLib.Variant,
+            DBusMethodInvocation,
+            Any | None,
+        ],
+        None,
+    ]
+    get_property: Callable[
+        [DBusConnection, str | None, str, str, str, GLib.Error, Any | None],
+        GLib.Variant,
+    ]
+    set_property: Callable[
+        [
+            DBusConnection,
+            str | None,
+            str,
+            str,
+            str,
+            GLib.Variant,
+            GLib.Error,
+            Any | None,
+        ],
+        bool,
+    ]
+    @property
+    def padding(self) -> list[int]: ...
 
 class DBusMenuModel(MenuModel):
     """
@@ -2234,10 +2757,9 @@ class DBusMenuModel(MenuModel):
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def get(
-        connection: DBusConnection, bus_name: typing.Optional[str], object_path: str
+        connection: DBusConnection, bus_name: str | None, object_path: str
     ) -> DBusMenuModel: ...
 
 class DBusMessage(GObject.Object):
@@ -2260,50 +2782,48 @@ class DBusMessage(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def locked(self) -> bool: ...
 
-    class Props:
-        locked: bool
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     @staticmethod
-    def bytes_needed(blob: typing.Sequence[int]) -> int: ...
+    def bytes_needed(blob: Sequence[int]) -> int: ...
     def copy(self) -> DBusMessage: ...
-    def get_arg0(self) -> typing.Optional[str]: ...
-    def get_arg0_path(self) -> typing.Optional[str]: ...
-    def get_body(self) -> typing.Optional[GLib.Variant]: ...
+    def get_arg0(self) -> str | None: ...
+    def get_arg0_path(self) -> str | None: ...
+    def get_body(self) -> GLib.Variant | None: ...
     def get_byte_order(self) -> DBusMessageByteOrder: ...
-    def get_destination(self) -> typing.Optional[str]: ...
-    def get_error_name(self) -> typing.Optional[str]: ...
+    def get_destination(self) -> str | None: ...
+    def get_error_name(self) -> str | None: ...
     def get_flags(self) -> DBusMessageFlags: ...
     def get_header(
-        self, header_field: DBusMessageHeaderField
-    ) -> typing.Optional[GLib.Variant]: ...
+        self, header_field: _DBusMessageHeaderFieldValueType
+    ) -> GLib.Variant | None: ...
     def get_header_fields(self) -> bytes: ...
-    def get_interface(self) -> typing.Optional[str]: ...
+    def get_interface(self) -> str | None: ...
     def get_locked(self) -> bool: ...
-    def get_member(self) -> typing.Optional[str]: ...
+    def get_member(self) -> str | None: ...
     def get_message_type(self) -> DBusMessageType: ...
     def get_num_unix_fds(self) -> int: ...
-    def get_path(self) -> typing.Optional[str]: ...
+    def get_path(self) -> str | None: ...
     def get_reply_serial(self) -> int: ...
-    def get_sender(self) -> typing.Optional[str]: ...
+    def get_sender(self) -> str | None: ...
     def get_serial(self) -> int: ...
     def get_signature(self) -> str: ...
-    def get_unix_fd_list(self) -> typing.Optional[UnixFDList]: ...
+    def get_unix_fd_list(self) -> UnixFDList | None: ...
     def lock(self) -> None: ...
     @classmethod
     def new(cls) -> DBusMessage: ...
     @classmethod
     def new_from_blob(
-        cls, blob: typing.Sequence[int], capabilities: DBusCapabilityFlags
+        cls, blob: Sequence[int], capabilities: _DBusCapabilityFlagsValueType
     ) -> DBusMessage: ...
     @classmethod
     def new_method_call(
-        cls,
-        name: typing.Optional[str],
-        path: str,
-        interface_: typing.Optional[str],
-        method: str,
+        cls, name: str | None, path: str, interface_: str | None, method: str
     ) -> DBusMessage: ...
     def new_method_error_literal(
         self, error_name: str, error_message: str
@@ -2313,26 +2833,26 @@ class DBusMessage(GObject.Object):
     def new_signal(cls, path: str, interface_: str, signal: str) -> DBusMessage: ...
     def print_(self, indent: int) -> str: ...
     def set_body(self, body: GLib.Variant) -> None: ...
-    def set_byte_order(self, byte_order: DBusMessageByteOrder) -> None: ...
-    def set_destination(self, value: typing.Optional[str] = None) -> None: ...
+    def set_byte_order(self, byte_order: _DBusMessageByteOrderValueType) -> None: ...
+    def set_destination(self, value: str | None = None) -> None: ...
     def set_error_name(self, value: str) -> None: ...
-    def set_flags(self, flags: DBusMessageFlags) -> None: ...
+    def set_flags(self, flags: _DBusMessageFlagsValueType) -> None: ...
     def set_header(
         self,
-        header_field: DBusMessageHeaderField,
-        value: typing.Optional[GLib.Variant] = None,
+        header_field: _DBusMessageHeaderFieldValueType,
+        value: GLib.Variant | None = None,
     ) -> None: ...
-    def set_interface(self, value: typing.Optional[str] = None) -> None: ...
-    def set_member(self, value: typing.Optional[str] = None) -> None: ...
-    def set_message_type(self, type: DBusMessageType) -> None: ...
+    def set_interface(self, value: str | None = None) -> None: ...
+    def set_member(self, value: str | None = None) -> None: ...
+    def set_message_type(self, type: _DBusMessageTypeValueType) -> None: ...
     def set_num_unix_fds(self, value: int) -> None: ...
-    def set_path(self, value: typing.Optional[str] = None) -> None: ...
+    def set_path(self, value: str | None = None) -> None: ...
     def set_reply_serial(self, value: int) -> None: ...
-    def set_sender(self, value: typing.Optional[str] = None) -> None: ...
+    def set_sender(self, value: str | None = None) -> None: ...
     def set_serial(self, serial: int) -> None: ...
-    def set_signature(self, value: typing.Optional[str] = None) -> None: ...
-    def set_unix_fd_list(self, fd_list: typing.Optional[UnixFDList] = None) -> None: ...
-    def to_blob(self, capabilities: DBusCapabilityFlags) -> bytes: ...
+    def set_signature(self, value: str | None = None) -> None: ...
+    def set_unix_fd_list(self, fd_list: UnixFDList | None = None) -> None: ...
+    def to_blob(self, capabilities: _DBusCapabilityFlagsValueType) -> bytes: ...
     def to_gerror(self) -> bool: ...
 
 class DBusMethodInfo(GObject.GBoxed):
@@ -2344,11 +2864,14 @@ class DBusMethodInfo(GObject.GBoxed):
         DBusMethodInfo()
     """
 
-    ref_count: int = ...
-    name: str = ...
-    in_args: list[DBusArgInfo] = ...
-    out_args: list[DBusArgInfo] = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    name: str
+    in_args: list[DBusArgInfo]
+    out_args: list[DBusArgInfo]
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     def ref(self) -> DBusMethodInfo: ...
     def unref(self) -> None: ...
 
@@ -2365,26 +2888,21 @@ class DBusMethodInvocation(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def get_connection(self) -> DBusConnection: ...
-    def get_interface_name(self) -> typing.Optional[str]: ...
+    def get_interface_name(self) -> str | None: ...
     def get_message(self) -> DBusMessage: ...
-    def get_method_info(self) -> typing.Optional[DBusMethodInfo]: ...
+    def get_method_info(self) -> DBusMethodInfo | None: ...
     def get_method_name(self) -> str: ...
     def get_object_path(self) -> str: ...
     def get_parameters(self) -> GLib.Variant: ...
-    def get_property_info(self) -> typing.Optional[DBusPropertyInfo]: ...
-    def get_sender(self) -> typing.Optional[str]: ...
+    def get_property_info(self) -> DBusPropertyInfo | None: ...
+    def get_sender(self) -> str | None: ...
     def return_dbus_error(self, error_name: str, error_message: str) -> None: ...
     def return_error_literal(self, domain: int, code: int, message: str) -> None: ...
     def return_gerror(self, error: GLib.Error) -> None: ...
-    def return_value(
-        self, parameters: typing.Optional[GLib.Variant] = None
-    ) -> None: ...
+    def return_value(self, parameters: GLib.Variant | None = None) -> None: ...
     def return_value_with_unix_fd_list(
-        self,
-        parameters: typing.Optional[GLib.Variant] = None,
-        fd_list: typing.Optional[UnixFDList] = None,
+        self, parameters: GLib.Variant | None = None, fd_list: UnixFDList | None = None
     ) -> None: ...
 
 class DBusNodeInfo(GObject.GBoxed):
@@ -2397,31 +2915,33 @@ class DBusNodeInfo(GObject.GBoxed):
         new_for_xml(xml_data:str) -> Gio.DBusNodeInfo
     """
 
-    ref_count: int = ...
-    path: str = ...
-    interfaces: list[DBusInterfaceInfo] = ...
-    nodes: list[DBusNodeInfo] = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    path: str
+    interfaces: list[DBusInterfaceInfo]
+    nodes: list[DBusNodeInfo]
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     def generate_xml(self, indent: int, string_builder: GLib.String) -> None: ...
-    def lookup_interface(self, name: str) -> typing.Optional[DBusInterfaceInfo]: ...
+    def lookup_interface(self, name: str) -> DBusInterfaceInfo | None: ...
     @classmethod
     def new_for_xml(cls, xml_data: str) -> DBusNodeInfo: ...
     def ref(self) -> DBusNodeInfo: ...
     def unref(self) -> None: ...
 
-class DBusObject(GObject.GInterface):
+class DBusObject(GObject.GInterface, Protocol):
     """
     Interface GDBusObject
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_interface(self, interface_name: str) -> typing.Optional[DBusInterface]: ...
+    def get_interface(self, interface_name: str) -> DBusInterface | None: ...
     def get_interfaces(self) -> list[DBusInterface]: ...
     def get_object_path(self) -> str: ...
 
-class DBusObjectIface(GObject.GPointer):
+class DBusObjectIface(_gi.Struct):
     """
     :Constructors:
 
@@ -2429,28 +2949,30 @@ class DBusObjectIface(GObject.GPointer):
 
         DBusObjectIface()
     """
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_object_path(self) -> Callable[[DBusObject], str]: ...
+    @property
+    def get_interfaces(self) -> Callable[[DBusObject], list[DBusInterface]]: ...
+    @property
+    def get_interface(self) -> Callable[[DBusObject, str], DBusInterface | None]: ...
+    @property
+    def interface_added(self) -> Callable[[DBusObject, DBusInterface], None]: ...
+    @property
+    def interface_removed(self) -> Callable[[DBusObject, DBusInterface], None]: ...
 
-    parent_iface: GObject.TypeInterface = ...
-    get_object_path: typing.Callable[[DBusObject], str] = ...
-    get_interfaces: typing.Callable[[DBusObject], list[DBusInterface]] = ...
-    get_interface: typing.Callable[
-        [DBusObject, str], typing.Optional[DBusInterface]
-    ] = ...
-    interface_added: typing.Callable[[DBusObject, DBusInterface], None] = ...
-    interface_removed: typing.Callable[[DBusObject, DBusInterface], None] = ...
-
-class DBusObjectManager(GObject.GInterface):
+class DBusObjectManager(GObject.GInterface, Protocol):
     """
     Interface GDBusObjectManager
 
     Signals from GObject:
       notify (GParam)
     """
-
     def get_interface(
         self, object_path: str, interface_name: str
-    ) -> typing.Optional[DBusInterface]: ...
-    def get_object(self, object_path: str) -> typing.Optional[DBusObject]: ...
+    ) -> DBusInterface | None: ...
+    def get_object(self, object_path: str) -> DBusObject | None: ...
     def get_object_path(self) -> str: ...
     def get_objects(self) -> list[DBusObject]: ...
 
@@ -2494,31 +3016,42 @@ class DBusObjectManagerClient(
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def connection(self) -> DBusConnection: ...
+        @property
+        def flags(self) -> DBusObjectManagerClientFlags: ...
+        @property
+        def get_proxy_type_destroy_notify(self) -> int: ...
+        @property
+        def get_proxy_type_func(self) -> int: ...
+        @property
+        def get_proxy_type_user_data(self) -> int: ...
+        @property
+        def name(self) -> str: ...
+        @property
+        def name_owner(self) -> str | None: ...
+        @property
+        def object_path(self) -> str | None: ...
 
-    class Props:
-        connection: DBusConnection
-        flags: DBusObjectManagerClientFlags
-        get_proxy_type_destroy_notify: None
-        get_proxy_type_func: None
-        get_proxy_type_user_data: None
-        name: str
-        name_owner: typing.Optional[str]
-        object_path: str
-        bus_type: BusType
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusObjectManagerClientPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusObjectManagerClientPrivate: ...
     def __init__(
         self,
-        bus_type: BusType = ...,
-        connection: DBusConnection = ...,
-        flags: DBusObjectManagerClientFlags = ...,
-        get_proxy_type_destroy_notify: None = ...,
-        get_proxy_type_func: None = ...,
-        get_proxy_type_user_data: None = ...,
-        name: str = ...,
-        object_path: str = ...,
+        *,
+        bus_type: _BusTypeValueType = ...,
+        connection: DBusConnection | None = ...,
+        flags: _DBusObjectManagerClientFlagsValueType = ...,
+        get_proxy_type_destroy_notify: int | Any | None = ...,
+        get_proxy_type_func: int | Any | None = ...,
+        get_proxy_type_user_data: int | Any | None = ...,
+        name: str | None = ...,
+        object_path: str | None = ...,
     ) -> None: ...
     def do_interface_proxy_properties_changed(
         self,
@@ -2526,6 +3059,7 @@ class DBusObjectManagerClient(
         interface_proxy: DBusProxy,
         changed_properties: GLib.Variant,
         invalidated_properties: str,
+        /,
     ) -> None: ...
     def do_interface_proxy_signal(
         self,
@@ -2534,69 +3068,138 @@ class DBusObjectManagerClient(
         sender_name: str,
         signal_name: str,
         parameters: GLib.Variant,
+        /,
     ) -> None: ...
     def get_connection(self) -> DBusConnection: ...
     def get_flags(self) -> DBusObjectManagerClientFlags: ...
     def get_name(self) -> str: ...
-    def get_name_owner(self) -> typing.Optional[str]: ...
+    def get_name_owner(self) -> str | None: ...
+    @overload
     @staticmethod
     def new(
         connection: DBusConnection,
-        flags: DBusObjectManagerClientFlags,
+        flags: _DBusObjectManagerClientFlagsValueType,
         name: str,
         object_path: str,
-        get_proxy_type_func: typing.Optional[
-            typing.Callable[..., typing.Type[typing.Any]]
-        ] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusObjectManagerClient]: ...
+    @overload
+    @staticmethod
+    def new(
+        connection: DBusConnection,
+        flags: _DBusObjectManagerClientFlagsValueType,
+        name: str,
+        object_path: str,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None,
+        get_proxy_type_user_data: Any | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new(
+        connection: DBusConnection,
+        flags: _DBusObjectManagerClientFlagsValueType,
+        name: str,
+        object_path: str,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_finish(cls, res: AsyncResult) -> DBusObjectManagerClient: ...
+    @overload
     @staticmethod
     def new_for_bus(
-        bus_type: BusType,
-        flags: DBusObjectManagerClientFlags,
+        bus_type: _BusTypeValueType,
+        flags: _DBusObjectManagerClientFlagsValueType,
         name: str,
         object_path: str,
-        get_proxy_type_func: typing.Optional[
-            typing.Callable[..., typing.Type[typing.Any]]
-        ] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusObjectManagerClient]: ...
+    @overload
+    @staticmethod
+    def new_for_bus(
+        bus_type: _BusTypeValueType,
+        flags: _DBusObjectManagerClientFlagsValueType,
+        name: str,
+        object_path: str,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None,
+        get_proxy_type_user_data: Any | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new_for_bus(
+        bus_type: _BusTypeValueType,
+        flags: _DBusObjectManagerClientFlagsValueType,
+        name: str,
+        object_path: str,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_for_bus_finish(cls, res: AsyncResult) -> DBusObjectManagerClient: ...
     @classmethod
     def new_for_bus_sync(
         cls,
-        bus_type: BusType,
-        flags: DBusObjectManagerClientFlags,
+        bus_type: _BusTypeValueType,
+        flags: _DBusObjectManagerClientFlagsValueType,
         name: str,
         object_path: str,
-        get_proxy_type_func: typing.Optional[
-            typing.Callable[..., typing.Type[typing.Any]]
-        ] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        *get_proxy_type_user_data: typing.Any,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusObjectManagerClient: ...
     @classmethod
     def new_sync(
         cls,
         connection: DBusConnection,
-        flags: DBusObjectManagerClientFlags,
-        name: typing.Optional[str],
+        flags: _DBusObjectManagerClientFlagsValueType,
+        name: str | None,
         object_path: str,
-        get_proxy_type_func: typing.Optional[
-            typing.Callable[..., typing.Type[typing.Any]]
-        ] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        *get_proxy_type_user_data: typing.Any,
+        get_proxy_type_func: Callable[
+            [DBusObjectManagerClient, str, str | None, Any | None], type[Any]
+        ]
+        | None = None,
+        get_proxy_type_user_data: Any | None = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusObjectManagerClient: ...
 
-class DBusObjectManagerClientClass(GObject.GPointer):
+class DBusObjectManagerClientClass(_gi.Struct):
     """
     :Constructors:
 
@@ -2604,20 +3207,27 @@ class DBusObjectManagerClientClass(GObject.GPointer):
 
         DBusObjectManagerClientClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    interface_proxy_signal: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def interface_proxy_signal(
+        self,
+    ) -> Callable[
         [DBusObjectManagerClient, DBusObjectProxy, DBusProxy, str, str, GLib.Variant],
         None,
-    ] = ...
-    interface_proxy_properties_changed: typing.Callable[
+    ]: ...
+    @property
+    def interface_proxy_properties_changed(
+        self,
+    ) -> Callable[
         [DBusObjectManagerClient, DBusObjectProxy, DBusProxy, GLib.Variant, str], None
-    ] = ...
-    padding: list[None] = ...
+    ]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class DBusObjectManagerClientPrivate(GObject.GPointer): ...
+class DBusObjectManagerClientPrivate(_gi.Struct): ...
 
-class DBusObjectManagerIface(GObject.GPointer):
+class DBusObjectManagerIface(_gi.Struct):
     """
     :Constructors:
 
@@ -2625,24 +3235,30 @@ class DBusObjectManagerIface(GObject.GPointer):
 
         DBusObjectManagerIface()
     """
-
-    parent_iface: GObject.TypeInterface = ...
-    get_object_path: typing.Callable[[DBusObjectManager], str] = ...
-    get_objects: typing.Callable[[DBusObjectManager], list[DBusObject]] = ...
-    get_object: typing.Callable[
-        [DBusObjectManager, str], typing.Optional[DBusObject]
-    ] = ...
-    get_interface: typing.Callable[
-        [DBusObjectManager, str, str], typing.Optional[DBusInterface]
-    ] = ...
-    object_added: typing.Callable[[DBusObjectManager, DBusObject], None] = ...
-    object_removed: typing.Callable[[DBusObjectManager, DBusObject], None] = ...
-    interface_added: typing.Callable[
-        [DBusObjectManager, DBusObject, DBusInterface], None
-    ] = ...
-    interface_removed: typing.Callable[
-        [DBusObjectManager, DBusObject, DBusInterface], None
-    ] = ...
+    @property
+    def parent_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_object_path(self) -> Callable[[DBusObjectManager], str]: ...
+    @property
+    def get_objects(self) -> Callable[[DBusObjectManager], list[DBusObject]]: ...
+    @property
+    def get_object(self) -> Callable[[DBusObjectManager, str], DBusObject | None]: ...
+    @property
+    def get_interface(
+        self,
+    ) -> Callable[[DBusObjectManager, str, str], DBusInterface | None]: ...
+    @property
+    def object_added(self) -> Callable[[DBusObjectManager, DBusObject], None]: ...
+    @property
+    def object_removed(self) -> Callable[[DBusObjectManager, DBusObject], None]: ...
+    @property
+    def interface_added(
+        self,
+    ) -> Callable[[DBusObjectManager, DBusObject, DBusInterface], None]: ...
+    @property
+    def interface_removed(
+        self,
+    ) -> Callable[[DBusObjectManager, DBusObject, DBusInterface], None]: ...
 
 class DBusObjectManagerServer(GObject.Object, DBusObjectManager):
     """
@@ -2668,29 +3284,31 @@ class DBusObjectManagerServer(GObject.Object, DBusObjectManager):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        connection: DBusConnection | None
+        @property
+        def object_path(self) -> str | None: ...
 
-    class Props:
-        connection: typing.Optional[DBusConnection]
-        object_path: str
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusObjectManagerServerPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusObjectManagerServerPrivate: ...
     def __init__(
-        self, connection: typing.Optional[DBusConnection] = ..., object_path: str = ...
+        self, *, connection: DBusConnection | None = ..., object_path: str | None = ...
     ) -> None: ...
     def export(self, object: DBusObjectSkeleton) -> None: ...
     def export_uniquely(self, object: DBusObjectSkeleton) -> None: ...
-    def get_connection(self) -> typing.Optional[DBusConnection]: ...
+    def get_connection(self) -> DBusConnection | None: ...
     def is_exported(self, object: DBusObjectSkeleton) -> bool: ...
     @classmethod
     def new(cls, object_path: str) -> DBusObjectManagerServer: ...
-    def set_connection(
-        self, connection: typing.Optional[DBusConnection] = None
-    ) -> None: ...
+    def set_connection(self, connection: DBusConnection | None = None) -> None: ...
     def unexport(self, object_path: str) -> bool: ...
 
-class DBusObjectManagerServerClass(GObject.GPointer):
+class DBusObjectManagerServerClass(_gi.Struct):
     """
     :Constructors:
 
@@ -2698,11 +3316,12 @@ class DBusObjectManagerServerClass(GObject.GPointer):
 
         DBusObjectManagerServerClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    padding: list[None] = ...
-
-class DBusObjectManagerServerPrivate(GObject.GPointer): ...
+class DBusObjectManagerServerPrivate(_gi.Struct): ...
 
 class DBusObjectProxy(GObject.Object, DBusObject):
     """
@@ -2726,22 +3345,30 @@ class DBusObjectProxy(GObject.Object, DBusObject):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def g_connection(self) -> DBusConnection | None: ...
+        @property
+        def g_object_path(self) -> str | None: ...
 
-    class Props:
-        g_connection: DBusConnection
-        g_object_path: str
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusObjectProxyPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusObjectProxyPrivate: ...
     def __init__(
-        self, g_connection: DBusConnection = ..., g_object_path: str = ...
+        self,
+        *,
+        g_connection: DBusConnection | None = ...,
+        g_object_path: str | None = ...,
     ) -> None: ...
     def get_connection(self) -> DBusConnection: ...
     @classmethod
     def new(cls, connection: DBusConnection, object_path: str) -> DBusObjectProxy: ...
 
-class DBusObjectProxyClass(GObject.GPointer):
+class DBusObjectProxyClass(_gi.Struct):
     """
     :Constructors:
 
@@ -2749,11 +3376,12 @@ class DBusObjectProxyClass(GObject.GPointer):
 
         DBusObjectProxyClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    padding: list[None] = ...
-
-class DBusObjectProxyPrivate(GObject.GPointer): ...
+class DBusObjectProxyPrivate(_gi.Struct): ...
 
 class DBusObjectSkeleton(GObject.Object, DBusObject):
     """
@@ -2779,17 +3407,20 @@ class DBusObjectSkeleton(GObject.Object, DBusObject):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        g_object_path: str | None
 
-    class Props:
-        g_object_path: str
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusObjectSkeletonPrivate = ...
-    def __init__(self, g_object_path: str = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusObjectSkeletonPrivate: ...
+    def __init__(self, *, g_object_path: str | None = ...) -> None: ...
     def add_interface(self, interface_: DBusInterfaceSkeleton) -> None: ...
     def do_authorize_method(
-        self, interface_: DBusInterfaceSkeleton, invocation: DBusMethodInvocation
+        self, interface_: DBusInterfaceSkeleton, invocation: DBusMethodInvocation, /
     ) -> bool: ...
     def flush(self) -> None: ...
     @classmethod
@@ -2798,7 +3429,7 @@ class DBusObjectSkeleton(GObject.Object, DBusObject):
     def remove_interface_by_name(self, interface_name: str) -> None: ...
     def set_object_path(self, object_path: str) -> None: ...
 
-class DBusObjectSkeletonClass(GObject.GPointer):
+class DBusObjectSkeletonClass(_gi.Struct):
     """
     :Constructors:
 
@@ -2806,14 +3437,18 @@ class DBusObjectSkeletonClass(GObject.GPointer):
 
         DBusObjectSkeletonClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    authorize_method: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def authorize_method(
+        self,
+    ) -> Callable[
         [DBusObjectSkeleton, DBusInterfaceSkeleton, DBusMethodInvocation], bool
-    ] = ...
-    padding: list[None] = ...
+    ]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class DBusObjectSkeletonPrivate(GObject.GPointer): ...
+class DBusObjectSkeletonPrivate(_gi.Struct): ...
 
 class DBusPropertyInfo(GObject.GBoxed):
     """
@@ -2824,11 +3459,11 @@ class DBusPropertyInfo(GObject.GBoxed):
         DBusPropertyInfo()
     """
 
-    ref_count: int = ...
-    name: str = ...
-    signature: str = ...
-    flags: DBusPropertyInfoFlags = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    name: str
+    signature: str
+    flags: DBusPropertyInfoFlags
+    annotations: list[DBusAnnotationInfo]
     def ref(self) -> DBusPropertyInfo: ...
     def unref(self) -> None: ...
 
@@ -2943,151 +3578,250 @@ class DBusProxy(GObject.Object, AsyncInitable, DBusInterface, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        g_connection: DBusConnection
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def g_connection(self) -> DBusConnection | None: ...
         g_default_timeout: int
-        g_flags: DBusProxyFlags
-        g_interface_info: DBusInterfaceInfo
-        g_interface_name: str
-        g_name: str
-        g_name_owner: str
-        g_object_path: str
-        g_bus_type: BusType
+        @property
+        def g_flags(self) -> DBusProxyFlags: ...
+        g_interface_info: DBusInterfaceInfo | None
+        @property
+        def g_interface_name(self) -> str | None: ...
+        @property
+        def g_name(self) -> str | None: ...
+        @property
+        def g_name_owner(self) -> str | None: ...
+        @property
+        def g_object_path(self) -> str | None: ...
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: DBusProxyPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> DBusProxyPrivate: ...
     def __init__(
         self,
-        g_bus_type: BusType = ...,
-        g_connection: DBusConnection = ...,
+        *,
+        g_bus_type: _BusTypeValueType = ...,
+        g_connection: DBusConnection | None = ...,
         g_default_timeout: int = ...,
-        g_flags: DBusProxyFlags = ...,
-        g_interface_info: DBusInterfaceInfo = ...,
-        g_interface_name: str = ...,
-        g_name: str = ...,
-        g_object_path: str = ...,
+        g_flags: _DBusProxyFlagsValueType = ...,
+        g_interface_info: DBusInterfaceInfo | None = ...,
+        g_interface_name: str | None = ...,
+        g_name: str | None = ...,
+        g_object_path: str | None = ...,
     ) -> None: ...
+    @overload
     def call(
         self,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[GLib.Variant]: ...
+    @overload
+    def call(
+        self,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusProxy, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def call(
+        self,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusProxy] | None,
     ) -> None: ...
     def call_finish(self, res: AsyncResult) -> GLib.Variant: ...
     def call_sync(
         self,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> GLib.Variant: ...
+    @overload
     def call_with_unix_fd_list(
         self,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        fd_list: typing.Optional[UnixFDList] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[GLib.Variant, UnixFDList | None]]: ...
+    @overload
+    def call_with_unix_fd_list(
+        self,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        fd_list: UnixFDList | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DBusProxy, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def call_with_unix_fd_list(
+        self,
+        method_name: str,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
+        timeout_msec: int,
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DBusProxy] | None,
     ) -> None: ...
     def call_with_unix_fd_list_finish(
         self, res: AsyncResult
-    ) -> typing.Tuple[GLib.Variant, UnixFDList]: ...
+    ) -> tuple[GLib.Variant, UnixFDList | None]: ...
     def call_with_unix_fd_list_sync(
         self,
         method_name: str,
-        parameters: typing.Optional[GLib.Variant],
-        flags: DBusCallFlags,
+        parameters: GLib.Variant | None,
+        flags: _DBusCallFlagsValueType,
         timeout_msec: int,
-        fd_list: typing.Optional[UnixFDList] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[GLib.Variant, UnixFDList]: ...
+        fd_list: UnixFDList | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> tuple[GLib.Variant, UnixFDList | None]: ...
     def do_g_properties_changed(
-        self, changed_properties: GLib.Variant, invalidated_properties: str
+        self, changed_properties: GLib.Variant, invalidated_properties: str, /
     ) -> None: ...
     def do_g_signal(
-        self, sender_name: str, signal_name: str, parameters: GLib.Variant
+        self, sender_name: str, signal_name: str, parameters: GLib.Variant, /
     ) -> None: ...
-    def get_cached_property(
-        self, property_name: str
-    ) -> typing.Optional[GLib.Variant]: ...
-    def get_cached_property_names(self) -> typing.Optional[list[str]]: ...
+    def get_cached_property(self, property_name: str) -> GLib.Variant | None: ...
+    def get_cached_property_names(self) -> list[str]: ...
     def get_connection(self) -> DBusConnection: ...
     def get_default_timeout(self) -> int: ...
     def get_flags(self) -> DBusProxyFlags: ...
-    def get_interface_info(self) -> typing.Optional[DBusInterfaceInfo]: ...
+    def get_interface_info(self) -> DBusInterfaceInfo | None: ...
     def get_interface_name(self) -> str: ...
-    def get_name(self) -> typing.Optional[str]: ...
-    def get_name_owner(self) -> typing.Optional[str]: ...
+    def get_name(self) -> str | None: ...
+    def get_name_owner(self) -> str | None: ...
     def get_object_path(self) -> str: ...
+    @overload
     @staticmethod
     def new(
         connection: DBusConnection,
-        flags: DBusProxyFlags,
-        info: typing.Optional[DBusInterfaceInfo],
-        name: typing.Optional[str],
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str | None,
         object_path: str,
         interface_name: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusProxy]: ...
+    @overload
+    @staticmethod
+    def new(
+        connection: DBusConnection,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str | None,
+        object_path: str,
+        interface_name: str,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new(
+        connection: DBusConnection,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str | None,
+        object_path: str,
+        interface_name: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_finish(cls, res: AsyncResult) -> DBusProxy: ...
+    @overload
     @staticmethod
     def new_for_bus(
-        bus_type: BusType,
-        flags: DBusProxyFlags,
-        info: typing.Optional[DBusInterfaceInfo],
+        bus_type: _BusTypeValueType,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
         name: str,
         object_path: str,
         interface_name: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[DBusProxy]: ...
+    @overload
+    @staticmethod
+    def new_for_bus(
+        bus_type: _BusTypeValueType,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str,
+        object_path: str,
+        interface_name: str,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new_for_bus(
+        bus_type: _BusTypeValueType,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str,
+        object_path: str,
+        interface_name: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @classmethod
     def new_for_bus_finish(cls, res: AsyncResult) -> DBusProxy: ...
     @classmethod
     def new_for_bus_sync(
         cls,
-        bus_type: BusType,
-        flags: DBusProxyFlags,
-        info: typing.Optional[DBusInterfaceInfo],
+        bus_type: _BusTypeValueType,
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
         name: str,
         object_path: str,
         interface_name: str,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusProxy: ...
     @classmethod
     def new_sync(
         cls,
         connection: DBusConnection,
-        flags: DBusProxyFlags,
-        info: typing.Optional[DBusInterfaceInfo],
-        name: typing.Optional[str],
+        flags: _DBusProxyFlagsValueType,
+        info: DBusInterfaceInfo | None,
+        name: str | None,
         object_path: str,
         interface_name: str,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusProxy: ...
     def set_cached_property(
-        self, property_name: str, value: typing.Optional[GLib.Variant] = None
+        self, property_name: str, value: GLib.Variant | None = None
     ) -> None: ...
     def set_default_timeout(self, timeout_msec: int) -> None: ...
-    def set_interface_info(
-        self, info: typing.Optional[DBusInterfaceInfo] = None
-    ) -> None: ...
+    def set_interface_info(self, info: DBusInterfaceInfo | None = None) -> None: ...
 
-class DBusProxyClass(GObject.GPointer):
+class DBusProxyClass(_gi.Struct):
     """
     :Constructors:
 
@@ -3095,13 +3829,18 @@ class DBusProxyClass(GObject.GPointer):
 
         DBusProxyClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def g_properties_changed(
+        self,
+    ) -> Callable[[DBusProxy, GLib.Variant, str], None]: ...
+    @property
+    def g_signal(self) -> Callable[[DBusProxy, str, str, GLib.Variant], None]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    g_properties_changed: typing.Callable[[DBusProxy, GLib.Variant, str], None] = ...
-    g_signal: typing.Callable[[DBusProxy, str, str, GLib.Variant], None] = ...
-    padding: list[None] = ...
-
-class DBusProxyPrivate(GObject.GPointer): ...
+class DBusProxyPrivate(_gi.Struct): ...
 
 class DBusServer(GObject.Object, Initable):
     """
@@ -3128,22 +3867,30 @@ class DBusServer(GObject.Object, Initable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def active(self) -> bool: ...
+        @property
+        def address(self) -> str | None: ...
+        @property
+        def authentication_observer(self) -> DBusAuthObserver | None: ...
+        @property
+        def client_address(self) -> str: ...
+        @property
+        def flags(self) -> DBusServerFlags: ...
+        @property
+        def guid(self) -> str: ...
 
-    class Props:
-        active: bool
-        address: str
-        authentication_observer: DBusAuthObserver
-        client_address: str
-        flags: DBusServerFlags
-        guid: str
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        address: str = ...,
-        authentication_observer: DBusAuthObserver = ...,
-        flags: DBusServerFlags = ...,
-        guid: str = ...,
+        *,
+        address: str | None = ...,
+        authentication_observer: DBusAuthObserver | None = ...,
+        flags: _DBusServerFlagsValueType = ...,
+        guid: str | None = ...,
     ) -> None: ...
     def get_client_address(self) -> str: ...
     def get_flags(self) -> DBusServerFlags: ...
@@ -3153,10 +3900,10 @@ class DBusServer(GObject.Object, Initable):
     def new_sync(
         cls,
         address: str,
-        flags: DBusServerFlags,
+        flags: _DBusServerFlagsValueType,
         guid: str,
-        observer: typing.Optional[DBusAuthObserver] = None,
-        cancellable: typing.Optional[Cancellable] = None,
+        observer: DBusAuthObserver | None = None,
+        cancellable: Cancellable | None = None,
     ) -> DBusServer: ...
     def start(self) -> None: ...
     def stop(self) -> None: ...
@@ -3170,14 +3917,17 @@ class DBusSignalInfo(GObject.GBoxed):
         DBusSignalInfo()
     """
 
-    ref_count: int = ...
-    name: str = ...
-    args: list[DBusArgInfo] = ...
-    annotations: list[DBusAnnotationInfo] = ...
+    ref_count: int
+    name: str
+    args: list[DBusArgInfo]
+    annotations: list[DBusAnnotationInfo]
+    def __init__(
+        self, *args, **kwargs
+    ) -> None: ...  # FIXME: Override is missing typing annotation
     def ref(self) -> DBusSignalInfo: ...
     def unref(self) -> None: ...
 
-class DBusSubtreeVTable(GObject.GPointer):
+class DBusSubtreeVTable(_gi.Struct):
     """
     :Constructors:
 
@@ -3186,12 +3936,18 @@ class DBusSubtreeVTable(GObject.GPointer):
         DBusSubtreeVTable()
     """
 
-    enumerate: typing.Callable[..., list[str]] = ...
-    introspect: typing.Callable[..., typing.Optional[list[DBusInterfaceInfo]]] = ...
-    dispatch: typing.Callable[..., typing.Optional[DBusInterfaceVTable]] = ...
-    padding: list[None] = ...
+    enumerate: Callable[[DBusConnection, str, str, Any | None], list[str]]
+    introspect: Callable[
+        [DBusConnection, str, str, str, Any | None], list[DBusInterfaceInfo]
+    ]
+    dispatch: Callable[
+        [DBusConnection, str, str, str, str, int | Any | None, Any | None],
+        DBusInterfaceVTable | None,
+    ]
+    @property
+    def padding(self) -> list[int]: ...
 
-class DataInputStream(BufferedInputStream, Seekable):
+class DataInputStream(BufferedInputStream):
     """
     :Constructors:
 
@@ -3216,87 +3972,140 @@ class DataInputStream(BufferedInputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(BufferedInputStream.Props):
+        @property
+        def byte_order(self) -> DataStreamByteOrder: ...
+        @byte_order.setter
+        def byte_order(self, value: _DataStreamByteOrderValueType) -> None: ...
+        @property
+        def newline_type(self) -> DataStreamNewlineType: ...
+        @newline_type.setter
+        def newline_type(self, value: _DataStreamNewlineTypeValueType) -> None: ...
 
-    class Props:
-        byte_order: DataStreamByteOrder
-        newline_type: DataStreamNewlineType
-        buffer_size: int
-        base_stream: InputStream
-        close_base_stream: bool
-
-    props: Props = ...
-    parent_instance: BufferedInputStream = ...
-    priv: DataInputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> BufferedInputStream: ...
+    @property
+    def priv(self) -> DataInputStreamPrivate: ...
     def __init__(
         self,
-        byte_order: DataStreamByteOrder = ...,
-        newline_type: DataStreamNewlineType = ...,
+        *,
+        byte_order: _DataStreamByteOrderValueType = ...,
+        newline_type: _DataStreamNewlineTypeValueType = ...,
         buffer_size: int = ...,
-        base_stream: InputStream = ...,
+        base_stream: InputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
+    # override
+    def __iter__(self) -> Self: ...
+    # override
+    def __next__(self) -> str: ...
     def get_byte_order(self) -> DataStreamByteOrder: ...
     def get_newline_type(self) -> DataStreamNewlineType: ...
     @classmethod
     def new(cls, base_stream: InputStream) -> DataInputStream: ...
-    def read_byte(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def read_int16(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def read_int32(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def read_int64(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
+    def read_byte(self, cancellable: Cancellable | None = None) -> int: ...
+    def read_int16(self, cancellable: Cancellable | None = None) -> int: ...
+    def read_int32(self, cancellable: Cancellable | None = None) -> int: ...
+    def read_int64(self, cancellable: Cancellable | None = None) -> int: ...
     def read_line(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[typing.Optional[bytes], int]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[bytes, int]: ...
+    @overload
+    def read_line_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[bytes, int]]: ...
+    @overload
     def read_line_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def read_line_finish(
-        self, result: AsyncResult
-    ) -> typing.Tuple[typing.Optional[bytes], int]: ...
-    def read_line_finish_utf8(
-        self, result: AsyncResult
-    ) -> typing.Tuple[typing.Optional[str], int]: ...
+    @overload
+    def read_line_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream] | None,
+    ) -> None: ...
+    def read_line_finish(self, result: AsyncResult) -> tuple[bytes, int]: ...
+    def read_line_finish_utf8(self, result: AsyncResult) -> tuple[str | None, int]: ...
     def read_line_utf8(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[typing.Optional[str], int]: ...
-    def read_uint16(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def read_uint32(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def read_uint64(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[str | None, int]: ...
+    def read_uint16(self, cancellable: Cancellable | None = None) -> int: ...
+    def read_uint32(self, cancellable: Cancellable | None = None) -> int: ...
+    def read_uint64(self, cancellable: Cancellable | None = None) -> int: ...
     def read_until(
-        self, stop_chars: str, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[str, int]: ...
+        self, stop_chars: str, cancellable: Cancellable | None = None
+    ) -> tuple[str, int]: ...
+    @overload
+    def read_until_async(
+        self, stop_chars: str, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[str, int]]: ...
+    @overload
     def read_until_async(
         self,
         stop_chars: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def read_until_finish(self, result: AsyncResult) -> typing.Tuple[str, int]: ...
+    @overload
+    def read_until_async(
+        self,
+        stop_chars: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream] | None,
+    ) -> None: ...
+    def read_until_finish(self, result: AsyncResult) -> tuple[str, int]: ...
     def read_upto(
         self,
         stop_chars: str,
         stop_chars_len: int,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[str, int]: ...
+        cancellable: Cancellable | None = None,
+    ) -> tuple[str, int]: ...
+    @overload
     def read_upto_async(
         self,
         stop_chars: str,
         stop_chars_len: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[str, int]]: ...
+    @overload
+    def read_upto_async(
+        self,
+        stop_chars: str,
+        stop_chars_len: int,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def read_upto_finish(self, result: AsyncResult) -> typing.Tuple[str, int]: ...
-    def set_byte_order(self, order: DataStreamByteOrder) -> None: ...
-    def set_newline_type(self, type: DataStreamNewlineType) -> None: ...
+    @overload
+    def read_upto_async(
+        self,
+        stop_chars: str,
+        stop_chars_len: int,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DataInputStream] | None,
+    ) -> None: ...
+    def read_upto_finish(self, result: AsyncResult) -> tuple[str, int]: ...
+    def set_byte_order(self, order: _DataStreamByteOrderValueType) -> None: ...
+    def set_newline_type(self, type: _DataStreamNewlineTypeValueType) -> None: ...
 
-class DataInputStreamClass(GObject.GPointer):
+class DataInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -3304,15 +4113,10 @@ class DataInputStreamClass(GObject.GPointer):
 
         DataInputStreamClass()
     """
+    @property
+    def parent_class(self) -> BufferedInputStreamClass: ...
 
-    parent_class: BufferedInputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class DataInputStreamPrivate(GObject.GPointer): ...
+class DataInputStreamPrivate(_gi.Struct): ...
 
 class DataOutputStream(FilterOutputStream, Seekable):
     """
@@ -3335,51 +4139,40 @@ class DataOutputStream(FilterOutputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(FilterOutputStream.Props):
+        @property
+        def byte_order(self) -> DataStreamByteOrder: ...
+        @byte_order.setter
+        def byte_order(self, value: _DataStreamByteOrderValueType) -> None: ...
 
-    class Props:
-        byte_order: DataStreamByteOrder
-        base_stream: OutputStream
-        close_base_stream: bool
-
-    props: Props = ...
-    parent_instance: FilterOutputStream = ...
-    priv: DataOutputStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> FilterOutputStream: ...
+    @property
+    def priv(self) -> DataOutputStreamPrivate: ...
     def __init__(
         self,
-        byte_order: DataStreamByteOrder = ...,
-        base_stream: OutputStream = ...,
+        *,
+        byte_order: _DataStreamByteOrderValueType = ...,
+        base_stream: OutputStream | None = ...,
         close_base_stream: bool = ...,
     ) -> None: ...
     def get_byte_order(self) -> DataStreamByteOrder: ...
     @classmethod
     def new(cls, base_stream: OutputStream) -> DataOutputStream: ...
-    def put_byte(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_int16(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_int32(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_int64(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_string(
-        self, str: str, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_uint16(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_uint32(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def put_uint64(
-        self, data: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def set_byte_order(self, order: DataStreamByteOrder) -> None: ...
+    def put_byte(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_int16(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_int32(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_int64(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_string(self, str: str, cancellable: Cancellable | None = None) -> bool: ...
+    def put_uint16(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_uint32(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def put_uint64(self, data: int, cancellable: Cancellable | None = None) -> bool: ...
+    def set_byte_order(self, order: _DataStreamByteOrderValueType) -> None: ...
 
-class DataOutputStreamClass(GObject.GPointer):
+class DataOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -3387,52 +4180,48 @@ class DataOutputStreamClass(GObject.GPointer):
 
         DataOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> FilterOutputStreamClass: ...
 
-    parent_class: FilterOutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+class DataOutputStreamPrivate(_gi.Struct): ...
 
-class DataOutputStreamPrivate(GObject.GPointer): ...
-
-class DatagramBased(GObject.GInterface):
+class DatagramBased(GObject.GInterface, Protocol):
     """
     Interface GDatagramBased
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def condition_check(self, condition: GLib.IOCondition) -> GLib.IOCondition: ...
+    def condition_check(
+        self, condition: GLib._IOConditionValueType
+    ) -> GLib.IOCondition: ...
     def condition_wait(
         self,
-        condition: GLib.IOCondition,
+        condition: GLib._IOConditionValueType,
         timeout: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def create_source(
         self,
-        condition: GLib.IOCondition,
-        cancellable: typing.Optional[Cancellable] = None,
+        condition: GLib._IOConditionValueType,
+        cancellable: Cancellable | None = None,
     ) -> GLib.Source: ...
     def receive_messages(
         self,
-        messages: typing.Sequence[InputMessage],
+        messages: Sequence[InputMessage],
         flags: int,
         timeout: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def send_messages(
         self,
-        messages: typing.Sequence[OutputMessage],
+        messages: Sequence[OutputMessage],
         flags: int,
         timeout: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
 
-class DatagramBasedInterface(GObject.GPointer):
+class DatagramBasedInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -3440,46 +4229,44 @@ class DatagramBasedInterface(GObject.GPointer):
 
         DatagramBasedInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def receive_messages(
+        self,
+    ) -> Callable[
+        [DatagramBased, Sequence[InputMessage], int, int, int, Cancellable | None], int
+    ]: ...
+    @property
+    def send_messages(
+        self,
+    ) -> Callable[
+        [DatagramBased, Sequence[OutputMessage], int, int, int, Cancellable | None], int
+    ]: ...
+    @property
+    def create_source(
+        self,
+    ) -> Callable[
+        [DatagramBased, GLib._IOConditionValueType, Cancellable | None], GLib.Source
+    ]: ...
+    @property
+    def condition_check(
+        self,
+    ) -> Callable[[DatagramBased, GLib._IOConditionValueType], GLib.IOCondition]: ...
+    @property
+    def condition_wait(
+        self,
+    ) -> Callable[
+        [DatagramBased, GLib._IOConditionValueType, int, Cancellable | None], bool
+    ]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    receive_messages: typing.Callable[
-        [
-            DatagramBased,
-            typing.Sequence[InputMessage],
-            int,
-            int,
-            typing.Optional[Cancellable],
-        ],
-        int,
-    ] = ...
-    send_messages: typing.Callable[
-        [
-            DatagramBased,
-            typing.Sequence[OutputMessage],
-            int,
-            int,
-            typing.Optional[Cancellable],
-        ],
-        int,
-    ] = ...
-    create_source: typing.Callable[
-        [DatagramBased, GLib.IOCondition, typing.Optional[Cancellable]], GLib.Source
-    ] = ...
-    condition_check: typing.Callable[
-        [DatagramBased, GLib.IOCondition], GLib.IOCondition
-    ] = ...
-    condition_wait: typing.Callable[
-        [DatagramBased, GLib.IOCondition, int, typing.Optional[Cancellable]], bool
-    ] = ...
-
-class DebugController(GObject.GInterface):
+class DebugController(GObject.GInterface, Protocol):
     """
     Interface GDebugController
 
     Signals from GObject:
       notify (GParam)
     """
-
     def get_debug_enabled(self) -> bool: ...
     def set_debug_enabled(self, debug_enabled: bool) -> None: ...
 
@@ -3503,26 +4290,27 @@ class DebugControllerDBus(GObject.Object, DebugController, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        connection: DBusConnection
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def connection(self) -> DBusConnection | None: ...
         debug_enabled: bool
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
-        self, connection: DBusConnection = ..., debug_enabled: bool = ...
+        self, *, connection: DBusConnection | None = ..., debug_enabled: bool = ...
     ) -> None: ...
-    def do_authorize(self, invocation: DBusMethodInvocation) -> bool: ...
+    def do_authorize(self, invocation: DBusMethodInvocation, /) -> bool: ...
     @classmethod
     def new(
-        cls,
-        connection: DBusConnection,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Optional[DebugControllerDBus]: ...
+        cls, connection: DBusConnection, cancellable: Cancellable | None = None
+    ) -> DebugControllerDBus | None: ...
     def stop(self) -> None: ...
 
-class DebugControllerDBusClass(GObject.GPointer):
+class DebugControllerDBusClass(_gi.Struct):
     """
     :Constructors:
 
@@ -3530,12 +4318,16 @@ class DebugControllerDBusClass(GObject.GPointer):
 
         DebugControllerDBusClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def authorize(
+        self,
+    ) -> Callable[[DebugControllerDBus, DBusMethodInvocation], bool]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    authorize: typing.Callable[[DebugControllerDBus, DBusMethodInvocation], bool] = ...
-    padding: list[None] = ...
-
-class DebugControllerInterface(GObject.GPointer):
+class DebugControllerInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -3543,160 +4335,76 @@ class DebugControllerInterface(GObject.GPointer):
 
         DebugControllerInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
 
-    g_iface: GObject.TypeInterface = ...
+DesktopAppInfo = GioUnix.DesktopAppInfo
+DesktopAppInfoLookup = GioUnix.DesktopAppInfoLookup
 
-class DesktopAppInfo(GObject.Object, AppInfo):
-    """
-    :Constructors:
-
-    ::
-
-        DesktopAppInfo(**properties)
-        new(desktop_id:str) -> Gio.DesktopAppInfo or None
-        new_from_filename(filename:str) -> Gio.DesktopAppInfo or None
-        new_from_keyfile(key_file:GLib.KeyFile) -> Gio.DesktopAppInfo or None
-
-    Object GDesktopAppInfo
-
-    Properties from GDesktopAppInfo:
-      filename -> gchararray: filename
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    class Props:
-        filename: typing.Optional[str]
-
-    props: Props = ...
-    def __init__(self, filename: str = ...) -> None: ...
-    def get_action_name(self, action_name: str) -> str: ...
-    def get_boolean(self, key: str) -> bool: ...
-    def get_categories(self) -> typing.Optional[str]: ...
-    def get_filename(self) -> typing.Optional[str]: ...
-    def get_generic_name(self) -> typing.Optional[str]: ...
-    @staticmethod
-    def get_implementations(interface: str) -> list[DesktopAppInfo]: ...
-    def get_is_hidden(self) -> bool: ...
-    def get_keywords(self) -> list[str]: ...
-    def get_locale_string(self, key: str) -> typing.Optional[str]: ...
-    def get_nodisplay(self) -> bool: ...
-    def get_show_in(self, desktop_env: typing.Optional[str] = None) -> bool: ...
-    def get_startup_wm_class(self) -> typing.Optional[str]: ...
-    def get_string(self, key: str) -> typing.Optional[str]: ...
-    def get_string_list(self, key: str) -> list[str]: ...
-    def has_key(self, key: str) -> bool: ...
-    def launch_action(
-        self, action_name: str, launch_context: typing.Optional[AppLaunchContext] = None
-    ) -> None: ...
-    def launch_uris_as_manager(
-        self,
-        uris: list[str],
-        launch_context: typing.Optional[AppLaunchContext],
-        spawn_flags: GLib.SpawnFlags,
-        user_setup: typing.Optional[typing.Callable[..., None]] = None,
-        pid_callback: typing.Optional[typing.Callable[..., None]] = None,
-        *pid_callback_data: typing.Any,
-    ) -> bool: ...
-    def launch_uris_as_manager_with_fds(
-        self,
-        uris: list[str],
-        launch_context: typing.Optional[AppLaunchContext],
-        spawn_flags: GLib.SpawnFlags,
-        user_setup: typing.Optional[typing.Callable[..., None]],
-        pid_callback: typing.Optional[typing.Callable[..., None]],
-        stdin_fd: int,
-        stdout_fd: int,
-        stderr_fd: int,
-        *pid_callback_data: typing.Any,
-    ) -> bool: ...
-    def list_actions(self) -> list[str]: ...
-    @classmethod
-    def new(cls, desktop_id: str) -> typing.Optional[DesktopAppInfo]: ...
-    @classmethod
-    def new_from_filename(cls, filename: str) -> typing.Optional[DesktopAppInfo]: ...
-    @classmethod
-    def new_from_keyfile(
-        cls, key_file: GLib.KeyFile
-    ) -> typing.Optional[DesktopAppInfo]: ...
-    @staticmethod
-    def search(search_string: str) -> list[typing.Sequence[str]]: ...
-    @staticmethod
-    def set_desktop_env(desktop_env: str) -> None: ...
-
-class DesktopAppInfoClass(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        DesktopAppInfoClass()
-    """
-
-    parent_class: GObject.ObjectClass = ...
-
-class DesktopAppInfoLookup(GObject.GInterface):
-    """
-    Interface GDesktopAppInfoLookup
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    def get_default_for_uri_scheme(
-        self, uri_scheme: str
-    ) -> typing.Optional[AppInfo]: ...
-
-class DesktopAppInfoLookupIface(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        DesktopAppInfoLookupIface()
-    """
-
-    g_iface: GObject.TypeInterface = ...
-    get_default_for_uri_scheme: typing.Callable[
-        [DesktopAppInfoLookup, str], typing.Optional[AppInfo]
-    ] = ...
-
-class Drive(GObject.GInterface):
+class Drive(GObject.GInterface, Protocol):
     """
     Interface GDrive
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_eject(self) -> bool: ...
     def can_poll_for_media(self) -> bool: ...
     def can_start(self) -> bool: ...
     def can_start_degraded(self) -> bool: ...
     def can_stop(self) -> bool: ...
+    @overload
+    def eject(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def eject(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Drive, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Drive] | None,
     ) -> None: ...
     def eject_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def eject_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Drive, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Drive] | None,
     ) -> None: ...
     def eject_with_operation_finish(self, result: AsyncResult) -> bool: ...
     def enumerate_identifiers(self) -> list[str]: ...
     def get_icon(self) -> Icon: ...
-    def get_identifier(self, kind: str) -> typing.Optional[str]: ...
+    def get_identifier(self, kind: str) -> str | None: ...
     def get_name(self) -> str: ...
-    def get_sort_key(self) -> typing.Optional[str]: ...
+    def get_sort_key(self) -> str | None: ...
     def get_start_stop_type(self) -> DriveStartStopType: ...
     def get_symbolic_icon(self) -> Icon: ...
     def get_volumes(self) -> list[Volume]: ...
@@ -3705,33 +4413,79 @@ class Drive(GObject.GInterface):
     def is_media_check_automatic(self) -> bool: ...
     def is_media_removable(self) -> bool: ...
     def is_removable(self) -> bool: ...
+    @overload
+    def poll_for_media(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def poll_for_media(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Drive, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def poll_for_media(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Drive] | None,
     ) -> None: ...
     def poll_for_media_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def start(
         self,
-        flags: DriveStartFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _DriveStartFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def start(
+        self,
+        flags: _DriveStartFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Drive, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def start(
+        self,
+        flags: _DriveStartFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Drive] | None,
     ) -> None: ...
     def start_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def stop(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def stop(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Drive, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def stop(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Drive] | None,
     ) -> None: ...
     def stop_finish(self, result: AsyncResult) -> bool: ...
 
-class DriveIface(GObject.GPointer):
+class DriveIface(_gi.Struct):
     """
     :Constructors:
 
@@ -3739,61 +4493,148 @@ class DriveIface(GObject.GPointer):
 
         DriveIface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def changed(self) -> Callable[[Drive], None]: ...
+    @property
+    def disconnected(self) -> Callable[[Drive], None]: ...
+    @property
+    def eject_button(self) -> Callable[[Drive], None]: ...
+    @property
+    def get_name(self) -> Callable[[Drive], str]: ...
+    @property
+    def get_icon(self) -> Callable[[Drive], Icon]: ...
+    @property
+    def has_volumes(self) -> Callable[[Drive], bool]: ...
+    @property
+    def get_volumes(self) -> Callable[[Drive], list[Volume]]: ...
+    @property
+    def is_media_removable(self) -> Callable[[Drive], bool]: ...
+    @property
+    def has_media(self) -> Callable[[Drive], bool]: ...
+    @property
+    def is_media_check_automatic(self) -> Callable[[Drive], bool]: ...
+    @property
+    def can_eject(self) -> Callable[[Drive], bool]: ...
+    @property
+    def can_poll_for_media(self) -> Callable[[Drive], bool]: ...
+    @property
+    def eject(
+        self,
+    ) -> Callable[
+        [
+            Drive,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_finish(self) -> Callable[[Drive, AsyncResult], bool]: ...
+    @property
+    def poll_for_media(
+        self,
+    ) -> Callable[
+        [
+            Drive,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def poll_for_media_finish(self) -> Callable[[Drive, AsyncResult], bool]: ...
+    @property
+    def get_identifier(self) -> Callable[[Drive, str], str | None]: ...
+    @property
+    def enumerate_identifiers(self) -> Callable[[Drive], list[str]]: ...
+    @property
+    def get_start_stop_type(self) -> Callable[[Drive], DriveStartStopType]: ...
+    @property
+    def can_start(self) -> Callable[[Drive], bool]: ...
+    @property
+    def can_start_degraded(self) -> Callable[[Drive], bool]: ...
+    @property
+    def start(
+        self,
+    ) -> Callable[
+        [
+            Drive,
+            _DriveStartFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def start_finish(self) -> Callable[[Drive, AsyncResult], bool]: ...
+    @property
+    def can_stop(self) -> Callable[[Drive], bool]: ...
+    @property
+    def stop(
+        self,
+    ) -> Callable[
+        [
+            Drive,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def stop_finish(self) -> Callable[[Drive, AsyncResult], bool]: ...
+    @property
+    def stop_button(self) -> Callable[[Drive], None]: ...
+    @property
+    def eject_with_operation(
+        self,
+    ) -> Callable[
+        [
+            Drive,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_with_operation_finish(self) -> Callable[[Drive, AsyncResult], bool]: ...
+    @property
+    def get_sort_key(self) -> Callable[[Drive], str | None]: ...
+    @property
+    def get_symbolic_icon(self) -> Callable[[Drive], Icon]: ...
+    @property
+    def is_removable(self) -> Callable[[Drive], bool]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    changed: typing.Callable[[Drive], None] = ...
-    disconnected: typing.Callable[[Drive], None] = ...
-    eject_button: typing.Callable[[Drive], None] = ...
-    get_name: typing.Callable[[Drive], str] = ...
-    get_icon: typing.Callable[[Drive], Icon] = ...
-    has_volumes: typing.Callable[[Drive], bool] = ...
-    get_volumes: typing.Callable[[Drive], list[Volume]] = ...
-    is_media_removable: typing.Callable[[Drive], bool] = ...
-    has_media: typing.Callable[[Drive], bool] = ...
-    is_media_check_automatic: typing.Callable[[Drive], bool] = ...
-    can_eject: typing.Callable[[Drive], bool] = ...
-    can_poll_for_media: typing.Callable[[Drive], bool] = ...
-    eject: typing.Callable[..., None] = ...
-    eject_finish: typing.Callable[[Drive, AsyncResult], bool] = ...
-    poll_for_media: typing.Callable[..., None] = ...
-    poll_for_media_finish: typing.Callable[[Drive, AsyncResult], bool] = ...
-    get_identifier: typing.Callable[[Drive, str], typing.Optional[str]] = ...
-    enumerate_identifiers: typing.Callable[[Drive], list[str]] = ...
-    get_start_stop_type: typing.Callable[[Drive], DriveStartStopType] = ...
-    can_start: typing.Callable[[Drive], bool] = ...
-    can_start_degraded: typing.Callable[[Drive], bool] = ...
-    start: typing.Callable[..., None] = ...
-    start_finish: typing.Callable[[Drive, AsyncResult], bool] = ...
-    can_stop: typing.Callable[[Drive], bool] = ...
-    stop: typing.Callable[..., None] = ...
-    stop_finish: typing.Callable[[Drive, AsyncResult], bool] = ...
-    stop_button: typing.Callable[[Drive], None] = ...
-    eject_with_operation: typing.Callable[..., None] = ...
-    eject_with_operation_finish: typing.Callable[[Drive, AsyncResult], bool] = ...
-    get_sort_key: typing.Callable[[Drive], typing.Optional[str]] = ...
-    get_symbolic_icon: typing.Callable[[Drive], Icon] = ...
-    is_removable: typing.Callable[[Drive], bool] = ...
-
-class DtlsClientConnection(GObject.GInterface):
+class DtlsClientConnection(GObject.GInterface, Protocol):
     """
     Interface GDtlsClientConnection
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_accepted_cas(self) -> list[typing.Sequence[int]]: ...
+    def get_accepted_cas(self) -> list[bytes]: ...
     def get_server_identity(self) -> SocketConnectable: ...
     def get_validation_flags(self) -> TlsCertificateFlags: ...
     @staticmethod
     def new(
-        base_socket: DatagramBased,
-        server_identity: typing.Optional[SocketConnectable] = None,
+        base_socket: DatagramBased, server_identity: SocketConnectable | None = None
     ) -> DtlsClientConnection: ...
     def set_server_identity(self, identity: SocketConnectable) -> None: ...
-    def set_validation_flags(self, flags: TlsCertificateFlags) -> None: ...
+    def set_validation_flags(self, flags: _TlsCertificateFlagsValueType) -> None: ...
 
-class DtlsClientConnectionInterface(GObject.GPointer):
+class DtlsClientConnectionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -3801,79 +4642,121 @@ class DtlsClientConnectionInterface(GObject.GPointer):
 
         DtlsClientConnectionInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
 
-    g_iface: GObject.TypeInterface = ...
-
-class DtlsConnection(GObject.GInterface):
+class DtlsConnection(GObject.GInterface, Protocol):
     """
     Interface GDtlsConnection
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def close(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def close(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def close_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection] | None,
     ) -> None: ...
     def close_finish(self, result: AsyncResult) -> bool: ...
     def emit_accept_certificate(
-        self, peer_cert: TlsCertificate, errors: TlsCertificateFlags
+        self, peer_cert: TlsCertificate, errors: _TlsCertificateFlagsValueType
     ) -> bool: ...
-    def get_certificate(self) -> typing.Optional[TlsCertificate]: ...
+    def get_certificate(self) -> TlsCertificate | None: ...
     def get_channel_binding_data(
-        self, type: TlsChannelBindingType
-    ) -> typing.Tuple[bool, bytes]: ...
-    def get_ciphersuite_name(self) -> typing.Optional[str]: ...
-    def get_database(self) -> typing.Optional[TlsDatabase]: ...
-    def get_interaction(self) -> typing.Optional[TlsInteraction]: ...
-    def get_negotiated_protocol(self) -> typing.Optional[str]: ...
-    def get_peer_certificate(self) -> typing.Optional[TlsCertificate]: ...
+        self, type: _TlsChannelBindingTypeValueType
+    ) -> tuple[bool, bytes]: ...
+    def get_ciphersuite_name(self) -> str | None: ...
+    def get_database(self) -> TlsDatabase | None: ...
+    def get_interaction(self) -> TlsInteraction | None: ...
+    def get_negotiated_protocol(self) -> str | None: ...
+    def get_peer_certificate(self) -> TlsCertificate | None: ...
     def get_peer_certificate_errors(self) -> TlsCertificateFlags: ...
     def get_protocol_version(self) -> TlsProtocolVersion: ...
     def get_rehandshake_mode(self) -> TlsRehandshakeMode: ...
     def get_require_close_notify(self) -> bool: ...
-    def handshake(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def handshake(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def handshake_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def handshake_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def handshake_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection] | None,
     ) -> None: ...
     def handshake_finish(self, result: AsyncResult) -> bool: ...
     def set_advertised_protocols(
-        self, protocols: typing.Optional[typing.Sequence[str]] = None
+        self, protocols: Sequence[str] | None = None
     ) -> None: ...
     def set_certificate(self, certificate: TlsCertificate) -> None: ...
-    def set_database(self, database: typing.Optional[TlsDatabase] = None) -> None: ...
-    def set_interaction(
-        self, interaction: typing.Optional[TlsInteraction] = None
-    ) -> None: ...
-    def set_rehandshake_mode(self, mode: TlsRehandshakeMode) -> None: ...
+    def set_database(self, database: TlsDatabase | None = None) -> None: ...
+    def set_interaction(self, interaction: TlsInteraction | None = None) -> None: ...
+    def set_rehandshake_mode(self, mode: _TlsRehandshakeModeValueType) -> None: ...
     def set_require_close_notify(self, require_close_notify: bool) -> None: ...
     def shutdown(
         self,
         shutdown_read: bool,
         shutdown_write: bool,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
+    @overload
     def shutdown_async(
         self,
         shutdown_read: bool,
         shutdown_write: bool,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def shutdown_async(
+        self,
+        shutdown_read: bool,
+        shutdown_write: bool,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def shutdown_async(
+        self,
+        shutdown_read: bool,
+        shutdown_write: bool,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[DtlsConnection] | None,
     ) -> None: ...
     def shutdown_finish(self, result: AsyncResult) -> bool: ...
 
-class DtlsConnectionInterface(GObject.GPointer):
+class DtlsConnectionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -3881,45 +4764,78 @@ class DtlsConnectionInterface(GObject.GPointer):
 
         DtlsConnectionInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def accept_certificate(
+        self,
+    ) -> Callable[
+        [DtlsConnection, TlsCertificate, _TlsCertificateFlagsValueType], bool
+    ]: ...
+    @property
+    def handshake(self) -> Callable[[DtlsConnection, Cancellable | None], bool]: ...
+    @property
+    def handshake_async(
+        self,
+    ) -> Callable[
+        [
+            DtlsConnection,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def handshake_finish(self) -> Callable[[DtlsConnection, AsyncResult], bool]: ...
+    @property
+    def shutdown(
+        self,
+    ) -> Callable[[DtlsConnection, bool, bool, Cancellable | None], bool]: ...
+    @property
+    def shutdown_async(
+        self,
+    ) -> Callable[
+        [
+            DtlsConnection,
+            bool,
+            bool,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def shutdown_finish(self) -> Callable[[DtlsConnection, AsyncResult], bool]: ...
+    @property
+    def set_advertised_protocols(
+        self,
+    ) -> Callable[[DtlsConnection, Sequence[str] | None], None]: ...
+    @property
+    def get_negotiated_protocol(self) -> Callable[[DtlsConnection], str | None]: ...
+    @property
+    def get_binding_data(
+        self,
+    ) -> Callable[
+        [DtlsConnection, _TlsChannelBindingTypeValueType, Sequence[int]], bool
+    ]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    accept_certificate: typing.Callable[
-        [DtlsConnection, TlsCertificate, TlsCertificateFlags], bool
-    ] = ...
-    handshake: typing.Callable[
-        [DtlsConnection, typing.Optional[Cancellable]], bool
-    ] = ...
-    handshake_async: typing.Callable[..., None] = ...
-    handshake_finish: typing.Callable[[DtlsConnection, AsyncResult], bool] = ...
-    shutdown: typing.Callable[
-        [DtlsConnection, bool, bool, typing.Optional[Cancellable]], bool
-    ] = ...
-    shutdown_async: typing.Callable[..., None] = ...
-    shutdown_finish: typing.Callable[[DtlsConnection, AsyncResult], bool] = ...
-    set_advertised_protocols: typing.Callable[
-        [DtlsConnection, typing.Optional[typing.Sequence[str]]], None
-    ] = ...
-    get_negotiated_protocol: typing.Callable[
-        [DtlsConnection], typing.Optional[str]
-    ] = ...
-    get_binding_data: typing.Callable[
-        [DtlsConnection, TlsChannelBindingType, typing.Sequence[int]], bool
-    ] = ...
-
-class DtlsServerConnection(GObject.GInterface):
+class DtlsServerConnection(GObject.GInterface, Protocol):
     """
     Interface GDtlsServerConnection
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def new(
-        base_socket: DatagramBased, certificate: typing.Optional[TlsCertificate] = None
+        base_socket: DatagramBased, certificate: TlsCertificate | None = None
     ) -> DtlsServerConnection: ...
 
-class DtlsServerConnectionInterface(GObject.GPointer):
+class DtlsServerConnectionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -3927,8 +4843,8 @@ class DtlsServerConnectionInterface(GObject.GPointer):
 
         DtlsServerConnectionInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
 
 class Emblem(GObject.Object, Icon):
     """
@@ -3949,24 +4865,26 @@ class Emblem(GObject.Object, Icon):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def icon(self) -> GObject.Object: ...
+        @property
+        def origin(self) -> EmblemOrigin: ...
 
-    class Props:
-        icon: GObject.Object
-        origin: EmblemOrigin
-
-    props: Props = ...
-    # override
+    @property
+    def props(self) -> Props: ...
     def __init__(
-        self, *, icon: GObject.Object = ..., origin: EmblemOrigin = ...
+        self, *, icon: GObject.Object | None = ..., origin: _EmblemOriginValueType = ...
     ) -> None: ...
     def get_icon(self) -> Icon: ...
     def get_origin(self) -> EmblemOrigin: ...
     @classmethod
     def new(cls, icon: Icon) -> Emblem: ...
     @classmethod
-    def new_with_origin(cls, icon: Icon, origin: EmblemOrigin) -> Emblem: ...
+    def new_with_origin(cls, icon: Icon, origin: _EmblemOriginValueType) -> Emblem: ...
 
-class EmblemClass(GObject.GPointer): ...
+class EmblemClass(_gi.Struct): ...
 
 class EmblemedIcon(GObject.Object, Icon):
     """
@@ -3985,25 +4903,26 @@ class EmblemedIcon(GObject.Object, Icon):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def gicon(self) -> Icon | None: ...
 
-    class Props:
-        gicon: Icon
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: EmblemedIconPrivate = ...
-    # override
-    def __init__(self, *, gicon: Icon = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> EmblemedIconPrivate: ...
+    def __init__(self, *, gicon: Icon | None = ...) -> None: ...
     def add_emblem(self, emblem: Emblem) -> None: ...
     def clear_emblems(self) -> None: ...
     def get_emblems(self) -> list[Emblem]: ...
     def get_icon(self) -> Icon: ...
     @classmethod
-    def new(
-        cls, icon: Icon, emblem: typing.Optional[Emblem] = None
-    ) -> EmblemedIcon: ...
+    def new(cls, icon: Icon, emblem: Emblem | None = None) -> EmblemedIcon: ...
 
-class EmblemedIconClass(GObject.GPointer):
+class EmblemedIconClass(_gi.Struct):
     """
     :Constructors:
 
@@ -4011,261 +4930,471 @@ class EmblemedIconClass(GObject.GPointer):
 
         EmblemedIconClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
+class EmblemedIconPrivate(_gi.Struct): ...
 
-class EmblemedIconPrivate(GObject.GPointer): ...
-
-class File(GObject.GInterface):
+class File(GObject.GInterface, Protocol):
     """
     Interface GFile
 
     Signals from GObject:
       notify (GParam)
     """
-
     def append_to(
-        self, flags: FileCreateFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileCreateFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileOutputStream: ...
+    @overload
     def append_to_async(
         self,
-        flags: FileCreateFlags,
+        flags: _FileCreateFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileOutputStream]: ...
+    @overload
+    def append_to_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def append_to_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def append_to_finish(self, res: AsyncResult) -> FileOutputStream: ...
     def build_attribute_list_for_copy(
-        self, flags: FileCopyFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileCopyFlagsValueType, cancellable: Cancellable | None = None
     ) -> str: ...
     def copy(
         self,
         destination: File,
-        flags: FileCopyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        progress_callback: typing.Optional[typing.Callable[..., None]] = None,
-        *progress_callback_data: typing.Any,
+        flags: _FileCopyFlagsValueType,
+        cancellable: Cancellable | None = None,
+        progress_callback: Callable[[int, int, Unpack[_DataTs]], None] | None = None,
+        *progress_callback_data: Unpack[_DataTs],
     ) -> bool: ...
     def copy_async(
         self,
         destination: File,
-        flags: FileCopyFlags,
+        flags: _FileCopyFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable],
-        progress_callback_closure: typing.Optional[typing.Callable[..., typing.Any]],
-        ready_callback_closure: typing.Callable[..., typing.Any],
+        cancellable: Cancellable | None,
+        progress_callback_closure: Callable[..., Any] | None,
+        ready_callback_closure: Callable[..., Any],
     ) -> None: ...
     def copy_attributes(
         self,
         destination: File,
-        flags: FileCopyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileCopyFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def copy_finish(self, res: AsyncResult) -> bool: ...
     def create(
-        self, flags: FileCreateFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileCreateFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileOutputStream: ...
+    @overload
     def create_async(
         self,
-        flags: FileCreateFlags,
+        flags: _FileCreateFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileOutputStream]: ...
+    @overload
+    def create_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def create_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def create_finish(self, res: AsyncResult) -> FileOutputStream: ...
     def create_readwrite(
-        self, flags: FileCreateFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileCreateFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileIOStream: ...
+    @overload
     def create_readwrite_async(
         self,
-        flags: FileCreateFlags,
+        flags: _FileCreateFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileIOStream]: ...
+    @overload
+    def create_readwrite_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def create_readwrite_async(
+        self,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def create_readwrite_finish(self, res: AsyncResult) -> FileIOStream: ...
-    def delete(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def delete(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def delete_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def delete_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def delete_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def delete_finish(self, result: AsyncResult) -> bool: ...
     def dup(self) -> File: ...
+    @overload
+    def eject_mountable(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def eject_mountable(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject_mountable(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def eject_mountable_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def eject_mountable_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def eject_mountable_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject_mountable_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def eject_mountable_with_operation_finish(self, result: AsyncResult) -> bool: ...
     def enumerate_children(
         self,
         attributes: str,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> FileEnumerator: ...
+    @overload
     def enumerate_children_async(
         self,
         attributes: str,
-        flags: FileQueryInfoFlags,
+        flags: _FileQueryInfoFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileEnumerator]: ...
+    @overload
+    def enumerate_children_async(
+        self,
+        attributes: str,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def enumerate_children_async(
+        self,
+        attributes: str,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def enumerate_children_finish(self, res: AsyncResult) -> FileEnumerator: ...
     def equal(self, file2: File) -> bool: ...
-    def find_enclosing_mount(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> Mount: ...
+    def find_enclosing_mount(self, cancellable: Cancellable | None = None) -> Mount: ...
+    @overload
+    def find_enclosing_mount_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[Mount]: ...
+    @overload
     def find_enclosing_mount_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def find_enclosing_mount_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def find_enclosing_mount_finish(self, res: AsyncResult) -> Mount: ...
-    def get_basename(self) -> typing.Optional[str]: ...
+    def get_basename(self) -> str | None: ...
     def get_child(self, name: str) -> File: ...
     def get_child_for_display_name(self, display_name: str) -> File: ...
-    def get_parent(self) -> typing.Optional[File]: ...
+    def get_parent(self) -> File | None: ...
     def get_parse_name(self) -> str: ...
-    def get_path(self) -> typing.Optional[str]: ...
-    def get_relative_path(self, descendant: File) -> typing.Optional[str]: ...
+    def get_path(self) -> str | None: ...
+    def get_relative_path(self, descendant: File) -> str | None: ...
     def get_uri(self) -> str: ...
-    def get_uri_scheme(self) -> typing.Optional[str]: ...
-    def has_parent(self, parent: typing.Optional[File] = None) -> bool: ...
+    def get_uri_scheme(self) -> str | None: ...
+    def has_parent(self, parent: File | None = None) -> bool: ...
     def has_prefix(self, prefix: File) -> bool: ...
     def has_uri_scheme(self, uri_scheme: str) -> bool: ...
     def hash(self) -> int: ...
     def is_native(self) -> bool: ...
     def load_bytes(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[GLib.Bytes, str]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[GLib.Bytes, str | None]: ...
+    @overload
+    def load_bytes_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[GLib.Bytes, str | None]]: ...
+    @overload
     def load_bytes_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def load_bytes_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def load_bytes_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[GLib.Bytes, str]: ...
+    ) -> tuple[GLib.Bytes, str | None]: ...
     def load_contents(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[bool, bytes, str]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[bool, bytes, str | None]: ...
+    @overload
+    def load_contents_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[bool, bytes, str | None]]: ...
+    @overload
     def load_contents_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def load_contents_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def load_contents_finish(
         self, res: AsyncResult
-    ) -> typing.Tuple[bool, bytes, str]: ...
+    ) -> tuple[bool, bytes, str | None]: ...
     def load_partial_contents_finish(
         self, res: AsyncResult
-    ) -> typing.Tuple[bool, bytes, str]: ...
-    def make_directory(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    ) -> tuple[bool, bytes, str | None]: ...
+    def make_directory(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def make_directory_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def make_directory_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def make_directory_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def make_directory_finish(self, result: AsyncResult) -> bool: ...
     def make_directory_with_parents(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> bool: ...
     def make_symbolic_link(
-        self, symlink_value: str, cancellable: typing.Optional[Cancellable] = None
+        self, symlink_value: str, cancellable: Cancellable | None = None
     ) -> bool: ...
+    @overload
     def make_symbolic_link_async(
         self,
         symlink_value: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def make_symbolic_link_async(
+        self,
+        symlink_value: str,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def make_symbolic_link_async(
+        self,
+        symlink_value: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def make_symbolic_link_finish(self, result: AsyncResult) -> bool: ...
     def measure_disk_usage(
         self,
-        flags: FileMeasureFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        progress_callback: typing.Optional[typing.Callable[..., None]] = None,
-        *progress_data: typing.Any,
-    ) -> typing.Tuple[bool, int, int, int]: ...
+        flags: _FileMeasureFlagsValueType,
+        cancellable: Cancellable | None = None,
+        progress_callback: Callable[[bool, int, int, int, Unpack[_DataTs]], None]
+        | None = None,
+        *progress_data: Unpack[_DataTs],
+    ) -> tuple[bool, int, int, int]: ...
     def measure_disk_usage_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[bool, int, int, int]: ...
+    ) -> tuple[bool, int, int, int]: ...
     def monitor(
-        self, flags: FileMonitorFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileMonitorFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileMonitor: ...
     def monitor_directory(
-        self, flags: FileMonitorFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileMonitorFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileMonitor: ...
     def monitor_file(
-        self, flags: FileMonitorFlags, cancellable: typing.Optional[Cancellable] = None
+        self, flags: _FileMonitorFlagsValueType, cancellable: Cancellable | None = None
     ) -> FileMonitor: ...
+    @overload
     def mount_enclosing_volume(
         self,
-        flags: MountMountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def mount_enclosing_volume(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def mount_enclosing_volume(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def mount_enclosing_volume_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def mount_mountable(
         self,
-        flags: MountMountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[File]: ...
+    @overload
+    def mount_mountable(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def mount_mountable(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def mount_mountable_finish(self, result: AsyncResult) -> File: ...
     def move(
         self,
         destination: File,
-        flags: FileCopyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        progress_callback: typing.Optional[typing.Callable[..., None]] = None,
-        *progress_callback_data: typing.Any,
+        flags: _FileCopyFlagsValueType,
+        cancellable: Cancellable | None = None,
+        progress_callback: Callable[[int, int, Unpack[_DataTs]], None] | None = None,
+        *progress_callback_data: Unpack[_DataTs],
     ) -> bool: ...
     def move_async(
         self,
         destination: File,
-        flags: FileCopyFlags,
+        flags: _FileCopyFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable],
-        progress_callback_closure: typing.Optional[typing.Callable[..., typing.Any]],
-        ready_callback_closure: typing.Callable[..., typing.Any],
+        cancellable: Cancellable | None,
+        progress_callback_closure: Callable[..., Any] | None,
+        ready_callback_closure: Callable[..., Any],
     ) -> None: ...
     def move_finish(self, result: AsyncResult) -> bool: ...
     @staticmethod
-    def new_build_filenamev(args: typing.Sequence[str]) -> File: ...
+    def new_build_filenamev(args: Sequence[str]) -> File: ...
     @staticmethod
     def new_for_commandline_arg(arg: str) -> File: ...
     @staticmethod
@@ -4275,307 +5404,589 @@ class File(GObject.GInterface):
     @staticmethod
     def new_for_uri(uri: str) -> File: ...
     @staticmethod
-    def new_tmp(
-        tmpl: typing.Optional[str] = None,
-    ) -> typing.Tuple[File, FileIOStream]: ...
+    def new_tmp(tmpl: str | None = None) -> tuple[File, FileIOStream]: ...
+    @overload
     @staticmethod
     def new_tmp_async(
-        tmpl: typing.Optional[str],
+        tmpl: str | None, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[File, FileIOStream]]: ...
+    @overload
+    @staticmethod
+    def new_tmp_async(
+        tmpl: str | None,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
+    @overload
+    @staticmethod
+    def new_tmp_async(
+        tmpl: str | None,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
+    ) -> None: ...
+    @overload
     @staticmethod
     def new_tmp_dir_async(
-        tmpl: typing.Optional[str],
+        tmpl: str | None, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[File]: ...
+    @overload
+    @staticmethod
+    def new_tmp_dir_async(
+        tmpl: str | None,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[None, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    @staticmethod
+    def new_tmp_dir_async(
+        tmpl: str | None,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[None] | None,
     ) -> None: ...
     @staticmethod
     def new_tmp_dir_finish(result: AsyncResult) -> File: ...
     @staticmethod
-    def new_tmp_finish(result: AsyncResult) -> typing.Tuple[File, FileIOStream]: ...
+    def new_tmp_finish(result: AsyncResult) -> tuple[File, FileIOStream]: ...
     def open_readwrite(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> FileIOStream: ...
+    @overload
+    def open_readwrite_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileIOStream]: ...
+    @overload
     def open_readwrite_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def open_readwrite_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def open_readwrite_finish(self, res: AsyncResult) -> FileIOStream: ...
     @staticmethod
     def parse_name(parse_name: str) -> File: ...
-    def peek_path(self) -> typing.Optional[str]: ...
+    def peek_path(self) -> str | None: ...
+    @overload
+    def poll_mountable(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def poll_mountable(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def poll_mountable(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def poll_mountable_finish(self, result: AsyncResult) -> bool: ...
     def query_default_handler(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> AppInfo: ...
+    @overload
+    def query_default_handler_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[AppInfo]: ...
+    @overload
     def query_default_handler_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_default_handler_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def query_default_handler_finish(self, result: AsyncResult) -> AppInfo: ...
-    def query_exists(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    def query_exists(self, cancellable: Cancellable | None = None) -> bool: ...
     def query_file_type(
         self,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> FileType: ...
     def query_filesystem_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None = None
     ) -> FileInfo: ...
+    @overload
+    def query_filesystem_info_async(
+        self, attributes: str, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileInfo]: ...
+    @overload
     def query_filesystem_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_filesystem_info_async(
+        self,
+        attributes: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def query_filesystem_info_finish(self, res: AsyncResult) -> FileInfo: ...
     def query_info(
         self,
         attributes: str,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> FileInfo: ...
+    @overload
     def query_info_async(
         self,
         attributes: str,
-        flags: FileQueryInfoFlags,
+        flags: _FileQueryInfoFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileInfo]: ...
+    @overload
+    def query_info_async(
+        self,
+        attributes: str,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_info_async(
+        self,
+        attributes: str,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def query_info_finish(self, res: AsyncResult) -> FileInfo: ...
     def query_settable_attributes(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> FileAttributeInfoList: ...
     def query_writable_namespaces(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> FileAttributeInfoList: ...
-    def read(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> FileInputStream: ...
+    def read(self, cancellable: Cancellable | None = None) -> FileInputStream: ...
+    @overload
+    def read_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileInputStream]: ...
+    @overload
     def read_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def read_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def read_finish(self, res: AsyncResult) -> FileInputStream: ...
     def replace(
         self,
-        etag: typing.Optional[str],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> FileOutputStream: ...
+    @overload
     def replace_async(
         self,
-        etag: typing.Optional[str],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
+        flags: _FileCreateFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileOutputStream]: ...
+    @overload
+    def replace_async(
+        self,
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def replace_async(
+        self,
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def replace_contents(
         self,
-        contents: typing.Sequence[int],
-        etag: typing.Optional[str],
+        contents: Sequence[int],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, str]: ...
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> tuple[bool, str | None]: ...
+    @overload
     def replace_contents_async(
         self,
-        contents: typing.Sequence[int],
-        etag: typing.Optional[str],
+        contents: Sequence[int],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, str | None]]: ...
+    @overload
+    def replace_contents_async(
+        self,
+        contents: Sequence[int],
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def replace_contents_async(
+        self,
+        contents: Sequence[int],
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def replace_contents_bytes_async(
         self,
         contents: GLib.Bytes,
-        etag: typing.Optional[str],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def replace_contents_finish(self, res: AsyncResult) -> typing.Tuple[bool, str]: ...
+    def replace_contents_finish(self, res: AsyncResult) -> tuple[bool, str | None]: ...
     def replace_finish(self, res: AsyncResult) -> FileOutputStream: ...
     def replace_readwrite(
         self,
-        etag: typing.Optional[str],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileCreateFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> FileIOStream: ...
+    @overload
     def replace_readwrite_async(
         self,
-        etag: typing.Optional[str],
+        etag: str | None,
         make_backup: bool,
-        flags: FileCreateFlags,
+        flags: _FileCreateFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[FileIOStream]: ...
+    @overload
+    def replace_readwrite_async(
+        self,
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def replace_readwrite_async(
+        self,
+        etag: str | None,
+        make_backup: bool,
+        flags: _FileCreateFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def replace_readwrite_finish(self, res: AsyncResult) -> FileIOStream: ...
     def resolve_relative_path(self, relative_path: str) -> File: ...
     def set_attribute(
         self,
         attribute: str,
-        type: FileAttributeType,
-        value_p: None,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        type: _FileAttributeTypeValueType,
+        value_p: int | Any | None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_byte_string(
         self,
         attribute: str,
         value: str,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_int32(
         self,
         attribute: str,
         value: int,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_int64(
         self,
         attribute: str,
         value: int,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_string(
         self,
         attribute: str,
         value: str,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_uint32(
         self,
         attribute: str,
         value: int,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_attribute_uint64(
         self,
         attribute: str,
         value: int,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
+    @overload
     def set_attributes_async(
         self,
         info: FileInfo,
-        flags: FileQueryInfoFlags,
+        flags: _FileQueryInfoFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, FileInfo]]: ...
+    @overload
+    def set_attributes_async(
+        self,
+        info: FileInfo,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def set_attributes_finish(
-        self, result: AsyncResult
-    ) -> typing.Tuple[bool, FileInfo]: ...
+    @overload
+    def set_attributes_async(
+        self,
+        info: FileInfo,
+        flags: _FileQueryInfoFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
+    ) -> None: ...
+    def set_attributes_finish(self, result: AsyncResult) -> tuple[bool, FileInfo]: ...
     def set_attributes_from_info(
         self,
         info: FileInfo,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def set_display_name(
-        self, display_name: str, cancellable: typing.Optional[Cancellable] = None
+        self, display_name: str, cancellable: Cancellable | None = None
     ) -> File: ...
+    @overload
     def set_display_name_async(
         self,
         display_name: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[File]: ...
+    @overload
+    def set_display_name_async(
+        self,
+        display_name: str,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def set_display_name_async(
+        self,
+        display_name: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def set_display_name_finish(self, res: AsyncResult) -> File: ...
+    @overload
     def start_mountable(
         self,
-        flags: DriveStartFlags,
-        start_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _DriveStartFlagsValueType,
+        start_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def start_mountable(
+        self,
+        flags: _DriveStartFlagsValueType,
+        start_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def start_mountable(
+        self,
+        flags: _DriveStartFlagsValueType,
+        start_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def start_mountable_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def stop_mountable(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def stop_mountable(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def stop_mountable(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def stop_mountable_finish(self, result: AsyncResult) -> bool: ...
     def supports_thread_contexts(self) -> bool: ...
-    def trash(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def trash(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def trash_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def trash_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def trash_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def trash_finish(self, result: AsyncResult) -> bool: ...
+    @overload
+    def unmount_mountable(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def unmount_mountable(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def unmount_mountable(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def unmount_mountable_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def unmount_mountable_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def unmount_mountable_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[File, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def unmount_mountable_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[File] | None,
     ) -> None: ...
     def unmount_mountable_with_operation_finish(self, result: AsyncResult) -> bool: ...
 
-class FileAttributeInfo(GObject.GPointer):
+class FileAttributeInfo(_gi.Struct):
     """
     :Constructors:
 
@@ -4584,9 +5995,9 @@ class FileAttributeInfo(GObject.GPointer):
         FileAttributeInfo()
     """
 
-    name: str = ...
-    type: FileAttributeType = ...
-    flags: FileAttributeInfoFlags = ...
+    name: str
+    type: FileAttributeType
+    flags: FileAttributeInfoFlags
 
 class FileAttributeInfoList(GObject.GBoxed):
     """
@@ -4598,10 +6009,14 @@ class FileAttributeInfoList(GObject.GBoxed):
         new() -> Gio.FileAttributeInfoList
     """
 
-    infos: FileAttributeInfo = ...
-    n_infos: int = ...
+    infos: FileAttributeInfo
+    n_infos: int
+    def __init__(self) -> None: ...
     def add(
-        self, name: str, type: FileAttributeType, flags: FileAttributeInfoFlags
+        self,
+        name: str,
+        type: _FileAttributeTypeValueType,
+        flags: _FileAttributeInfoFlagsValueType,
     ) -> None: ...
     def dup(self) -> FileAttributeInfoList: ...
     def lookup(self, name: str) -> FileAttributeInfo: ...
@@ -4618,41 +6033,21 @@ class FileAttributeMatcher(GObject.GBoxed):
 
         new(attributes:str) -> Gio.FileAttributeMatcher
     """
-
+    def __init__(self, attributes: str) -> None: ...
     def enumerate_namespace(self, ns: str) -> bool: ...
-    def enumerate_next(self) -> typing.Optional[str]: ...
+    def enumerate_next(self) -> str | None: ...
     def matches(self, attribute: str) -> bool: ...
     def matches_only(self, attribute: str) -> bool: ...
     @classmethod
     def new(cls, attributes: str) -> FileAttributeMatcher: ...
     def ref(self) -> FileAttributeMatcher: ...
     def subtract(
-        self, subtract: typing.Optional[FileAttributeMatcher] = None
-    ) -> typing.Optional[FileAttributeMatcher]: ...
+        self, subtract: FileAttributeMatcher | None = None
+    ) -> FileAttributeMatcher | None: ...
     def to_string(self) -> str: ...
     def unref(self) -> None: ...
 
-class FileDescriptorBased(GObject.GInterface):
-    """
-    Interface GFileDescriptorBased
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    def get_fd(self) -> int: ...
-
-class FileDescriptorBasedIface(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        FileDescriptorBasedIface()
-    """
-
-    g_iface: GObject.TypeInterface = ...
-    get_fd: typing.Callable[[FileDescriptorBased], int] = ...
+FileDescriptorBased = GioUnix.FileDescriptorBased
 
 class FileEnumerator(GObject.Object):
     """
@@ -4670,66 +6065,92 @@ class FileEnumerator(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        container: File
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: FileEnumeratorPrivate = ...
-    def __init__(self, container: File = ...) -> None: ...
-    def close(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> FileEnumeratorPrivate: ...
+    def __init__(self, *, container: File | None = ...) -> None: ...
+    # override
+    def __iter__(self) -> Self: ...
+    # override
+    def __next__(self) -> FileInfo: ...
+    def close(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def close_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[FileEnumerator, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[FileEnumerator] | None,
     ) -> None: ...
     def close_finish(self, result: AsyncResult) -> bool: ...
     def do_close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[FileEnumerator, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_close_finish(self, result: AsyncResult) -> bool: ...
-    def do_close_fn(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
-    def do_next_file(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Optional[FileInfo]: ...
+    def do_close_finish(self, result: AsyncResult, /) -> bool: ...
+    def do_close_fn(self, cancellable: Cancellable | None, /) -> bool: ...
+    def do_next_file(self, cancellable: Cancellable | None, /) -> FileInfo | None: ...
     def do_next_files_async(
         self,
         num_files: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[FileEnumerator, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_next_files_finish(self, result: AsyncResult) -> list[FileInfo]: ...
+    def do_next_files_finish(self, result: AsyncResult, /) -> list[FileInfo]: ...
     def get_child(self, info: FileInfo) -> File: ...
     def get_container(self) -> File: ...
     def has_pending(self) -> bool: ...
     def is_closed(self) -> bool: ...
     def iterate(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[bool, FileInfo, File]: ...
-    def next_file(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Optional[FileInfo]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[bool, FileInfo, File]: ...
+    def next_file(self, cancellable: Cancellable | None = None) -> FileInfo | None: ...
+    @overload
+    def next_files_async(
+        self, num_files: int, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[list[FileInfo]]: ...
+    @overload
     def next_files_async(
         self,
         num_files: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[FileEnumerator, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def next_files_async(
+        self,
+        num_files: int,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[FileEnumerator] | None,
     ) -> None: ...
     def next_files_finish(self, result: AsyncResult) -> list[FileInfo]: ...
     def set_pending(self, pending: bool) -> None: ...
 
-class FileEnumeratorClass(GObject.GPointer):
+class FileEnumeratorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -4737,29 +6158,49 @@ class FileEnumeratorClass(GObject.GPointer):
 
         FileEnumeratorClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def next_file(
+        self,
+    ) -> Callable[[FileEnumerator, Cancellable | None], FileInfo | None]: ...
+    @property
+    def close_fn(self) -> Callable[[FileEnumerator, Cancellable | None], bool]: ...
+    @property
+    def next_files_async(
+        self,
+    ) -> Callable[
+        [
+            FileEnumerator,
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def next_files_finish(
+        self,
+    ) -> Callable[[FileEnumerator, AsyncResult], list[FileInfo]]: ...
+    @property
+    def close_async(
+        self,
+    ) -> Callable[
+        [
+            FileEnumerator,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def close_finish(self) -> Callable[[FileEnumerator, AsyncResult], bool]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    next_file: typing.Callable[
-        [FileEnumerator, typing.Optional[Cancellable]], typing.Optional[FileInfo]
-    ] = ...
-    close_fn: typing.Callable[
-        [FileEnumerator, typing.Optional[Cancellable]], bool
-    ] = ...
-    next_files_async: typing.Callable[..., None] = ...
-    next_files_finish: typing.Callable[
-        [FileEnumerator, AsyncResult], list[FileInfo]
-    ] = ...
-    close_async: typing.Callable[..., None] = ...
-    close_finish: typing.Callable[[FileEnumerator, AsyncResult], bool] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
-
-class FileEnumeratorPrivate(GObject.GPointer): ...
+class FileEnumeratorPrivate(_gi.Struct): ...
 
 class FileIOStream(IOStream, Seekable):
     """
@@ -4779,55 +6220,60 @@ class FileIOStream(IOStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
-
-    props: Props = ...
-    parent_instance: IOStream = ...
-    priv: FileIOStreamPrivate = ...
+    @property
+    def parent_instance(self) -> IOStream: ...
+    @property
+    def priv(self) -> FileIOStreamPrivate: ...
     def do_can_seek(self) -> bool: ...
     def do_can_truncate(self) -> bool: ...
-    def do_get_etag(self) -> typing.Optional[str]: ...
+    def do_get_etag(self) -> str | None: ...
     def do_query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None, /
     ) -> FileInfo: ...
     def do_query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[FileIOStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_query_info_finish(self, result: AsyncResult) -> FileInfo: ...
+    def do_query_info_finish(self, result: AsyncResult, /) -> FileInfo: ...
     def do_seek(
-        self,
-        offset: int,
-        type: GLib.SeekType,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, offset: int, type: GLib.SeekType, cancellable: Cancellable | None, /
     ) -> bool: ...
     def do_tell(self) -> int: ...
-    def do_truncate_fn(
-        self, size: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def get_etag(self) -> typing.Optional[str]: ...
+    def do_truncate_fn(self, size: int, cancellable: Cancellable | None, /) -> bool: ...
+    def get_etag(self) -> str | None: ...
     def query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None = None
     ) -> FileInfo: ...
+    @overload
+    def query_info_async(
+        self, attributes: str, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileInfo]: ...
+    @overload
     def query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[FileIOStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_info_async(
+        self,
+        attributes: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[FileIOStream] | None,
     ) -> None: ...
     def query_info_finish(self, result: AsyncResult) -> FileInfo: ...
 
-class FileIOStreamClass(GObject.GPointer):
+class FileIOStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -4835,30 +6281,46 @@ class FileIOStreamClass(GObject.GPointer):
 
         FileIOStreamClass()
     """
+    @property
+    def parent_class(self) -> IOStreamClass: ...
+    @property
+    def tell(self) -> Callable[[FileIOStream], int]: ...
+    @property
+    def can_seek(self) -> Callable[[FileIOStream], bool]: ...
+    @property
+    def seek(
+        self,
+    ) -> Callable[[FileIOStream, int, GLib.SeekType, Cancellable | None], bool]: ...
+    @property
+    def can_truncate(self) -> Callable[[FileIOStream], bool]: ...
+    @property
+    def truncate_fn(
+        self,
+    ) -> Callable[[FileIOStream, int, Cancellable | None], bool]: ...
+    @property
+    def query_info(
+        self,
+    ) -> Callable[[FileIOStream, str, Cancellable | None], FileInfo]: ...
+    @property
+    def query_info_async(
+        self,
+    ) -> Callable[
+        [
+            FileIOStream,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def query_info_finish(self) -> Callable[[FileIOStream, AsyncResult], FileInfo]: ...
+    @property
+    def get_etag(self) -> Callable[[FileIOStream], str | None]: ...
 
-    parent_class: IOStreamClass = ...
-    tell: typing.Callable[[FileIOStream], int] = ...
-    can_seek: typing.Callable[[FileIOStream], bool] = ...
-    seek: typing.Callable[
-        [FileIOStream, int, GLib.SeekType, typing.Optional[Cancellable]], bool
-    ] = ...
-    can_truncate: typing.Callable[[FileIOStream], bool] = ...
-    truncate_fn: typing.Callable[
-        [FileIOStream, int, typing.Optional[Cancellable]], bool
-    ] = ...
-    query_info: typing.Callable[
-        [FileIOStream, str, typing.Optional[Cancellable]], FileInfo
-    ] = ...
-    query_info_async: typing.Callable[..., None] = ...
-    query_info_finish: typing.Callable[[FileIOStream, AsyncResult], FileInfo] = ...
-    get_etag: typing.Callable[[FileIOStream], typing.Optional[str]] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class FileIOStreamPrivate(GObject.GPointer): ...
+class FileIOStreamPrivate(_gi.Struct): ...
 
 class FileIcon(GObject.Object, Icon, LoadableIcon):
     """
@@ -4877,20 +6339,21 @@ class FileIcon(GObject.Object, Icon, LoadableIcon):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def file(self) -> File: ...
 
-    class Props:
-        file: File
-
-    props: Props = ...
-    # override
-    def __init__(self, *, file: File = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, file: File | None = ...) -> None: ...
     def get_file(self) -> File: ...
     @classmethod
     def new(cls, file: File) -> FileIcon: ...
 
-class FileIconClass(GObject.GPointer): ...
+class FileIconClass(_gi.Struct): ...
 
-class FileIface(GObject.GPointer):
+class FileIface(_gi.Struct):
     """
     :Constructors:
 
@@ -4898,182 +6361,658 @@ class FileIface(GObject.GPointer):
 
         FileIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    dup: typing.Callable[[File], File] = ...
-    hash: typing.Callable[[File], int] = ...
-    equal: typing.Callable[[File, File], bool] = ...
-    is_native: typing.Callable[[File], bool] = ...
-    has_uri_scheme: typing.Callable[[File, str], bool] = ...
-    get_uri_scheme: typing.Callable[[File], typing.Optional[str]] = ...
-    get_basename: typing.Callable[[File], typing.Optional[str]] = ...
-    get_path: typing.Callable[[File], typing.Optional[str]] = ...
-    get_uri: typing.Callable[[File], str] = ...
-    get_parse_name: typing.Callable[[File], str] = ...
-    get_parent: typing.Callable[[File], typing.Optional[File]] = ...
-    prefix_matches: typing.Callable[[File, File], bool] = ...
-    get_relative_path: typing.Callable[[File, File], typing.Optional[str]] = ...
-    resolve_relative_path: typing.Callable[[File, str], File] = ...
-    get_child_for_display_name: typing.Callable[[File, str], File] = ...
-    enumerate_children: typing.Callable[
-        [File, str, FileQueryInfoFlags, typing.Optional[Cancellable]], FileEnumerator
-    ] = ...
-    enumerate_children_async: typing.Callable[..., None] = ...
-    enumerate_children_finish: typing.Callable[
-        [File, AsyncResult], FileEnumerator
-    ] = ...
-    query_info: typing.Callable[
-        [File, str, FileQueryInfoFlags, typing.Optional[Cancellable]], FileInfo
-    ] = ...
-    query_info_async: typing.Callable[..., None] = ...
-    query_info_finish: typing.Callable[[File, AsyncResult], FileInfo] = ...
-    query_filesystem_info: typing.Callable[
-        [File, str, typing.Optional[Cancellable]], FileInfo
-    ] = ...
-    query_filesystem_info_async: typing.Callable[..., None] = ...
-    query_filesystem_info_finish: typing.Callable[[File, AsyncResult], FileInfo] = ...
-    find_enclosing_mount: typing.Callable[
-        [File, typing.Optional[Cancellable]], Mount
-    ] = ...
-    find_enclosing_mount_async: typing.Callable[..., None] = ...
-    find_enclosing_mount_finish: typing.Callable[[File, AsyncResult], Mount] = ...
-    set_display_name: typing.Callable[
-        [File, str, typing.Optional[Cancellable]], File
-    ] = ...
-    set_display_name_async: typing.Callable[..., None] = ...
-    set_display_name_finish: typing.Callable[[File, AsyncResult], File] = ...
-    query_settable_attributes: typing.Callable[
-        [File, typing.Optional[Cancellable]], FileAttributeInfoList
-    ] = ...
-    _query_settable_attributes_async: None = ...
-    _query_settable_attributes_finish: None = ...
-    query_writable_namespaces: typing.Callable[
-        [File, typing.Optional[Cancellable]], FileAttributeInfoList
-    ] = ...
-    _query_writable_namespaces_async: None = ...
-    _query_writable_namespaces_finish: None = ...
-    set_attribute: typing.Callable[
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def dup(self) -> Callable[[File], File]: ...
+    @property
+    def hash(self) -> Callable[[File], int]: ...
+    @property
+    def equal(self) -> Callable[[File, File], bool]: ...
+    @property
+    def is_native(self) -> Callable[[File], bool]: ...
+    @property
+    def has_uri_scheme(self) -> Callable[[File, str], bool]: ...
+    @property
+    def get_uri_scheme(self) -> Callable[[File], str | None]: ...
+    @property
+    def get_basename(self) -> Callable[[File], str | None]: ...
+    @property
+    def get_path(self) -> Callable[[File], str | None]: ...
+    @property
+    def get_uri(self) -> Callable[[File], str]: ...
+    @property
+    def get_parse_name(self) -> Callable[[File], str]: ...
+    @property
+    def get_parent(self) -> Callable[[File], File | None]: ...
+    @property
+    def prefix_matches(self) -> Callable[[File, File], bool]: ...
+    @property
+    def get_relative_path(self) -> Callable[[File, File], str | None]: ...
+    @property
+    def resolve_relative_path(self) -> Callable[[File, str], File]: ...
+    @property
+    def get_child_for_display_name(self) -> Callable[[File, str], File]: ...
+    @property
+    def enumerate_children(
+        self,
+    ) -> Callable[
+        [File, str, _FileQueryInfoFlagsValueType, Cancellable | None], FileEnumerator
+    ]: ...
+    @property
+    def enumerate_children_async(
+        self,
+    ) -> Callable[
         [
             File,
             str,
-            FileAttributeType,
-            None,
-            FileQueryInfoFlags,
-            typing.Optional[Cancellable],
+            _FileQueryInfoFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def enumerate_children_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], FileEnumerator]: ...
+    @property
+    def query_info(
+        self,
+    ) -> Callable[
+        [File, str, _FileQueryInfoFlagsValueType, Cancellable | None], FileInfo
+    ]: ...
+    @property
+    def query_info_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str,
+            _FileQueryInfoFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def query_info_finish(self) -> Callable[[File, AsyncResult], FileInfo]: ...
+    @property
+    def query_filesystem_info(
+        self,
+    ) -> Callable[[File, str, Cancellable | None], FileInfo]: ...
+    @property
+    def query_filesystem_info_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def query_filesystem_info_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], FileInfo]: ...
+    @property
+    def find_enclosing_mount(self) -> Callable[[File, Cancellable | None], Mount]: ...
+    @property
+    def find_enclosing_mount_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def find_enclosing_mount_finish(self) -> Callable[[File, AsyncResult], Mount]: ...
+    @property
+    def set_display_name(self) -> Callable[[File, str, Cancellable | None], File]: ...
+    @property
+    def set_display_name_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def set_display_name_finish(self) -> Callable[[File, AsyncResult], File]: ...
+    @property
+    def query_settable_attributes(
+        self,
+    ) -> Callable[[File, Cancellable | None], FileAttributeInfoList]: ...
+    @property
+    def query_writable_namespaces(
+        self,
+    ) -> Callable[[File, Cancellable | None], FileAttributeInfoList]: ...
+    @property
+    def set_attribute(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str,
+            _FileAttributeTypeValueType,
+            Any | None,
+            _FileQueryInfoFlagsValueType,
+            Cancellable | None,
         ],
         bool,
-    ] = ...
-    set_attributes_from_info: typing.Callable[
-        [File, FileInfo, FileQueryInfoFlags, typing.Optional[Cancellable]], bool
-    ] = ...
-    set_attributes_async: typing.Callable[..., None] = ...
-    set_attributes_finish: typing.Callable[
-        [File, AsyncResult], typing.Tuple[bool, FileInfo]
-    ] = ...
-    read_fn: typing.Callable[
-        [File, typing.Optional[Cancellable]], FileInputStream
-    ] = ...
-    read_async: typing.Callable[..., None] = ...
-    read_finish: typing.Callable[[File, AsyncResult], FileInputStream] = ...
-    append_to: typing.Callable[
-        [File, FileCreateFlags, typing.Optional[Cancellable]], FileOutputStream
-    ] = ...
-    append_to_async: typing.Callable[..., None] = ...
-    append_to_finish: typing.Callable[[File, AsyncResult], FileOutputStream] = ...
-    create: typing.Callable[
-        [File, FileCreateFlags, typing.Optional[Cancellable]], FileOutputStream
-    ] = ...
-    create_async: typing.Callable[..., None] = ...
-    create_finish: typing.Callable[[File, AsyncResult], FileOutputStream] = ...
-    replace: typing.Callable[
+    ]: ...
+    @property
+    def set_attributes_from_info(
+        self,
+    ) -> Callable[
+        [File, FileInfo, _FileQueryInfoFlagsValueType, Cancellable | None], bool
+    ]: ...
+    @property
+    def set_attributes_async(
+        self,
+    ) -> Callable[
         [
             File,
-            typing.Optional[str],
-            bool,
-            FileCreateFlags,
-            typing.Optional[Cancellable],
+            FileInfo,
+            _FileQueryInfoFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
         ],
+        None,
+    ]: ...
+    @property
+    def set_attributes_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], tuple[bool, FileInfo]]: ...
+    @property
+    def read_fn(self) -> Callable[[File, Cancellable | None], FileInputStream]: ...
+    @property
+    def read_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def read_finish(self) -> Callable[[File, AsyncResult], FileInputStream]: ...
+    @property
+    def append_to(
+        self,
+    ) -> Callable[
+        [File, _FileCreateFlagsValueType, Cancellable | None], FileOutputStream
+    ]: ...
+    @property
+    def append_to_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _FileCreateFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def append_to_finish(self) -> Callable[[File, AsyncResult], FileOutputStream]: ...
+    @property
+    def create(
+        self,
+    ) -> Callable[
+        [File, _FileCreateFlagsValueType, Cancellable | None], FileOutputStream
+    ]: ...
+    @property
+    def create_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _FileCreateFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def create_finish(self) -> Callable[[File, AsyncResult], FileOutputStream]: ...
+    @property
+    def replace(
+        self,
+    ) -> Callable[
+        [File, str | None, bool, _FileCreateFlagsValueType, Cancellable | None],
         FileOutputStream,
-    ] = ...
-    replace_async: typing.Callable[..., None] = ...
-    replace_finish: typing.Callable[[File, AsyncResult], FileOutputStream] = ...
-    delete_file: typing.Callable[[File, typing.Optional[Cancellable]], bool] = ...
-    delete_file_async: typing.Callable[..., None] = ...
-    delete_file_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    trash: typing.Callable[[File, typing.Optional[Cancellable]], bool] = ...
-    trash_async: typing.Callable[..., None] = ...
-    trash_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    make_directory: typing.Callable[[File, typing.Optional[Cancellable]], bool] = ...
-    make_directory_async: typing.Callable[..., None] = ...
-    make_directory_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    make_symbolic_link: typing.Callable[
-        [File, str, typing.Optional[Cancellable]], bool
-    ] = ...
-    make_symbolic_link_async: typing.Callable[..., None] = ...
-    make_symbolic_link_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    copy: typing.Callable[..., bool] = ...
-    copy_async: typing.Callable[..., None] = ...
-    copy_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    move: typing.Callable[..., bool] = ...
-    move_async: typing.Callable[..., None] = ...
-    move_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    mount_mountable: typing.Callable[..., None] = ...
-    mount_mountable_finish: typing.Callable[[File, AsyncResult], File] = ...
-    unmount_mountable: typing.Callable[..., None] = ...
-    unmount_mountable_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    eject_mountable: typing.Callable[..., None] = ...
-    eject_mountable_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    mount_enclosing_volume: typing.Callable[..., None] = ...
-    mount_enclosing_volume_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    monitor_dir: typing.Callable[
-        [File, FileMonitorFlags, typing.Optional[Cancellable]], FileMonitor
-    ] = ...
-    monitor_file: typing.Callable[
-        [File, FileMonitorFlags, typing.Optional[Cancellable]], FileMonitor
-    ] = ...
-    open_readwrite: typing.Callable[
-        [File, typing.Optional[Cancellable]], FileIOStream
-    ] = ...
-    open_readwrite_async: typing.Callable[..., None] = ...
-    open_readwrite_finish: typing.Callable[[File, AsyncResult], FileIOStream] = ...
-    create_readwrite: typing.Callable[
-        [File, FileCreateFlags, typing.Optional[Cancellable]], FileIOStream
-    ] = ...
-    create_readwrite_async: typing.Callable[..., None] = ...
-    create_readwrite_finish: typing.Callable[[File, AsyncResult], FileIOStream] = ...
-    replace_readwrite: typing.Callable[
+    ]: ...
+    @property
+    def replace_async(
+        self,
+    ) -> Callable[
         [
             File,
-            typing.Optional[str],
+            str | None,
             bool,
-            FileCreateFlags,
-            typing.Optional[Cancellable],
+            _FileCreateFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
         ],
+        None,
+    ]: ...
+    @property
+    def replace_finish(self) -> Callable[[File, AsyncResult], FileOutputStream]: ...
+    @property
+    def delete_file(self) -> Callable[[File, Cancellable | None], bool]: ...
+    @property
+    def delete_file_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def delete_file_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def trash(self) -> Callable[[File, Cancellable | None], bool]: ...
+    @property
+    def trash_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def trash_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def make_directory(self) -> Callable[[File, Cancellable | None], bool]: ...
+    @property
+    def make_directory_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def make_directory_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def make_symbolic_link(self) -> Callable[[File, str, Cancellable | None], bool]: ...
+    @property
+    def make_symbolic_link_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def make_symbolic_link_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def copy(
+        self,
+    ) -> Callable[
+        [
+            File,
+            File,
+            _FileCopyFlagsValueType,
+            Cancellable | None,
+            Callable[[int, int, Any | None], None] | None,
+            Any | None,
+        ],
+        bool,
+    ]: ...
+    @property
+    def copy_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            File,
+            _FileCopyFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[int, int, Any | None], None] | None,
+            int | Any | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def copy_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def move(
+        self,
+    ) -> Callable[
+        [
+            File,
+            File,
+            _FileCopyFlagsValueType,
+            Cancellable | None,
+            Callable[[int, int, Any | None], None] | None,
+            Any | None,
+        ],
+        bool,
+    ]: ...
+    @property
+    def move_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            File,
+            _FileCopyFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[int, int, Any | None], None] | None,
+            int | Any | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def move_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def mount_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountMountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def mount_mountable_finish(self) -> Callable[[File, AsyncResult], File]: ...
+    @property
+    def unmount_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def unmount_mountable_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def eject_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_mountable_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def mount_enclosing_volume(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountMountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def mount_enclosing_volume_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def monitor_dir(
+        self,
+    ) -> Callable[
+        [File, _FileMonitorFlagsValueType, Cancellable | None], FileMonitor
+    ]: ...
+    @property
+    def monitor_file(
+        self,
+    ) -> Callable[
+        [File, _FileMonitorFlagsValueType, Cancellable | None], FileMonitor
+    ]: ...
+    @property
+    def open_readwrite(self) -> Callable[[File, Cancellable | None], FileIOStream]: ...
+    @property
+    def open_readwrite_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def open_readwrite_finish(self) -> Callable[[File, AsyncResult], FileIOStream]: ...
+    @property
+    def create_readwrite(
+        self,
+    ) -> Callable[
+        [File, _FileCreateFlagsValueType, Cancellable | None], FileIOStream
+    ]: ...
+    @property
+    def create_readwrite_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _FileCreateFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def create_readwrite_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], FileIOStream]: ...
+    @property
+    def replace_readwrite(
+        self,
+    ) -> Callable[
+        [File, str | None, bool, _FileCreateFlagsValueType, Cancellable | None],
         FileIOStream,
-    ] = ...
-    replace_readwrite_async: typing.Callable[..., None] = ...
-    replace_readwrite_finish: typing.Callable[[File, AsyncResult], FileIOStream] = ...
-    start_mountable: typing.Callable[..., None] = ...
-    start_mountable_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    stop_mountable: typing.Callable[..., None] = ...
-    stop_mountable_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    supports_thread_contexts: bool = ...
-    unmount_mountable_with_operation: typing.Callable[..., None] = ...
-    unmount_mountable_with_operation_finish: typing.Callable[
-        [File, AsyncResult], bool
-    ] = ...
-    eject_mountable_with_operation: typing.Callable[..., None] = ...
-    eject_mountable_with_operation_finish: typing.Callable[
-        [File, AsyncResult], bool
-    ] = ...
-    poll_mountable: typing.Callable[..., None] = ...
-    poll_mountable_finish: typing.Callable[[File, AsyncResult], bool] = ...
-    measure_disk_usage: typing.Callable[..., typing.Tuple[bool, int, int, int]] = ...
-    measure_disk_usage_async: None = ...
-    measure_disk_usage_finish: typing.Callable[
-        [File, AsyncResult], typing.Tuple[bool, int, int, int]
-    ] = ...
-    query_exists: typing.Callable[[File, typing.Optional[Cancellable]], bool] = ...
+    ]: ...
+    @property
+    def replace_readwrite_async(
+        self,
+    ) -> Callable[
+        [
+            File,
+            str | None,
+            bool,
+            _FileCreateFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def replace_readwrite_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], FileIOStream]: ...
+    @property
+    def start_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _DriveStartFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def start_mountable_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def stop_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def stop_mountable_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def supports_thread_contexts(self) -> bool: ...
+    @property
+    def unmount_mountable_with_operation(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def unmount_mountable_with_operation_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def eject_mountable_with_operation(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_mountable_with_operation_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def poll_mountable(
+        self,
+    ) -> Callable[
+        [
+            File,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def poll_mountable_finish(self) -> Callable[[File, AsyncResult], bool]: ...
+    @property
+    def measure_disk_usage(
+        self,
+    ) -> Callable[
+        [
+            File,
+            _FileMeasureFlagsValueType,
+            Cancellable | None,
+            Callable[[bool, int, int, int, Any | None], None] | None,
+            Any | None,
+        ],
+        tuple[bool, int, int, int],
+    ]: ...
+    @property
+    def measure_disk_usage_async(self) -> int: ...
+    @property
+    def measure_disk_usage_finish(
+        self,
+    ) -> Callable[[File, AsyncResult], tuple[bool, int, int, int]]: ...
+    @property
+    def query_exists(self) -> Callable[[File, Cancellable | None], bool]: ...
 
 class FileInfo(GObject.Object):
     """
@@ -5089,58 +7028,56 @@ class FileInfo(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def clear_status(self) -> None: ...
     def copy_into(self, dest_info: FileInfo) -> None: ...
     def dup(self) -> FileInfo: ...
-    def get_access_date_time(self) -> typing.Optional[GLib.DateTime]: ...
-    def get_attribute_as_string(self, attribute: str) -> typing.Optional[str]: ...
+    def get_access_date_time(self) -> GLib.DateTime | None: ...
+    def get_attribute_as_string(self, attribute: str) -> str | None: ...
     def get_attribute_boolean(self, attribute: str) -> bool: ...
-    def get_attribute_byte_string(self, attribute: str) -> typing.Optional[str]: ...
+    def get_attribute_byte_string(self, attribute: str) -> str | None: ...
     def get_attribute_data(
         self, attribute: str
-    ) -> typing.Tuple[bool, FileAttributeType, None, FileAttributeStatus]: ...
-    def get_attribute_file_path(self, attribute: str) -> typing.Optional[str]: ...
+    ) -> tuple[bool, FileAttributeType, int, FileAttributeStatus]: ...
+    def get_attribute_file_path(self, attribute: str) -> str | None: ...
     def get_attribute_int32(self, attribute: str) -> int: ...
     def get_attribute_int64(self, attribute: str) -> int: ...
-    def get_attribute_object(
-        self, attribute: str
-    ) -> typing.Optional[GObject.Object]: ...
+    def get_attribute_object(self, attribute: str) -> GObject.Object | None: ...
     def get_attribute_status(self, attribute: str) -> FileAttributeStatus: ...
-    def get_attribute_string(self, attribute: str) -> typing.Optional[str]: ...
-    def get_attribute_stringv(self, attribute: str) -> typing.Optional[list[str]]: ...
+    def get_attribute_string(self, attribute: str) -> str | None: ...
+    def get_attribute_stringv(self, attribute: str) -> list[str]: ...
     def get_attribute_type(self, attribute: str) -> FileAttributeType: ...
     def get_attribute_uint32(self, attribute: str) -> int: ...
     def get_attribute_uint64(self, attribute: str) -> int: ...
-    def get_content_type(self) -> typing.Optional[str]: ...
-    def get_creation_date_time(self) -> typing.Optional[GLib.DateTime]: ...
-    def get_deletion_date(self) -> typing.Optional[GLib.DateTime]: ...
+    def get_content_type(self) -> str | None: ...
+    def get_creation_date_time(self) -> GLib.DateTime | None: ...
+    def get_deletion_date(self) -> GLib.DateTime | None: ...
     def get_display_name(self) -> str: ...
     def get_edit_name(self) -> str: ...
-    def get_etag(self) -> typing.Optional[str]: ...
+    def get_etag(self) -> str | None: ...
     def get_file_type(self) -> FileType: ...
-    def get_icon(self) -> typing.Optional[Icon]: ...
+    def get_icon(self) -> Icon | None: ...
     def get_is_backup(self) -> bool: ...
     def get_is_hidden(self) -> bool: ...
     def get_is_symlink(self) -> bool: ...
-    def get_modification_date_time(self) -> typing.Optional[GLib.DateTime]: ...
+    def get_modification_date_time(self) -> GLib.DateTime | None: ...
     def get_modification_time(self) -> GLib.TimeVal: ...
     def get_name(self) -> str: ...
     def get_size(self) -> int: ...
     def get_sort_order(self) -> int: ...
-    def get_symbolic_icon(self) -> typing.Optional[Icon]: ...
-    def get_symlink_target(self) -> typing.Optional[str]: ...
+    def get_symbolic_icon(self) -> Icon | None: ...
+    def get_symlink_target(self) -> str | None: ...
     def has_attribute(self, attribute: str) -> bool: ...
     def has_namespace(self, name_space: str) -> bool: ...
-    def list_attributes(
-        self, name_space: typing.Optional[str] = None
-    ) -> typing.Optional[list[str]]: ...
+    def list_attributes(self, name_space: str | None = None) -> list[str]: ...
     @classmethod
     def new(cls) -> FileInfo: ...
     def remove_attribute(self, attribute: str) -> None: ...
     def set_access_date_time(self, atime: GLib.DateTime) -> None: ...
     def set_attribute(
-        self, attribute: str, type: FileAttributeType, value_p: None
+        self,
+        attribute: str,
+        type: _FileAttributeTypeValueType,
+        value_p: int | Any | None,
     ) -> None: ...
     def set_attribute_boolean(self, attribute: str, attr_value: bool) -> None: ...
     def set_attribute_byte_string(self, attribute: str, attr_value: str) -> None: ...
@@ -5152,11 +7089,11 @@ class FileInfo(GObject.Object):
         self, attribute: str, attr_value: GObject.Object
     ) -> None: ...
     def set_attribute_status(
-        self, attribute: str, status: FileAttributeStatus
+        self, attribute: str, status: _FileAttributeStatusValueType
     ) -> bool: ...
     def set_attribute_string(self, attribute: str, attr_value: str) -> None: ...
     def set_attribute_stringv(
-        self, attribute: str, attr_value: typing.Sequence[str]
+        self, attribute: str, attr_value: Sequence[str]
     ) -> None: ...
     def set_attribute_uint32(self, attribute: str, attr_value: int) -> None: ...
     def set_attribute_uint64(self, attribute: str, attr_value: int) -> None: ...
@@ -5164,7 +7101,7 @@ class FileInfo(GObject.Object):
     def set_creation_date_time(self, creation_time: GLib.DateTime) -> None: ...
     def set_display_name(self, display_name: str) -> None: ...
     def set_edit_name(self, edit_name: str) -> None: ...
-    def set_file_type(self, type: FileType) -> None: ...
+    def set_file_type(self, type: _FileTypeValueType) -> None: ...
     def set_icon(self, icon: Icon) -> None: ...
     def set_is_hidden(self, is_hidden: bool) -> None: ...
     def set_is_symlink(self, is_symlink: bool) -> None: ...
@@ -5177,7 +7114,7 @@ class FileInfo(GObject.Object):
     def set_symlink_target(self, symlink_target: str) -> None: ...
     def unset_attribute_mask(self) -> None: ...
 
-class FileInfoClass(GObject.GPointer): ...
+class FileInfoClass(_gi.Struct): ...
 
 class FileInputStream(InputStream, Seekable):
     """
@@ -5192,43 +7129,56 @@ class FileInputStream(InputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: InputStream = ...
-    priv: FileInputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> InputStream: ...
+    @property
+    def priv(self) -> FileInputStreamPrivate: ...
     def do_can_seek(self) -> bool: ...
     def do_query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None, /
     ) -> FileInfo: ...
     def do_query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[FileInputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_query_info_finish(self, result: AsyncResult) -> FileInfo: ...
+    def do_query_info_finish(self, result: AsyncResult, /) -> FileInfo: ...
     def do_seek(
-        self,
-        offset: int,
-        type: GLib.SeekType,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, offset: int, type: GLib.SeekType, cancellable: Cancellable | None, /
     ) -> bool: ...
     def do_tell(self) -> int: ...
     def query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None = None
     ) -> FileInfo: ...
+    @overload
+    def query_info_async(
+        self, attributes: str, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileInfo]: ...
+    @overload
     def query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[FileInputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_info_async(
+        self,
+        attributes: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[FileInputStream] | None,
     ) -> None: ...
     def query_info_finish(self, result: AsyncResult) -> FileInfo: ...
 
-class FileInputStreamClass(GObject.GPointer):
+class FileInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5236,25 +7186,40 @@ class FileInputStreamClass(GObject.GPointer):
 
         FileInputStreamClass()
     """
+    @property
+    def parent_class(self) -> InputStreamClass: ...
+    @property
+    def tell(self) -> Callable[[FileInputStream], int]: ...
+    @property
+    def can_seek(self) -> Callable[[FileInputStream], bool]: ...
+    @property
+    def seek(
+        self,
+    ) -> Callable[[FileInputStream, int, GLib.SeekType, Cancellable | None], bool]: ...
+    @property
+    def query_info(
+        self,
+    ) -> Callable[[FileInputStream, str, Cancellable | None], FileInfo]: ...
+    @property
+    def query_info_async(
+        self,
+    ) -> Callable[
+        [
+            FileInputStream,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def query_info_finish(
+        self,
+    ) -> Callable[[FileInputStream, AsyncResult], FileInfo]: ...
 
-    parent_class: InputStreamClass = ...
-    tell: typing.Callable[[FileInputStream], int] = ...
-    can_seek: typing.Callable[[FileInputStream], bool] = ...
-    seek: typing.Callable[
-        [FileInputStream, int, GLib.SeekType, typing.Optional[Cancellable]], bool
-    ] = ...
-    query_info: typing.Callable[
-        [FileInputStream, str, typing.Optional[Cancellable]], FileInfo
-    ] = ...
-    query_info_async: typing.Callable[..., None] = ...
-    query_info_finish: typing.Callable[[FileInputStream, AsyncResult], FileInfo] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class FileInputStreamPrivate(GObject.GPointer): ...
+class FileInputStreamPrivate(_gi.Struct): ...
 
 class FileMonitor(GObject.Object):
     """
@@ -5276,27 +7241,34 @@ class FileMonitor(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        cancelled: bool
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def cancelled(self) -> bool: ...
         rate_limit: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: FileMonitorPrivate = ...
-    def __init__(self, rate_limit: int = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> FileMonitorPrivate: ...
+    def __init__(self, *, rate_limit: int = ...) -> None: ...
     def cancel(self) -> bool: ...
     def do_cancel(self) -> bool: ...
     def do_changed(
-        self, file: File, other_file: File, event_type: FileMonitorEvent
+        self, file: File, other_file: File, event_type: _FileMonitorEventValueType, /
     ) -> None: ...
     def emit_event(
-        self, child: File, other_file: File, event_type: FileMonitorEvent
+        self,
+        child: File,
+        other_file: File | None,
+        event_type: _FileMonitorEventValueType,
     ) -> None: ...
     def is_cancelled(self) -> bool: ...
     def set_rate_limit(self, limit_msecs: int) -> None: ...
 
-class FileMonitorClass(GObject.GPointer):
+class FileMonitorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5304,17 +7276,16 @@ class FileMonitorClass(GObject.GPointer):
 
         FileMonitorClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def changed(
+        self,
+    ) -> Callable[[FileMonitor, File, File, _FileMonitorEventValueType], None]: ...
+    @property
+    def cancel(self) -> Callable[[FileMonitor], bool]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    changed: typing.Callable[[FileMonitor, File, File, FileMonitorEvent], None] = ...
-    cancel: typing.Callable[[FileMonitor], bool] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class FileMonitorPrivate(GObject.GPointer): ...
+class FileMonitorPrivate(_gi.Struct): ...
 
 class FileOutputStream(OutputStream, Seekable):
     """
@@ -5329,49 +7300,60 @@ class FileOutputStream(OutputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: OutputStream = ...
-    priv: FileOutputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> OutputStream: ...
+    @property
+    def priv(self) -> FileOutputStreamPrivate: ...
     def do_can_seek(self) -> bool: ...
     def do_can_truncate(self) -> bool: ...
-    def do_get_etag(self) -> typing.Optional[str]: ...
+    def do_get_etag(self) -> str | None: ...
     def do_query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None, /
     ) -> FileInfo: ...
     def do_query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[FileOutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_query_info_finish(self, result: AsyncResult) -> FileInfo: ...
+    def do_query_info_finish(self, result: AsyncResult, /) -> FileInfo: ...
     def do_seek(
-        self,
-        offset: int,
-        type: GLib.SeekType,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, offset: int, type: GLib.SeekType, cancellable: Cancellable | None, /
     ) -> bool: ...
     def do_tell(self) -> int: ...
-    def do_truncate_fn(
-        self, size: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
-    def get_etag(self) -> typing.Optional[str]: ...
+    def do_truncate_fn(self, size: int, cancellable: Cancellable | None, /) -> bool: ...
+    def get_etag(self) -> str | None: ...
     def query_info(
-        self, attributes: str, cancellable: typing.Optional[Cancellable] = None
+        self, attributes: str, cancellable: Cancellable | None = None
     ) -> FileInfo: ...
+    @overload
+    def query_info_async(
+        self, attributes: str, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[FileInfo]: ...
+    @overload
     def query_info_async(
         self,
         attributes: str,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[FileOutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def query_info_async(
+        self,
+        attributes: str,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[FileOutputStream] | None,
     ) -> None: ...
     def query_info_finish(self, result: AsyncResult) -> FileInfo: ...
 
-class FileOutputStreamClass(GObject.GPointer):
+class FileOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5379,30 +7361,48 @@ class FileOutputStreamClass(GObject.GPointer):
 
         FileOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> OutputStreamClass: ...
+    @property
+    def tell(self) -> Callable[[FileOutputStream], int]: ...
+    @property
+    def can_seek(self) -> Callable[[FileOutputStream], bool]: ...
+    @property
+    def seek(
+        self,
+    ) -> Callable[[FileOutputStream, int, GLib.SeekType, Cancellable | None], bool]: ...
+    @property
+    def can_truncate(self) -> Callable[[FileOutputStream], bool]: ...
+    @property
+    def truncate_fn(
+        self,
+    ) -> Callable[[FileOutputStream, int, Cancellable | None], bool]: ...
+    @property
+    def query_info(
+        self,
+    ) -> Callable[[FileOutputStream, str, Cancellable | None], FileInfo]: ...
+    @property
+    def query_info_async(
+        self,
+    ) -> Callable[
+        [
+            FileOutputStream,
+            str,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def query_info_finish(
+        self,
+    ) -> Callable[[FileOutputStream, AsyncResult], FileInfo]: ...
+    @property
+    def get_etag(self) -> Callable[[FileOutputStream], str | None]: ...
 
-    parent_class: OutputStreamClass = ...
-    tell: typing.Callable[[FileOutputStream], int] = ...
-    can_seek: typing.Callable[[FileOutputStream], bool] = ...
-    seek: typing.Callable[
-        [FileOutputStream, int, GLib.SeekType, typing.Optional[Cancellable]], bool
-    ] = ...
-    can_truncate: typing.Callable[[FileOutputStream], bool] = ...
-    truncate_fn: typing.Callable[
-        [FileOutputStream, int, typing.Optional[Cancellable]], bool
-    ] = ...
-    query_info: typing.Callable[
-        [FileOutputStream, str, typing.Optional[Cancellable]], FileInfo
-    ] = ...
-    query_info_async: typing.Callable[..., None] = ...
-    query_info_finish: typing.Callable[[FileOutputStream, AsyncResult], FileInfo] = ...
-    get_etag: typing.Callable[[FileOutputStream], typing.Optional[str]] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class FileOutputStreamPrivate(GObject.GPointer): ...
+class FileOutputStreamPrivate(_gi.Struct): ...
 
 class FilenameCompleter(GObject.Object):
     """
@@ -5421,15 +7421,14 @@ class FilenameCompleter(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def do_got_completion_data(self) -> None: ...
-    def get_completion_suffix(self, initial_text: str) -> typing.Optional[str]: ...
+    def get_completion_suffix(self, initial_text: str) -> str | None: ...
     def get_completions(self, initial_text: str) -> list[str]: ...
     @classmethod
     def new(cls) -> FilenameCompleter: ...
     def set_dirs_only(self, dirs_only: bool) -> None: ...
 
-class FilenameCompleterClass(GObject.GPointer):
+class FilenameCompleterClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5437,12 +7436,10 @@ class FilenameCompleterClass(GObject.GPointer):
 
         FilenameCompleterClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    got_completion_data: typing.Callable[[FilenameCompleter], None] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def got_completion_data(self) -> Callable[[FilenameCompleter], None]: ...
 
 class FilterInputStream(InputStream):
     """
@@ -5461,22 +7458,26 @@ class FilterInputStream(InputStream):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        base_stream: InputStream
+    @type_check_only
+    class Props(InputStream.Props):
+        @property
+        def base_stream(self) -> InputStream: ...
         close_base_stream: bool
 
-    props: Props = ...
-    parent_instance: InputStream = ...
-    base_stream: InputStream = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> InputStream: ...
+    @property
+    def base_stream(self) -> InputStream: ...
     def __init__(
-        self, base_stream: InputStream = ..., close_base_stream: bool = ...
+        self, *, base_stream: InputStream | None = ..., close_base_stream: bool = ...
     ) -> None: ...
     def get_base_stream(self) -> InputStream: ...
     def get_close_base_stream(self) -> bool: ...
     def set_close_base_stream(self, close_base: bool) -> None: ...
 
-class FilterInputStreamClass(GObject.GPointer):
+class FilterInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5484,11 +7485,8 @@ class FilterInputStreamClass(GObject.GPointer):
 
         FilterInputStreamClass()
     """
-
-    parent_class: InputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
+    @property
+    def parent_class(self) -> InputStreamClass: ...
 
 class FilterOutputStream(OutputStream):
     """
@@ -5507,22 +7505,27 @@ class FilterOutputStream(OutputStream):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(OutputStream.Props):
+        @property
+        def base_stream(self) -> OutputStream: ...
+        @property
+        def close_base_stream(self) -> bool: ...
 
-    class Props:
-        base_stream: OutputStream
-        close_base_stream: bool
-
-    props: Props = ...
-    parent_instance: OutputStream = ...
-    base_stream: OutputStream = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> OutputStream: ...
+    @property
+    def base_stream(self) -> OutputStream: ...
     def __init__(
-        self, base_stream: OutputStream = ..., close_base_stream: bool = ...
+        self, *, base_stream: OutputStream | None = ..., close_base_stream: bool = ...
     ) -> None: ...
     def get_base_stream(self) -> OutputStream: ...
     def get_close_base_stream(self) -> bool: ...
     def set_close_base_stream(self, close_base: bool) -> None: ...
 
-class FilterOutputStreamClass(GObject.GPointer):
+class FilterOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5530,35 +7533,29 @@ class FilterOutputStreamClass(GObject.GPointer):
 
         FilterOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> OutputStreamClass: ...
 
-    parent_class: OutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-
-class IOExtension(GObject.GPointer):
+class IOExtension(_gi.Struct):
     def get_name(self) -> str: ...
     def get_priority(self) -> int: ...
-    def get_type(self) -> typing.Type[typing.Any]: ...
+    def get_type(self) -> type[Any]: ...
 
-class IOExtensionPoint(GObject.GPointer):
+class IOExtensionPoint(_gi.Struct):
     def get_extension_by_name(self, name: str) -> IOExtension: ...
     def get_extensions(self) -> list[IOExtension]: ...
-    def get_required_type(self) -> typing.Type[typing.Any]: ...
+    def get_required_type(self) -> type[Any]: ...
     @staticmethod
     def implement(
-        extension_point_name: str,
-        type: typing.Type[typing.Any],
-        extension_name: str,
-        priority: int,
+        extension_point_name: str, type: type[Any], extension_name: str, priority: int
     ) -> IOExtension: ...
     @staticmethod
     def lookup(name: str) -> IOExtensionPoint: ...
     @staticmethod
     def register(name: str) -> IOExtensionPoint: ...
-    def set_required_type(self, type: typing.Type[typing.Any]) -> None: ...
+    def set_required_type(self, type: type[Any]) -> None: ...
 
-class IOModule(GObject.TypeModule, GObject.TypePlugin):
+class IOModule(GObject.TypeModule):
     """
     :Constructors:
 
@@ -5572,24 +7569,23 @@ class IOModule(GObject.TypeModule, GObject.TypePlugin):
     Signals from GObject:
       notify (GParam)
     """
-
     @classmethod
     def new(cls, filename: str) -> IOModule: ...
     @staticmethod
     def query() -> list[str]: ...
 
-class IOModuleClass(GObject.GPointer): ...
+class IOModuleClass(_gi.Struct): ...
 
-class IOModuleScope(GObject.GPointer):
+class IOModuleScope(_gi.Struct):
     def block(self, basename: str) -> None: ...
     def free(self) -> None: ...
 
-class IOSchedulerJob(GObject.GPointer):
+class IOSchedulerJob(_gi.Struct):
     def send_to_mainloop(
-        self, func: typing.Callable[..., bool], *user_data: typing.Any
+        self, func: Callable[[Unpack[_DataTs]], bool], *user_data: Unpack[_DataTs]
     ) -> bool: ...
     def send_to_mainloop_async(
-        self, func: typing.Callable[..., bool], *user_data: typing.Any
+        self, func: Callable[[Unpack[_DataTs]], bool], *user_data: Unpack[_DataTs]
     ) -> None: ...
 
 class IOStream(GObject.Object):
@@ -5610,34 +7606,54 @@ class IOStream(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def closed(self) -> bool: ...
+        @property
+        def input_stream(self) -> InputStream: ...
+        @property
+        def output_stream(self) -> OutputStream: ...
 
-    class Props:
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: IOStreamPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> IOStreamPrivate: ...
     def clear_pending(self) -> None: ...
-    def close(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def close(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def close_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[IOStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[IOStream] | None,
     ) -> None: ...
     def close_finish(self, result: AsyncResult) -> bool: ...
     def do_close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[IOStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_close_finish(self, result: AsyncResult) -> bool: ...
-    def do_close_fn(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def do_close_finish(self, result: AsyncResult, /) -> bool: ...
+    def do_close_fn(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_get_input_stream(self) -> InputStream: ...
     def do_get_output_stream(self) -> OutputStream: ...
     def get_input_stream(self) -> InputStream: ...
@@ -5645,21 +7661,40 @@ class IOStream(GObject.Object):
     def has_pending(self) -> bool: ...
     def is_closed(self) -> bool: ...
     def set_pending(self) -> bool: ...
+    @overload
     def splice_async(
         self,
         stream2: IOStream,
-        flags: IOStreamSpliceFlags,
+        flags: _IOStreamSpliceFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def splice_async(
+        self,
+        stream2: IOStream,
+        flags: _IOStreamSpliceFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[IOStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def splice_async(
+        self,
+        stream2: IOStream,
+        flags: _IOStreamSpliceFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[IOStream] | None,
     ) -> None: ...
     @staticmethod
     def splice_finish(result: AsyncResult) -> bool: ...
 
-class IOStreamAdapter(GObject.GPointer): ...
+class IOStreamAdapter(_gi.Struct): ...
 
-class IOStreamClass(GObject.GPointer):
+class IOStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5667,44 +7702,49 @@ class IOStreamClass(GObject.GPointer):
 
         IOStreamClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_input_stream(self) -> Callable[[IOStream], InputStream]: ...
+    @property
+    def get_output_stream(self) -> Callable[[IOStream], OutputStream]: ...
+    @property
+    def close_fn(self) -> Callable[[IOStream, Cancellable | None], bool]: ...
+    @property
+    def close_async(
+        self,
+    ) -> Callable[
+        [
+            IOStream,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def close_finish(self) -> Callable[[IOStream, AsyncResult], bool]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_input_stream: typing.Callable[[IOStream], InputStream] = ...
-    get_output_stream: typing.Callable[[IOStream], OutputStream] = ...
-    close_fn: typing.Callable[[IOStream, typing.Optional[Cancellable]], bool] = ...
-    close_async: typing.Callable[..., None] = ...
-    close_finish: typing.Callable[[IOStream, AsyncResult], bool] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
-    _g_reserved8: None = ...
-    _g_reserved9: None = ...
-    _g_reserved10: None = ...
+class IOStreamPrivate(_gi.Struct): ...
 
-class IOStreamPrivate(GObject.GPointer): ...
-
-class Icon(GObject.GInterface):
+class Icon(GObject.GInterface, Protocol):
     """
     Interface GIcon
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
-    def deserialize(value: GLib.Variant) -> typing.Optional[Icon]: ...
-    def equal(self, icon2: typing.Optional[Icon] = None) -> bool: ...
+    def deserialize(value: GLib.Variant) -> Icon | None: ...
+    def equal(self, icon2: Icon | None = None) -> bool: ...
     def hash(self) -> int: ...
     @staticmethod
     def new_for_string(str: str) -> Icon: ...
-    def serialize(self) -> typing.Optional[GLib.Variant]: ...
-    def to_string(self) -> typing.Optional[str]: ...
+    def serialize(self) -> GLib.Variant | None: ...
+    def to_string(self) -> str | None: ...
 
-class IconIface(GObject.GPointer):
+class IconIface(_gi.Struct):
     """
     :Constructors:
 
@@ -5712,13 +7752,18 @@ class IconIface(GObject.GPointer):
 
         IconIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    hash: typing.Callable[[Icon], int] = ...
-    equal: typing.Callable[[typing.Optional[Icon], typing.Optional[Icon]], bool] = ...
-    to_tokens: typing.Callable[[Icon], typing.Tuple[bool, list[str], int]] = ...
-    from_tokens: None = ...
-    serialize: typing.Callable[[Icon], typing.Optional[GLib.Variant]] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def hash(self) -> Callable[[Icon], int]: ...
+    @property
+    def equal(self) -> Callable[[Icon | None, Icon | None], bool]: ...
+    @property
+    def to_tokens(self) -> Callable[[Icon], tuple[bool, list[str], int]]: ...
+    @property
+    def from_tokens(self) -> int: ...
+    @property
+    def serialize(self) -> Callable[[Icon], GLib.Variant | None]: ...
 
 class InetAddress(GObject.Object):
     """
@@ -5729,6 +7774,7 @@ class InetAddress(GObject.Object):
         InetAddress(**properties)
         new_any(family:Gio.SocketFamily) -> Gio.InetAddress
         new_from_bytes(bytes:list, family:Gio.SocketFamily) -> Gio.InetAddress
+        new_from_bytes_with_ipv6_info(bytes:list, family:Gio.SocketFamily, flowinfo:int, scope_id:int) -> Gio.InetAddress
         new_from_string(string:str) -> Gio.InetAddress or None
         new_loopback(family:Gio.SocketFamily) -> Gio.InetAddress
 
@@ -5747,32 +7793,61 @@ class InetAddress(GObject.Object):
       is-mc-node-local -> gboolean: is-mc-node-local
       is-mc-org-local -> gboolean: is-mc-org-local
       is-mc-site-local -> gboolean: is-mc-site-local
+      flowinfo -> guint: flowinfo
+      scope-id -> guint: scope-id
 
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def bytes(self) -> int: ...
+        @property
+        def family(self) -> SocketFamily: ...
+        @property
+        def flowinfo(self) -> int: ...
+        @property
+        def is_any(self) -> bool: ...
+        @property
+        def is_link_local(self) -> bool: ...
+        @property
+        def is_loopback(self) -> bool: ...
+        @property
+        def is_mc_global(self) -> bool: ...
+        @property
+        def is_mc_link_local(self) -> bool: ...
+        @property
+        def is_mc_node_local(self) -> bool: ...
+        @property
+        def is_mc_org_local(self) -> bool: ...
+        @property
+        def is_mc_site_local(self) -> bool: ...
+        @property
+        def is_multicast(self) -> bool: ...
+        @property
+        def is_site_local(self) -> bool: ...
+        @property
+        def scope_id(self) -> int: ...
 
-    class Props:
-        bytes: None
-        family: SocketFamily
-        is_any: bool
-        is_link_local: bool
-        is_loopback: bool
-        is_mc_global: bool
-        is_mc_link_local: bool
-        is_mc_node_local: bool
-        is_mc_org_local: bool
-        is_mc_site_local: bool
-        is_multicast: bool
-        is_site_local: bool
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: InetAddressPrivate = ...
-    def __init__(self, bytes: None = ..., family: SocketFamily = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> InetAddressPrivate: ...
+    def __init__(
+        self,
+        *,
+        bytes: int | Any | None = ...,
+        family: _SocketFamilyValueType = ...,
+        flowinfo: int = ...,
+        scope_id: int = ...,
+    ) -> None: ...
     def do_to_string(self) -> str: ...
     def equal(self, other_address: InetAddress) -> bool: ...
     def get_family(self) -> SocketFamily: ...
+    def get_flowinfo(self) -> int: ...
     def get_is_any(self) -> bool: ...
     def get_is_link_local(self) -> bool: ...
     def get_is_loopback(self) -> bool: ...
@@ -5784,19 +7859,28 @@ class InetAddress(GObject.Object):
     def get_is_multicast(self) -> bool: ...
     def get_is_site_local(self) -> bool: ...
     def get_native_size(self) -> int: ...
+    def get_scope_id(self) -> int: ...
     @classmethod
-    def new_any(cls, family: SocketFamily) -> InetAddress: ...
+    def new_any(cls, family: _SocketFamilyValueType) -> InetAddress: ...
     @classmethod
     def new_from_bytes(
-        cls, bytes: typing.Sequence[int], family: SocketFamily
+        cls, bytes: Sequence[int], family: _SocketFamilyValueType
     ) -> InetAddress: ...
     @classmethod
-    def new_from_string(cls, string: str) -> typing.Optional[InetAddress]: ...
+    def new_from_bytes_with_ipv6_info(
+        cls,
+        bytes: Sequence[int],
+        family: _SocketFamilyValueType,
+        flowinfo: int,
+        scope_id: int,
+    ) -> InetAddress: ...
     @classmethod
-    def new_loopback(cls, family: SocketFamily) -> InetAddress: ...
+    def new_from_string(cls, string: str) -> InetAddress | None: ...
+    @classmethod
+    def new_loopback(cls, family: _SocketFamilyValueType) -> InetAddress: ...
     def to_string(self) -> str: ...
 
-class InetAddressClass(GObject.GPointer):
+class InetAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5804,10 +7888,12 @@ class InetAddressClass(GObject.GPointer):
 
         InetAddressClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    to_string: typing.Callable[[InetAddress], str] = ...
-    to_bytes: typing.Callable[[InetAddress], int] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def to_string(self) -> Callable[[InetAddress], str]: ...
+    @property
+    def to_bytes(self) -> Callable[[InetAddress], int]: ...
 
 class InetAddressMask(GObject.Object, Initable):
     """
@@ -5829,16 +7915,25 @@ class InetAddressMask(GObject.Object, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        address: InetAddress
-        family: SocketFamily
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def address(self) -> InetAddress: ...
+        @address.setter
+        def address(self, value: InetAddress | None) -> None: ...
+        @property
+        def family(self) -> SocketFamily: ...
         length: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: InetAddressMaskPrivate = ...
-    def __init__(self, address: InetAddress = ..., length: int = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> InetAddressMaskPrivate: ...
+    def __init__(
+        self, *, address: InetAddress | None = ..., length: int = ...
+    ) -> None: ...
     def equal(self, mask2: InetAddressMask) -> bool: ...
     def get_address(self) -> InetAddress: ...
     def get_family(self) -> SocketFamily: ...
@@ -5850,7 +7945,7 @@ class InetAddressMask(GObject.Object, Initable):
     def new_from_string(cls, mask_string: str) -> InetAddressMask: ...
     def to_string(self) -> str: ...
 
-class InetAddressMaskClass(GObject.GPointer):
+class InetAddressMaskClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5858,13 +7953,13 @@ class InetAddressMaskClass(GObject.GPointer):
 
         InetAddressMaskClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
+class InetAddressMaskPrivate(_gi.Struct): ...
+class InetAddressPrivate(_gi.Struct): ...
 
-class InetAddressMaskPrivate(GObject.GPointer): ...
-class InetAddressPrivate(GObject.GPointer): ...
-
-class InetSocketAddress(SocketAddress, SocketConnectable):
+class InetSocketAddress(SocketAddress):
     """
     :Constructors:
 
@@ -5888,20 +7983,27 @@ class InetSocketAddress(SocketAddress, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(SocketAddress.Props):
+        @property
+        def address(self) -> InetAddress: ...
+        @property
+        def flowinfo(self) -> int: ...
+        @property
+        def port(self) -> int: ...
+        @property
+        def scope_id(self) -> int: ...
 
-    class Props:
-        address: InetAddress
-        flowinfo: int
-        port: int
-        scope_id: int
-        family: SocketFamily
-
-    props: Props = ...
-    parent_instance: SocketAddress = ...
-    priv: InetSocketAddressPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketAddress: ...
+    @property
+    def priv(self) -> InetSocketAddressPrivate: ...
     def __init__(
         self,
-        address: InetAddress = ...,
+        *,
+        address: InetAddress | None = ...,
         flowinfo: int = ...,
         port: int = ...,
         scope_id: int = ...,
@@ -5915,7 +8017,7 @@ class InetSocketAddress(SocketAddress, SocketConnectable):
     @classmethod
     def new_from_string(cls, address: str, port: int) -> InetSocketAddress: ...
 
-class InetSocketAddressClass(GObject.GPointer):
+class InetSocketAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -5923,28 +8025,27 @@ class InetSocketAddressClass(GObject.GPointer):
 
         InetSocketAddressClass()
     """
+    @property
+    def parent_class(self) -> SocketAddressClass: ...
 
-    parent_class: SocketAddressClass = ...
+class InetSocketAddressPrivate(_gi.Struct): ...
 
-class InetSocketAddressPrivate(GObject.GPointer): ...
-
-class Initable(GObject.GInterface):
+class Initable(GObject.GInterface, Protocol):
     """
     Interface GInitable
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def init(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def init(self, cancellable: Cancellable | None = None) -> bool: ...
     @staticmethod
     def newv(
-        object_type: typing.Type[typing.Any],
-        parameters: typing.Sequence[GObject.Parameter],
-        cancellable: typing.Optional[Cancellable] = None,
+        object_type: type[Any],
+        parameters: Sequence[GObject.Parameter],
+        cancellable: Cancellable | None = None,
     ) -> GObject.Object: ...
 
-class InitableIface(GObject.GPointer):
+class InitableIface(_gi.Struct):
     """
     :Constructors:
 
@@ -5952,11 +8053,12 @@ class InitableIface(GObject.GPointer):
 
         InitableIface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def init(self) -> Callable[[Initable, Cancellable | None], bool]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    init: typing.Callable[[Initable, typing.Optional[Cancellable]], bool] = ...
-
-class InputMessage(GObject.GPointer):
+class InputMessage(_gi.Struct):
     """
     :Constructors:
 
@@ -5965,13 +8067,13 @@ class InputMessage(GObject.GPointer):
         InputMessage()
     """
 
-    address: SocketAddress = ...
-    vectors: list[InputVector] = ...
-    num_vectors: int = ...
-    bytes_received: int = ...
-    flags: int = ...
-    control_messages: list[SocketControlMessage] = ...
-    num_control_messages: int = ...
+    address: SocketAddress
+    vectors: list[InputVector]
+    num_vectors: int
+    bytes_received: int
+    flags: int
+    control_messages: list[SocketControlMessage]
+    num_control_messages: int
 
 class InputStream(GObject.Object):
     """
@@ -5986,102 +8088,143 @@ class InputStream(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: InputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> InputStreamPrivate: ...
     def clear_pending(self) -> None: ...
-    def close(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def close(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def close_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[InputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[InputStream] | None,
     ) -> None: ...
     def close_finish(self, result: AsyncResult) -> bool: ...
     def do_close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[InputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_close_finish(self, result: AsyncResult) -> bool: ...
-    def do_close_fn(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def do_close_finish(self, result: AsyncResult, /) -> bool: ...
+    def do_close_fn(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_read_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[InputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> bytes: ...
-    def do_read_finish(self, result: AsyncResult) -> int: ...
+    def do_read_finish(self, result: AsyncResult, /) -> int: ...
     def do_read_fn(
-        self, buffer: None, count: int, cancellable: typing.Optional[Cancellable] = None
+        self, buffer: int | Any | None, count: int, cancellable: Cancellable | None, /
     ) -> int: ...
-    def do_skip(
-        self, count: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> int: ...
+    def do_skip(self, count: int, cancellable: Cancellable | None, /) -> int: ...
     def do_skip_async(
         self,
         count: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[InputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_skip_finish(self, result: AsyncResult) -> int: ...
+    def do_skip_finish(self, result: AsyncResult, /) -> int: ...
     def has_pending(self) -> bool: ...
     def is_closed(self) -> bool: ...
-    def read(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[int, bytes]: ...
+    def read(self, cancellable: Cancellable | None = None) -> tuple[int, bytes]: ...
     def read_all(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[bool, bytes, int]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[bool, bytes, int]: ...
     def read_all_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[InputStream, Unpack[_DataTs]]
+        | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> bytes: ...
-    def read_all_finish(self, result: AsyncResult) -> typing.Tuple[bool, int]: ...
+    def read_all_finish(self, result: AsyncResult) -> tuple[bool, int]: ...
     def read_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[InputStream, Unpack[_DataTs]]
+        | None = None,
+        *user_data: Unpack[_DataTs],
     ) -> bytes: ...
     def read_bytes(
-        self, count: int, cancellable: typing.Optional[Cancellable] = None
+        self, count: int, cancellable: Cancellable | None = None
     ) -> GLib.Bytes: ...
+    @overload
+    def read_bytes_async(
+        self, count: int, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[GLib.Bytes]: ...
+    @overload
     def read_bytes_async(
         self,
         count: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[InputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def read_bytes_async(
+        self,
+        count: int,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[InputStream] | None,
     ) -> None: ...
     def read_bytes_finish(self, result: AsyncResult) -> GLib.Bytes: ...
     def read_finish(self, result: AsyncResult) -> int: ...
     def set_pending(self) -> bool: ...
-    def skip(
-        self, count: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> int: ...
+    def skip(self, count: int, cancellable: Cancellable | None = None) -> int: ...
+    @overload
+    def skip_async(
+        self, count: int, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[int]: ...
+    @overload
     def skip_async(
         self,
         count: int,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[InputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def skip_async(
+        self,
+        count: int,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[InputStream] | None,
     ) -> None: ...
     def skip_finish(self, result: AsyncResult) -> int: ...
 
-class InputStreamClass(GObject.GPointer):
+class InputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6089,28 +8232,67 @@ class InputStreamClass(GObject.GPointer):
 
         InputStreamClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def read_fn(
+        self,
+    ) -> Callable[[InputStream, Any | None, int, Cancellable | None], int]: ...
+    @property
+    def skip(self) -> Callable[[InputStream, int, Cancellable | None], int]: ...
+    @property
+    def close_fn(self) -> Callable[[InputStream, Cancellable | None], bool]: ...
+    @property
+    def read_async(
+        self,
+    ) -> Callable[
+        [
+            InputStream,
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        bytes,
+    ]: ...
+    @property
+    def read_finish(self) -> Callable[[InputStream, AsyncResult], int]: ...
+    @property
+    def skip_async(
+        self,
+    ) -> Callable[
+        [
+            InputStream,
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def skip_finish(self) -> Callable[[InputStream, AsyncResult], int]: ...
+    @property
+    def close_async(
+        self,
+    ) -> Callable[
+        [
+            InputStream,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def close_finish(self) -> Callable[[InputStream, AsyncResult], bool]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    read_fn: typing.Callable[
-        [InputStream, None, int, typing.Optional[Cancellable]], int
-    ] = ...
-    skip: typing.Callable[[InputStream, int, typing.Optional[Cancellable]], int] = ...
-    close_fn: typing.Callable[[InputStream, typing.Optional[Cancellable]], bool] = ...
-    read_async: typing.Callable[..., bytes] = ...
-    read_finish: typing.Callable[[InputStream, AsyncResult], int] = ...
-    skip_async: typing.Callable[..., None] = ...
-    skip_finish: typing.Callable[[InputStream, AsyncResult], int] = ...
-    close_async: typing.Callable[..., None] = ...
-    close_finish: typing.Callable[[InputStream, AsyncResult], bool] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+class InputStreamPrivate(_gi.Struct): ...
 
-class InputStreamPrivate(GObject.GPointer): ...
-
-class InputVector(GObject.GPointer):
+class InputVector(_gi.Struct):
     """
     :Constructors:
 
@@ -6119,21 +8301,31 @@ class InputVector(GObject.GPointer):
         InputVector()
     """
 
-    buffer: None = ...
-    size: int = ...
+    buffer: int
+    size: int
 
-# override
-class ListModel(GObject.GInterface):
-    def __contains__(self, item: object) -> bool: ...
-    def __getitem__(self, position: int) -> GObject.Object: ...
-    def __iter__(self) -> typing.Iterator[GObject.Object]: ...
+class ListModel(GObject.GInterface, Protocol[ObjectItemType]):
+    """
+    Interface GListModel
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def __contains__(self, item: ObjectItemType) -> bool: ...
+    @overload
+    def __getitem__(self, key: slice) -> list[ObjectItemType]: ...
+    @overload
+    def __getitem__(self, key: int) -> ObjectItemType: ...
+    def __iter__(self) -> Iterator[ObjectItemType]: ...
     def __len__(self) -> int: ...
-    def get_item(self, position: int) -> typing.Optional[GObject.Object]: ...
-    def get_item_type(self) -> typing.Type[typing.Any]: ...
+    # override
+    def get_item(self, position: int) -> ObjectItemType | None: ...
+    # override
+    def get_item_type(self) -> type[ObjectItemType]: ...
     def get_n_items(self) -> int: ...
     def items_changed(self, position: int, removed: int, added: int) -> None: ...
 
-class ListModelInterface(GObject.GPointer):
+class ListModelInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -6141,76 +8333,96 @@ class ListModelInterface(GObject.GPointer):
 
         ListModelInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_item_type(self) -> Callable[[ListModel], type[Any]]: ...
+    @property
+    def get_n_items(self) -> Callable[[ListModel], int]: ...
+    @property
+    def get_item(self) -> Callable[[ListModel, int], GObject.Object | None]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    get_item_type: typing.Callable[[ListModel], typing.Type[typing.Any]] = ...
-    get_n_items: typing.Callable[[ListModel], int] = ...
-    get_item: typing.Callable[[ListModel, int], typing.Optional[GObject.Object]] = ...
-
-class ListStore(GObject.Object, ListModel):
+# override
+class ListStore(GObject.Object, ListModel[ObjectItemType], Generic[ObjectItemType]):
     """
     :Constructors:
 
     ::
 
         ListStore(**properties)
-        new(item_type:GType) -> Gio.ListStore
+        new(item_type:GType) -> ListStore
 
     Object GListStore
 
     Properties from GListStore:
-      item-type -> GType: item-type
-      n-items -> guint: n-items
+      itemtype -> GType: itemtype
+      nitems -> guint: nitems
 
     Signals from GListModel:
-      items-changed (guint, guint, guint)
+      itemschanged (guint, guint, guint)
 
     Signals from GObject:
       notify (GParam)
     """
 
-    class Props:
-        item_type: typing.Type[typing.Any]
-        n_items: int
+    @type_check_only
+    class Props(GObject.Object.Props, Generic[ObjectPropsItemType]):
+        @property
+        def item_type(self) -> type[ObjectPropsItemType]: ...
+        @property
+        def n_items(self) -> int: ...
 
-    props: Props = ...
-    def __init__(self, item_type: typing.Type[typing.Any] = ...) -> None: ...
-    def append(self, item: GObject.Object) -> None: ...
-    def find(self, item: GObject.Object) -> typing.Tuple[bool, int]: ...
-    # override
+    @property
+    def props(self) -> Props[ObjectItemType]: ...
+    def __init__(self, *, item_type: type[ObjectItemType] = ...) -> None: ...
+    def __delitem__(self, key: int | slice) -> None: ...
+    @overload
+    def __setitem__(self, key: slice, value: Sequence[ObjectItemType]) -> None: ...
+    @overload
+    def __setitem__(self, key: int, value: ObjectItemType) -> None: ...
+    def append(self, item: ObjectItemType) -> None: ...
+    def find(self, item: ObjectItemType) -> tuple[bool, int]: ...
     def find_with_equal_func(
         self,
-        item: typing.Optional[GObject.Object],
-        equal_func: typing.Callable[..., bool],
-        *user_data: typing.Any,
-    ) -> typing.Tuple[bool, int]: ...
+        item: ObjectItemType | None,
+        equal_func: Callable[
+            [ObjectItemType | None, ObjectItemType | None, Unpack[_DataTs]], bool
+        ],
+        *user_data: Unpack[_DataTs],
+    ) -> tuple[bool, int]: ...
     def find_with_equal_func_full(
         self,
-        item: typing.Optional[GObject.Object],
-        equal_func: typing.Callable[..., bool],
-        *user_data: typing.Any,
-    ) -> typing.Tuple[bool, int]: ...
-    def insert(self, position: int, item: GObject.Object) -> None: ...
-    # override
+        item: ObjectItemType | None,
+        equal_func: Callable[
+            [ObjectItemType | None, ObjectItemType | None, Unpack[_DataTs]], bool
+        ],
+        *user_data: Unpack[_DataTs],
+    ) -> tuple[bool, int]: ...
+    def insert(self, position: int, item: ObjectItemType) -> None: ...
     def insert_sorted(
         self,
-        item: GObject.Object,
-        compare_func: typing.Callable[..., int],
-        *user_data: typing.Any,
-    ) -> int: ...
+        item: ObjectItemType,
+        compare_func: Callable[
+            [ObjectItemType | None, ObjectItemType | None, Unpack[_DataTs]], int
+        ],
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
     @classmethod
-    def new(cls, item_type: typing.Type[typing.Any]) -> ListStore: ...
+    def new(cls, item_type: type[ObjectItemType]) -> ListStore[ObjectItemType]: ...
     def remove(self, position: int) -> None: ...
     def remove_all(self) -> None: ...
-    # override
     def sort(
-        self, compare_func: typing.Callable[..., int], *user_data: typing.Any
-    ) -> int: ...
+        self,
+        compare_func: Callable[
+            [ObjectItemType | None, ObjectItemType | None, Unpack[_DataTs]], int
+        ],
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
     def splice(
-        self, position: int, n_removals: int, additions: typing.Sequence[GObject.Object]
+        self, position: int, n_removals: int, additions: Sequence[ObjectItemType]
     ) -> None: ...
 
-class ListStoreClass(GObject.GPointer):
+class ListStoreClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6218,30 +8430,42 @@ class ListStoreClass(GObject.GPointer):
 
         ListStoreClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class LoadableIcon(GObject.GInterface):
+class LoadableIcon(GObject.GInterface, Protocol):
     """
     Interface GLoadableIcon
 
     Signals from GObject:
       notify (GParam)
     """
-
     def load(
-        self, size: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[InputStream, str]: ...
+        self, size: int, cancellable: Cancellable | None = None
+    ) -> tuple[InputStream, str]: ...
+    @overload
+    def load_async(
+        self, size: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[InputStream, str]]: ...
+    @overload
     def load_async(
         self,
         size: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[LoadableIcon, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def load_finish(self, res: AsyncResult) -> typing.Tuple[InputStream, str]: ...
+    @overload
+    def load_async(
+        self,
+        size: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[LoadableIcon] | None,
+    ) -> None: ...
+    def load_finish(self, res: AsyncResult) -> tuple[InputStream, str]: ...
 
-class LoadableIconIface(GObject.GPointer):
+class LoadableIconIface(_gi.Struct):
     """
     :Constructors:
 
@@ -6249,16 +8473,29 @@ class LoadableIconIface(GObject.GPointer):
 
         LoadableIconIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    load: typing.Callable[
-        [LoadableIcon, int, typing.Optional[Cancellable]],
-        typing.Tuple[InputStream, str],
-    ] = ...
-    load_async: typing.Callable[..., None] = ...
-    load_finish: typing.Callable[
-        [LoadableIcon, AsyncResult], typing.Tuple[InputStream, str]
-    ] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def load(
+        self,
+    ) -> Callable[[LoadableIcon, int, Cancellable | None], tuple[InputStream, str]]: ...
+    @property
+    def load_async(
+        self,
+    ) -> Callable[
+        [
+            LoadableIcon,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def load_finish(
+        self,
+    ) -> Callable[[LoadableIcon, AsyncResult], tuple[InputStream, str]]: ...
 
 class MemoryInputStream(InputStream, PollableInputStream, Seekable):
     """
@@ -6276,14 +8513,13 @@ class MemoryInputStream(InputStream, PollableInputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: InputStream = ...
-    priv: MemoryInputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> InputStream: ...
+    @property
+    def priv(self) -> MemoryInputStreamPrivate: ...
     def add_bytes(self, bytes: GLib.Bytes) -> None: ...
     def add_data(
-        self,
-        data: typing.Sequence[int],
-        destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        self, data: Sequence[int], destroy: Callable[[Any | None], None] | None = None
     ) -> None: ...
     @classmethod
     def new(cls) -> MemoryInputStream: ...
@@ -6291,12 +8527,10 @@ class MemoryInputStream(InputStream, PollableInputStream, Seekable):
     def new_from_bytes(cls, bytes: GLib.Bytes) -> MemoryInputStream: ...
     @classmethod
     def new_from_data(
-        cls,
-        data: typing.Sequence[int],
-        destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        cls, data: Sequence[int], destroy: Callable[[Any | None], None] | None = None
     ) -> MemoryInputStream: ...
 
-class MemoryInputStreamClass(GObject.GPointer):
+class MemoryInputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6304,28 +8538,22 @@ class MemoryInputStreamClass(GObject.GPointer):
 
         MemoryInputStreamClass()
     """
+    @property
+    def parent_class(self) -> InputStreamClass: ...
 
-    parent_class: InputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+class MemoryInputStreamPrivate(_gi.Struct): ...
 
-class MemoryInputStreamPrivate(GObject.GPointer): ...
-
-class MemoryMonitor(GObject.GInterface):
+class MemoryMonitor(GObject.GInterface, Protocol):
     """
     Interface GMemoryMonitor
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def dup_default() -> MemoryMonitor: ...
 
-class MemoryMonitorInterface(GObject.GPointer):
+class MemoryMonitorInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -6333,11 +8561,12 @@ class MemoryMonitorInterface(GObject.GPointer):
 
         MemoryMonitorInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    low_memory_warning: typing.Callable[
-        [MemoryMonitor, MemoryMonitorWarningLevel], None
-    ] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def low_memory_warning(
+        self,
+    ) -> Callable[[MemoryMonitor, _MemoryMonitorWarningLevelValueType], None]: ...
 
 class MemoryOutputStream(OutputStream, PollableOutputStream, Seekable):
     """
@@ -6360,25 +8589,31 @@ class MemoryOutputStream(OutputStream, PollableOutputStream, Seekable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(OutputStream.Props):
+        @property
+        def data(self) -> int: ...
+        @property
+        def data_size(self) -> int: ...
+        @property
+        def size(self) -> int: ...
 
-    class Props:
-        data: typing.Optional[None]
-        data_size: int
-        size: int
-
-    props: Props = ...
-    parent_instance: OutputStream = ...
-    priv: MemoryOutputStreamPrivate = ...
-    def __init__(self, data: None = ..., size: int = ...) -> None: ...
-    def get_data(self) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> OutputStream: ...
+    @property
+    def priv(self) -> MemoryOutputStreamPrivate: ...
+    def __init__(self, *, data: int | Any | None = ..., size: int = ...) -> None: ...
+    def get_data(self) -> int: ...
     def get_data_size(self) -> int: ...
     def get_size(self) -> int: ...
     @classmethod
     def new_resizable(cls) -> MemoryOutputStream: ...
     def steal_as_bytes(self) -> GLib.Bytes: ...
-    def steal_data(self) -> None: ...
+    def steal_data(self) -> int: ...
 
-class MemoryOutputStreamClass(GObject.GPointer):
+class MemoryOutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6386,15 +8621,10 @@ class MemoryOutputStreamClass(GObject.GPointer):
 
         MemoryOutputStreamClass()
     """
+    @property
+    def parent_class(self) -> OutputStreamClass: ...
 
-    parent_class: OutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class MemoryOutputStreamPrivate(GObject.GPointer): ...
+class MemoryOutputStreamPrivate(_gi.Struct): ...
 
 class Menu(MenuModel):
     """
@@ -6413,47 +8643,34 @@ class Menu(MenuModel):
     Signals from GObject:
       notify (GParam)
     """
-
     def append(
-        self,
-        label: typing.Optional[str] = None,
-        detailed_action: typing.Optional[str] = None,
+        self, label: str | None = None, detailed_action: str | None = None
     ) -> None: ...
     def append_item(self, item: MenuItem) -> None: ...
-    def append_section(
-        self, label: typing.Optional[str], section: MenuModel
-    ) -> None: ...
-    def append_submenu(
-        self, label: typing.Optional[str], submenu: MenuModel
-    ) -> None: ...
+    def append_section(self, label: str | None, section: MenuModel) -> None: ...
+    def append_submenu(self, label: str | None, submenu: MenuModel) -> None: ...
     def freeze(self) -> None: ...
     def insert(
         self,
         position: int,
-        label: typing.Optional[str] = None,
-        detailed_action: typing.Optional[str] = None,
+        label: str | None = None,
+        detailed_action: str | None = None,
     ) -> None: ...
     def insert_item(self, position: int, item: MenuItem) -> None: ...
     def insert_section(
-        self, position: int, label: typing.Optional[str], section: MenuModel
+        self, position: int, label: str | None, section: MenuModel
     ) -> None: ...
     def insert_submenu(
-        self, position: int, label: typing.Optional[str], submenu: MenuModel
+        self, position: int, label: str | None, submenu: MenuModel
     ) -> None: ...
     @classmethod
     def new(cls) -> Menu: ...
     def prepend(
-        self,
-        label: typing.Optional[str] = None,
-        detailed_action: typing.Optional[str] = None,
+        self, label: str | None = None, detailed_action: str | None = None
     ) -> None: ...
     def prepend_item(self, item: MenuItem) -> None: ...
-    def prepend_section(
-        self, label: typing.Optional[str], section: MenuModel
-    ) -> None: ...
-    def prepend_submenu(
-        self, label: typing.Optional[str], submenu: MenuModel
-    ) -> None: ...
+    def prepend_section(self, label: str | None, section: MenuModel) -> None: ...
+    def prepend_submenu(self, label: str | None, submenu: MenuModel) -> None: ...
     def remove(self, position: int) -> None: ...
     def remove_all(self) -> None: ...
 
@@ -6470,16 +8687,17 @@ class MenuAttributeIter(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: MenuAttributeIterPrivate = ...
-    def do_get_next(self) -> typing.Tuple[bool, str, GLib.Variant]: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> MenuAttributeIterPrivate: ...
+    def do_get_next(self) -> tuple[bool, str, GLib.Variant]: ...
     def get_name(self) -> str: ...
-    def get_next(self) -> typing.Tuple[bool, str, GLib.Variant]: ...
+    def get_next(self) -> tuple[bool, str, GLib.Variant]: ...
     def get_value(self) -> GLib.Variant: ...
     def next(self) -> bool: ...
 
-class MenuAttributeIterClass(GObject.GPointer):
+class MenuAttributeIterClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6487,13 +8705,14 @@ class MenuAttributeIterClass(GObject.GPointer):
 
         MenuAttributeIterClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_next(
+        self,
+    ) -> Callable[[MenuAttributeIter], tuple[bool, str, GLib.Variant]]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_next: typing.Callable[
-        [MenuAttributeIter], typing.Tuple[bool, str, GLib.Variant]
-    ] = ...
-
-class MenuAttributeIterPrivate(GObject.GPointer): ...
+class MenuAttributeIterPrivate(_gi.Struct): ...
 
 class MenuItem(GObject.Object):
     """
@@ -6512,45 +8731,34 @@ class MenuItem(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def get_attribute_value(
-        self, attribute: str, expected_type: typing.Optional[GLib.VariantType] = None
-    ) -> typing.Optional[GLib.Variant]: ...
-    def get_link(self, link: str) -> typing.Optional[MenuModel]: ...
+        self, attribute: str, expected_type: GLib.VariantType | None = None
+    ) -> GLib.Variant | None: ...
+    def get_link(self, link: str) -> MenuModel | None: ...
     @classmethod
     def new(
-        cls,
-        label: typing.Optional[str] = None,
-        detailed_action: typing.Optional[str] = None,
+        cls, label: str | None = None, detailed_action: str | None = None
     ) -> MenuItem: ...
     @classmethod
     def new_from_model(cls, model: MenuModel, item_index: int) -> MenuItem: ...
     @classmethod
-    def new_section(
-        cls, label: typing.Optional[str], section: MenuModel
-    ) -> MenuItem: ...
+    def new_section(cls, label: str | None, section: MenuModel) -> MenuItem: ...
     @classmethod
-    def new_submenu(
-        cls, label: typing.Optional[str], submenu: MenuModel
-    ) -> MenuItem: ...
+    def new_submenu(cls, label: str | None, submenu: MenuModel) -> MenuItem: ...
     def set_action_and_target_value(
-        self,
-        action: typing.Optional[str] = None,
-        target_value: typing.Optional[GLib.Variant] = None,
+        self, action: str | None = None, target_value: GLib.Variant | None = None
     ) -> None: ...
     # override
-    def set_attribute(
-        self, attributes: list[typing.Tuple[str, str, typing.Any]]
-    ) -> None: ...
+    def set_attribute(self, attributes: list[tuple[str, str, Any]]) -> None: ...
     def set_attribute_value(
-        self, attribute: str, value: typing.Optional[GLib.Variant] = None
+        self, attribute: str, value: GLib.Variant | None = None
     ) -> None: ...
     def set_detailed_action(self, detailed_action: str) -> None: ...
     def set_icon(self, icon: Icon) -> None: ...
-    def set_label(self, label: typing.Optional[str] = None) -> None: ...
-    def set_link(self, link: str, model: typing.Optional[MenuModel] = None) -> None: ...
-    def set_section(self, section: typing.Optional[MenuModel] = None) -> None: ...
-    def set_submenu(self, submenu: typing.Optional[MenuModel] = None) -> None: ...
+    def set_label(self, label: str | None = None) -> None: ...
+    def set_link(self, link: str, model: MenuModel | None = None) -> None: ...
+    def set_section(self, section: MenuModel | None = None) -> None: ...
+    def set_submenu(self, submenu: MenuModel | None = None) -> None: ...
 
 class MenuLinkIter(GObject.Object):
     """
@@ -6565,16 +8773,17 @@ class MenuLinkIter(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: MenuLinkIterPrivate = ...
-    def do_get_next(self) -> typing.Tuple[bool, str, MenuModel]: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> MenuLinkIterPrivate: ...
+    def do_get_next(self) -> tuple[bool, str, MenuModel]: ...
     def get_name(self) -> str: ...
-    def get_next(self) -> typing.Tuple[bool, str, MenuModel]: ...
+    def get_next(self) -> tuple[bool, str, MenuModel]: ...
     def get_value(self) -> MenuModel: ...
     def next(self) -> bool: ...
 
-class MenuLinkIterClass(GObject.GPointer):
+class MenuLinkIterClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6582,11 +8791,12 @@ class MenuLinkIterClass(GObject.GPointer):
 
         MenuLinkIterClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_next(self) -> Callable[[MenuLinkIter], tuple[bool, str, MenuModel]]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_next: typing.Callable[[MenuLinkIter], typing.Tuple[bool, str, MenuModel]] = ...
-
-class MenuLinkIterPrivate(GObject.GPointer): ...
+class MenuLinkIterPrivate(_gi.Struct): ...
 
 class MenuModel(GObject.Object):
     """
@@ -6604,40 +8814,34 @@ class MenuModel(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: MenuModelPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> MenuModelPrivate: ...
     def do_get_item_attribute_value(
-        self,
-        item_index: int,
-        attribute: str,
-        expected_type: typing.Optional[GLib.VariantType] = None,
-    ) -> typing.Optional[GLib.Variant]: ...
-    def do_get_item_attributes(self, item_index: int) -> dict[str, GLib.Variant]: ...
-    def do_get_item_link(
-        self, item_index: int, link: str
-    ) -> typing.Optional[MenuModel]: ...
-    def do_get_item_links(self, item_index: int) -> dict[str, MenuModel]: ...
+        self, item_index: int, attribute: str, expected_type: GLib.VariantType | None, /
+    ) -> GLib.Variant | None: ...
+    def do_get_item_attributes(self, item_index: int, /) -> dict[str, GLib.Variant]: ...
+    def do_get_item_link(self, item_index: int, link: str, /) -> MenuModel | None: ...
+    def do_get_item_links(self, item_index: int, /) -> dict[str, MenuModel]: ...
     def do_get_n_items(self) -> int: ...
     def do_is_mutable(self) -> bool: ...
-    def do_iterate_item_attributes(self, item_index: int) -> MenuAttributeIter: ...
-    def do_iterate_item_links(self, item_index: int) -> MenuLinkIter: ...
+    def do_iterate_item_attributes(self, item_index: int, /) -> MenuAttributeIter: ...
+    def do_iterate_item_links(self, item_index: int, /) -> MenuLinkIter: ...
     def get_item_attribute_value(
         self,
         item_index: int,
         attribute: str,
-        expected_type: typing.Optional[GLib.VariantType] = None,
-    ) -> typing.Optional[GLib.Variant]: ...
-    def get_item_link(
-        self, item_index: int, link: str
-    ) -> typing.Optional[MenuModel]: ...
+        expected_type: GLib.VariantType | None = None,
+    ) -> GLib.Variant | None: ...
+    def get_item_link(self, item_index: int, link: str) -> MenuModel | None: ...
     def get_n_items(self) -> int: ...
     def is_mutable(self) -> bool: ...
     def items_changed(self, position: int, removed: int, added: int) -> None: ...
     def iterate_item_attributes(self, item_index: int) -> MenuAttributeIter: ...
     def iterate_item_links(self, item_index: int) -> MenuLinkIter: ...
 
-class MenuModelClass(GObject.GPointer):
+class MenuModelClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6645,104 +8849,202 @@ class MenuModelClass(GObject.GPointer):
 
         MenuModelClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def is_mutable(self) -> Callable[[MenuModel], bool]: ...
+    @property
+    def get_n_items(self) -> Callable[[MenuModel], int]: ...
+    @property
+    def get_item_attributes(
+        self,
+    ) -> Callable[[MenuModel, int], dict[str, GLib.Variant]]: ...
+    @property
+    def iterate_item_attributes(
+        self,
+    ) -> Callable[[MenuModel, int], MenuAttributeIter]: ...
+    @property
+    def get_item_attribute_value(
+        self,
+    ) -> Callable[
+        [MenuModel, int, str, GLib.VariantType | None], GLib.Variant | None
+    ]: ...
+    @property
+    def get_item_links(self) -> Callable[[MenuModel, int], dict[str, MenuModel]]: ...
+    @property
+    def iterate_item_links(self) -> Callable[[MenuModel, int], MenuLinkIter]: ...
+    @property
+    def get_item_link(self) -> Callable[[MenuModel, int, str], MenuModel | None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    is_mutable: typing.Callable[[MenuModel], bool] = ...
-    get_n_items: typing.Callable[[MenuModel], int] = ...
-    get_item_attributes: typing.Callable[
-        [MenuModel, int], dict[str, GLib.Variant]
-    ] = ...
-    iterate_item_attributes: typing.Callable[[MenuModel, int], MenuAttributeIter] = ...
-    get_item_attribute_value: typing.Callable[
-        [MenuModel, int, str, typing.Optional[GLib.VariantType]],
-        typing.Optional[GLib.Variant],
-    ] = ...
-    get_item_links: typing.Callable[[MenuModel, int], dict[str, MenuModel]] = ...
-    iterate_item_links: typing.Callable[[MenuModel, int], MenuLinkIter] = ...
-    get_item_link: typing.Callable[
-        [MenuModel, int, str], typing.Optional[MenuModel]
-    ] = ...
+class MenuModelPrivate(_gi.Struct): ...
 
-class MenuModelPrivate(GObject.GPointer): ...
-
-class Mount(GObject.GInterface):
+class Mount(GObject.GInterface, Protocol):
     """
     Interface GMount
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_eject(self) -> bool: ...
     def can_unmount(self) -> bool: ...
+    @overload
+    def eject(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def eject(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def eject_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def eject_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def eject_with_operation_finish(self, result: AsyncResult) -> bool: ...
     def get_default_location(self) -> File: ...
-    def get_drive(self) -> typing.Optional[Drive]: ...
+    def get_drive(self) -> Drive | None: ...
     def get_icon(self) -> Icon: ...
     def get_name(self) -> str: ...
     def get_root(self) -> File: ...
-    def get_sort_key(self) -> typing.Optional[str]: ...
+    def get_sort_key(self) -> str | None: ...
     def get_symbolic_icon(self) -> Icon: ...
-    def get_uuid(self) -> typing.Optional[str]: ...
-    def get_volume(self) -> typing.Optional[Volume]: ...
+    def get_uuid(self) -> str | None: ...
+    def get_volume(self) -> Volume | None: ...
+    @overload
+    def guess_content_type(
+        self, force_rescan: bool, cancellable: Cancellable | None = None
+    ) -> _gi.Async[list[str]]: ...
+    @overload
     def guess_content_type(
         self,
         force_rescan: bool,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def guess_content_type(
+        self,
+        force_rescan: bool,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def guess_content_type_finish(self, result: AsyncResult) -> list[str]: ...
     def guess_content_type_sync(
-        self, force_rescan: bool, cancellable: typing.Optional[Cancellable] = None
+        self, force_rescan: bool, cancellable: Cancellable | None = None
     ) -> list[str]: ...
     def is_shadowed(self) -> bool: ...
+    @overload
     def remount(
         self,
-        flags: MountMountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def remount(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def remount(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def remount_finish(self, result: AsyncResult) -> bool: ...
     def shadow(self) -> None: ...
+    @overload
+    def unmount(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def unmount(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def unmount(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def unmount_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def unmount_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def unmount_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Mount, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def unmount_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Mount] | None,
     ) -> None: ...
     def unmount_with_operation_finish(self, result: AsyncResult) -> bool: ...
     def unshadow(self) -> None: ...
 
-class MountIface(GObject.GPointer):
+class MountIface(_gi.Struct):
     """
     :Constructors:
 
@@ -6750,37 +9052,135 @@ class MountIface(GObject.GPointer):
 
         MountIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    changed: typing.Callable[[Mount], None] = ...
-    unmounted: typing.Callable[[Mount], None] = ...
-    get_root: typing.Callable[[Mount], File] = ...
-    get_name: typing.Callable[[Mount], str] = ...
-    get_icon: typing.Callable[[Mount], Icon] = ...
-    get_uuid: typing.Callable[[Mount], typing.Optional[str]] = ...
-    get_volume: typing.Callable[[Mount], typing.Optional[Volume]] = ...
-    get_drive: typing.Callable[[Mount], typing.Optional[Drive]] = ...
-    can_unmount: typing.Callable[[Mount], bool] = ...
-    can_eject: typing.Callable[[Mount], bool] = ...
-    unmount: typing.Callable[..., None] = ...
-    unmount_finish: typing.Callable[[Mount, AsyncResult], bool] = ...
-    eject: typing.Callable[..., None] = ...
-    eject_finish: typing.Callable[[Mount, AsyncResult], bool] = ...
-    remount: typing.Callable[..., None] = ...
-    remount_finish: typing.Callable[[Mount, AsyncResult], bool] = ...
-    guess_content_type: typing.Callable[..., None] = ...
-    guess_content_type_finish: typing.Callable[[Mount, AsyncResult], list[str]] = ...
-    guess_content_type_sync: typing.Callable[
-        [Mount, bool, typing.Optional[Cancellable]], list[str]
-    ] = ...
-    pre_unmount: typing.Callable[[Mount], None] = ...
-    unmount_with_operation: typing.Callable[..., None] = ...
-    unmount_with_operation_finish: typing.Callable[[Mount, AsyncResult], bool] = ...
-    eject_with_operation: typing.Callable[..., None] = ...
-    eject_with_operation_finish: typing.Callable[[Mount, AsyncResult], bool] = ...
-    get_default_location: typing.Callable[[Mount], File] = ...
-    get_sort_key: typing.Callable[[Mount], typing.Optional[str]] = ...
-    get_symbolic_icon: typing.Callable[[Mount], Icon] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def changed(self) -> Callable[[Mount], None]: ...
+    @property
+    def unmounted(self) -> Callable[[Mount], None]: ...
+    @property
+    def get_root(self) -> Callable[[Mount], File]: ...
+    @property
+    def get_name(self) -> Callable[[Mount], str]: ...
+    @property
+    def get_icon(self) -> Callable[[Mount], Icon]: ...
+    @property
+    def get_uuid(self) -> Callable[[Mount], str | None]: ...
+    @property
+    def get_volume(self) -> Callable[[Mount], Volume | None]: ...
+    @property
+    def get_drive(self) -> Callable[[Mount], Drive | None]: ...
+    @property
+    def can_unmount(self) -> Callable[[Mount], bool]: ...
+    @property
+    def can_eject(self) -> Callable[[Mount], bool]: ...
+    @property
+    def unmount(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def unmount_finish(self) -> Callable[[Mount, AsyncResult], bool]: ...
+    @property
+    def eject(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_finish(self) -> Callable[[Mount, AsyncResult], bool]: ...
+    @property
+    def remount(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            _MountMountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def remount_finish(self) -> Callable[[Mount, AsyncResult], bool]: ...
+    @property
+    def guess_content_type(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            bool,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def guess_content_type_finish(
+        self,
+    ) -> Callable[[Mount, AsyncResult], list[str]]: ...
+    @property
+    def guess_content_type_sync(
+        self,
+    ) -> Callable[[Mount, bool, Cancellable | None], list[str]]: ...
+    @property
+    def pre_unmount(self) -> Callable[[Mount], None]: ...
+    @property
+    def unmount_with_operation(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def unmount_with_operation_finish(self) -> Callable[[Mount, AsyncResult], bool]: ...
+    @property
+    def eject_with_operation(
+        self,
+    ) -> Callable[
+        [
+            Mount,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_with_operation_finish(self) -> Callable[[Mount, AsyncResult], bool]: ...
+    @property
+    def get_default_location(self) -> Callable[[Mount], File]: ...
+    @property
+    def get_sort_key(self) -> Callable[[Mount], str | None]: ...
+    @property
+    def get_symbolic_icon(self) -> Callable[[Mount], Icon]: ...
 
 class MountOperation(GObject.Object):
     """
@@ -6815,32 +9215,39 @@ class MountOperation(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         anonymous: bool
         choice: int
-        domain: typing.Optional[str]
+        domain: str | None
         is_tcrypt_hidden_volume: bool
         is_tcrypt_system_volume: bool
-        password: typing.Optional[str]
-        password_save: PasswordSave
+        password: str | None
+        @property
+        def password_save(self) -> PasswordSave: ...
+        @password_save.setter
+        def password_save(self, value: _PasswordSaveValueType) -> None: ...
         pim: int
-        username: typing.Optional[str]
+        username: str | None
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: MountOperationPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> MountOperationPrivate: ...
     def __init__(
         self,
+        *,
         anonymous: bool = ...,
         choice: int = ...,
-        domain: typing.Optional[str] = ...,
+        domain: str | None = ...,
         is_tcrypt_hidden_volume: bool = ...,
         is_tcrypt_system_volume: bool = ...,
-        password: typing.Optional[str] = ...,
-        password_save: PasswordSave = ...,
+        password: str | None = ...,
+        password_save: _PasswordSaveValueType = ...,
         pim: int = ...,
-        username: typing.Optional[str] = ...,
+        username: str | None = ...,
     ) -> None: ...
     def do_aborted(self) -> None: ...
     def do_ask_password(
@@ -6848,42 +9255,40 @@ class MountOperation(GObject.Object):
         message: str,
         default_user: str,
         default_domain: str,
-        flags: AskPasswordFlags,
+        flags: _AskPasswordFlagsValueType,
+        /,
     ) -> None: ...
-    def do_ask_question(self, message: str, choices: typing.Sequence[str]) -> None: ...
-    def do_reply(self, result: MountOperationResult) -> None: ...
+    def do_ask_question(self, message: str, choices: Sequence[str], /) -> None: ...
+    def do_reply(self, result: _MountOperationResultValueType, /) -> None: ...
     def do_show_processes(
-        self,
-        message: str,
-        processes: typing.Sequence[int],
-        choices: typing.Sequence[str],
+        self, message: str, processes: Sequence[int], choices: Sequence[str], /
     ) -> None: ...
     def do_show_unmount_progress(
-        self, message: str, time_left: int, bytes_left: int
+        self, message: str, time_left: int, bytes_left: int, /
     ) -> None: ...
     def get_anonymous(self) -> bool: ...
     def get_choice(self) -> int: ...
-    def get_domain(self) -> typing.Optional[str]: ...
+    def get_domain(self) -> str | None: ...
     def get_is_tcrypt_hidden_volume(self) -> bool: ...
     def get_is_tcrypt_system_volume(self) -> bool: ...
-    def get_password(self) -> typing.Optional[str]: ...
+    def get_password(self) -> str | None: ...
     def get_password_save(self) -> PasswordSave: ...
     def get_pim(self) -> int: ...
-    def get_username(self) -> typing.Optional[str]: ...
+    def get_username(self) -> str | None: ...
     @classmethod
     def new(cls) -> MountOperation: ...
-    def reply(self, result: MountOperationResult) -> None: ...
+    def reply(self, result: _MountOperationResultValueType) -> None: ...
     def set_anonymous(self, anonymous: bool) -> None: ...
     def set_choice(self, choice: int) -> None: ...
-    def set_domain(self, domain: typing.Optional[str] = None) -> None: ...
+    def set_domain(self, domain: str | None = None) -> None: ...
     def set_is_tcrypt_hidden_volume(self, hidden_volume: bool) -> None: ...
     def set_is_tcrypt_system_volume(self, system_volume: bool) -> None: ...
-    def set_password(self, password: typing.Optional[str] = None) -> None: ...
-    def set_password_save(self, save: PasswordSave) -> None: ...
+    def set_password(self, password: str | None = None) -> None: ...
+    def set_password_save(self, save: _PasswordSaveValueType) -> None: ...
     def set_pim(self, pim: int) -> None: ...
-    def set_username(self, username: typing.Optional[str] = None) -> None: ...
+    def set_username(self, username: str | None = None) -> None: ...
 
-class MountOperationClass(GObject.GPointer):
+class MountOperationClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6891,33 +9296,34 @@ class MountOperationClass(GObject.GPointer):
 
         MountOperationClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def ask_password(
+        self,
+    ) -> Callable[
+        [MountOperation, str, str, str, _AskPasswordFlagsValueType], None
+    ]: ...
+    @property
+    def ask_question(self) -> Callable[[MountOperation, str, Sequence[str]], None]: ...
+    @property
+    def reply(
+        self,
+    ) -> Callable[[MountOperation, _MountOperationResultValueType], None]: ...
+    @property
+    def aborted(self) -> Callable[[MountOperation], None]: ...
+    @property
+    def show_processes(
+        self,
+    ) -> Callable[[MountOperation, str, Sequence[int], Sequence[str]], None]: ...
+    @property
+    def show_unmount_progress(
+        self,
+    ) -> Callable[[MountOperation, str, int, int], None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    ask_password: typing.Callable[
-        [MountOperation, str, str, str, AskPasswordFlags], None
-    ] = ...
-    ask_question: typing.Callable[
-        [MountOperation, str, typing.Sequence[str]], None
-    ] = ...
-    reply: typing.Callable[[MountOperation, MountOperationResult], None] = ...
-    aborted: typing.Callable[[MountOperation], None] = ...
-    show_processes: typing.Callable[
-        [MountOperation, str, typing.Sequence[int], typing.Sequence[str]], None
-    ] = ...
-    show_unmount_progress: typing.Callable[[MountOperation, str, int, int], None] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
-    _g_reserved8: None = ...
-    _g_reserved9: None = ...
+class MountOperationPrivate(_gi.Struct): ...
 
-class MountOperationPrivate(GObject.GPointer): ...
-
-class NativeSocketAddress(SocketAddress, SocketConnectable):
+class NativeSocketAddress(SocketAddress):
     """
     :Constructors:
 
@@ -6934,17 +9340,14 @@ class NativeSocketAddress(SocketAddress, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        family: SocketFamily
-
-    props: Props = ...
-    parent_instance: SocketAddress = ...
-    priv: NativeSocketAddressPrivate = ...
+    @property
+    def parent_instance(self) -> SocketAddress: ...
+    @property
+    def priv(self) -> NativeSocketAddressPrivate: ...
     @classmethod
-    def new(cls, native: None, len: int) -> NativeSocketAddress: ...
+    def new(cls, native: int | Any | None, len: int) -> NativeSocketAddress: ...
 
-class NativeSocketAddressClass(GObject.GPointer):
+class NativeSocketAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6952,10 +9355,10 @@ class NativeSocketAddressClass(GObject.GPointer):
 
         NativeSocketAddressClass()
     """
+    @property
+    def parent_class(self) -> SocketAddressClass: ...
 
-    parent_class: SocketAddressClass = ...
-
-class NativeSocketAddressPrivate(GObject.GPointer): ...
+class NativeSocketAddressPrivate(_gi.Struct): ...
 
 class NativeVolumeMonitor(VolumeMonitor):
     """
@@ -6984,10 +9387,10 @@ class NativeVolumeMonitor(VolumeMonitor):
     Signals from GObject:
       notify (GParam)
     """
+    @property
+    def parent_instance(self) -> VolumeMonitor: ...
 
-    parent_instance: VolumeMonitor = ...
-
-class NativeVolumeMonitorClass(GObject.GPointer):
+class NativeVolumeMonitorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -6995,9 +9398,10 @@ class NativeVolumeMonitorClass(GObject.GPointer):
 
         NativeVolumeMonitorClass()
     """
-
-    parent_class: VolumeMonitorClass = ...
-    get_mount_for_mount_path: None = ...
+    @property
+    def parent_class(self) -> VolumeMonitorClass: ...
+    @property
+    def get_mount_for_mount_path(self) -> int: ...
 
 class NetworkAddress(GObject.Object, SocketConnectable):
     """
@@ -7019,21 +9423,27 @@ class NetworkAddress(GObject.Object, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def hostname(self) -> str: ...
+        @property
+        def port(self) -> int: ...
+        @property
+        def scheme(self) -> str | None: ...
 
-    class Props:
-        hostname: str
-        port: int
-        scheme: typing.Optional[str]
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: NetworkAddressPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> NetworkAddressPrivate: ...
     def __init__(
-        self, hostname: str = ..., port: int = ..., scheme: str = ...
+        self, *, hostname: str | None = ..., port: int = ..., scheme: str | None = ...
     ) -> None: ...
     def get_hostname(self) -> str: ...
     def get_port(self) -> int: ...
-    def get_scheme(self) -> typing.Optional[str]: ...
+    def get_scheme(self) -> str | None: ...
     @classmethod
     def new(cls, hostname: str, port: int) -> NetworkAddress: ...
     @classmethod
@@ -7043,7 +9453,7 @@ class NetworkAddress(GObject.Object, SocketConnectable):
     @staticmethod
     def parse_uri(uri: str, default_port: int) -> NetworkAddress: ...
 
-class NetworkAddressClass(GObject.GPointer):
+class NetworkAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7051,30 +9461,40 @@ class NetworkAddressClass(GObject.GPointer):
 
         NetworkAddressClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
+class NetworkAddressPrivate(_gi.Struct): ...
 
-class NetworkAddressPrivate(GObject.GPointer): ...
-
-class NetworkMonitor(GObject.GInterface):
+class NetworkMonitor(GObject.GInterface, Protocol):
     """
     Interface GNetworkMonitor
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_reach(
-        self,
-        connectable: SocketConnectable,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, connectable: SocketConnectable, cancellable: Cancellable | None = None
     ) -> bool: ...
+    @overload
+    def can_reach_async(
+        self, connectable: SocketConnectable, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def can_reach_async(
         self,
         connectable: SocketConnectable,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[NetworkMonitor, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def can_reach_async(
+        self,
+        connectable: SocketConnectable,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[NetworkMonitor] | None,
     ) -> None: ...
     def can_reach_finish(self, result: AsyncResult) -> bool: ...
     def get_connectivity(self) -> NetworkConnectivity: ...
@@ -7083,7 +9503,7 @@ class NetworkMonitor(GObject.GInterface):
     def get_network_available(self) -> bool: ...
     def get_network_metered(self) -> bool: ...
 
-class NetworkMonitorInterface(GObject.GPointer):
+class NetworkMonitorInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7091,14 +9511,29 @@ class NetworkMonitorInterface(GObject.GPointer):
 
         NetworkMonitorInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    network_changed: typing.Callable[[NetworkMonitor, bool], None] = ...
-    can_reach: typing.Callable[
-        [NetworkMonitor, SocketConnectable, typing.Optional[Cancellable]], bool
-    ] = ...
-    can_reach_async: typing.Callable[..., None] = ...
-    can_reach_finish: typing.Callable[[NetworkMonitor, AsyncResult], bool] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def network_changed(self) -> Callable[[NetworkMonitor, bool], None]: ...
+    @property
+    def can_reach(
+        self,
+    ) -> Callable[[NetworkMonitor, SocketConnectable, Cancellable | None], bool]: ...
+    @property
+    def can_reach_async(
+        self,
+    ) -> Callable[
+        [
+            NetworkMonitor,
+            SocketConnectable,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def can_reach_finish(self) -> Callable[[NetworkMonitor, AsyncResult], bool]: ...
 
 class NetworkService(GObject.Object, SocketConnectable):
     """
@@ -7120,22 +9555,29 @@ class NetworkService(GObject.Object, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        domain: str
-        protocol: str
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def domain(self) -> str: ...
+        @property
+        def protocol(self) -> str: ...
         scheme: str
-        service: str
+        @property
+        def service(self) -> str: ...
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: NetworkServicePrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> NetworkServicePrivate: ...
     def __init__(
         self,
-        domain: str = ...,
-        protocol: str = ...,
+        *,
+        domain: str | None = ...,
+        protocol: str | None = ...,
         scheme: str = ...,
-        service: str = ...,
+        service: str | None = ...,
     ) -> None: ...
     def get_domain(self) -> str: ...
     def get_protocol(self) -> str: ...
@@ -7145,7 +9587,7 @@ class NetworkService(GObject.Object, SocketConnectable):
     def new(cls, service: str, protocol: str, domain: str) -> NetworkService: ...
     def set_scheme(self, scheme: str) -> None: ...
 
-class NetworkServiceClass(GObject.GPointer):
+class NetworkServiceClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7153,10 +9595,10 @@ class NetworkServiceClass(GObject.GPointer):
 
         NetworkServiceClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class NetworkServicePrivate(GObject.GPointer): ...
+class NetworkServicePrivate(_gi.Struct): ...
 
 class Notification(GObject.Object):
     """
@@ -7172,25 +9614,24 @@ class Notification(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
     def add_button(self, label: str, detailed_action: str) -> None: ...
     def add_button_with_target(
-        self, label: str, action: str, target: typing.Optional[GLib.Variant] = None
+        self, label: str, action: str, target: GLib.Variant | None = None
     ) -> None: ...
     @classmethod
     def new(cls, title: str) -> Notification: ...
-    def set_body(self, body: typing.Optional[str] = None) -> None: ...
-    def set_category(self, category: typing.Optional[str] = None) -> None: ...
+    def set_body(self, body: str | None = None) -> None: ...
+    def set_category(self, category: str | None = None) -> None: ...
     def set_default_action(self, detailed_action: str) -> None: ...
     def set_default_action_and_target(
-        self, action: str, target: typing.Optional[GLib.Variant] = None
+        self, action: str, target: GLib.Variant | None = None
     ) -> None: ...
     def set_icon(self, icon: Icon) -> None: ...
-    def set_priority(self, priority: NotificationPriority) -> None: ...
+    def set_priority(self, priority: _NotificationPriorityValueType) -> None: ...
     def set_title(self, title: str) -> None: ...
     def set_urgent(self, urgent: bool) -> None: ...
 
-class OutputMessage(GObject.GPointer):
+class OutputMessage(_gi.Struct):
     """
     :Constructors:
 
@@ -7199,12 +9640,12 @@ class OutputMessage(GObject.GPointer):
         OutputMessage()
     """
 
-    address: SocketAddress = ...
-    vectors: OutputVector = ...
-    num_vectors: int = ...
-    bytes_sent: int = ...
-    control_messages: list[SocketControlMessage] = ...
-    num_control_messages: int = ...
+    address: SocketAddress
+    vectors: OutputVector
+    num_vectors: int
+    bytes_sent: int
+    control_messages: list[SocketControlMessage]
+    num_control_messages: int
 
 class OutputStream(GObject.Object):
     """
@@ -7219,88 +9660,117 @@ class OutputStream(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: OutputStreamPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> OutputStreamPrivate: ...
     def clear_pending(self) -> None: ...
-    def close(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def close(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def close_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def close_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
     ) -> None: ...
     def close_finish(self, result: AsyncResult) -> bool: ...
     def do_close_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[OutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_close_finish(self, result: AsyncResult) -> bool: ...
-    def do_close_fn(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
-    def do_flush(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def do_close_finish(self, result: AsyncResult, /) -> bool: ...
+    def do_close_fn(self, cancellable: Cancellable | None, /) -> bool: ...
+    def do_flush(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_flush_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[OutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_flush_finish(self, result: AsyncResult) -> bool: ...
+    def do_flush_finish(self, result: AsyncResult, /) -> bool: ...
     def do_splice(
         self,
         source: InputStream,
-        flags: OutputStreamSpliceFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _OutputStreamSpliceFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> int: ...
     def do_splice_async(
         self,
         source: InputStream,
-        flags: OutputStreamSpliceFlags,
+        flags: _OutputStreamSpliceFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[OutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_splice_finish(self, result: AsyncResult) -> int: ...
+    def do_splice_finish(self, result: AsyncResult, /) -> int: ...
     def do_write_async(
         self,
-        buffer: typing.Optional[typing.Sequence[int]],
+        buffer: Sequence[int] | None,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[OutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_write_finish(self, result: AsyncResult) -> int: ...
+    def do_write_finish(self, result: AsyncResult, /) -> int: ...
     def do_write_fn(
-        self,
-        buffer: typing.Optional[typing.Sequence[int]] = None,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, buffer: Sequence[int] | None, cancellable: Cancellable | None, /
     ) -> int: ...
     def do_writev_async(
         self,
-        vectors: typing.Sequence[OutputVector],
+        vectors: Sequence[OutputVector],
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[OutputStream, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_writev_finish(self, result: AsyncResult) -> typing.Tuple[bool, int]: ...
+    def do_writev_finish(self, result: AsyncResult, /) -> tuple[bool, int]: ...
     def do_writev_fn(
-        self,
-        vectors: typing.Sequence[OutputVector],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, int]: ...
-    def flush(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+        self, vectors: Sequence[OutputVector], cancellable: Cancellable | None, /
+    ) -> tuple[bool, int]: ...
+    def flush(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def flush_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def flush_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def flush_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
     ) -> None: ...
     def flush_finish(self, result: AsyncResult) -> bool: ...
     def has_pending(self) -> bool: ...
@@ -7310,89 +9780,185 @@ class OutputStream(GObject.Object):
     def splice(
         self,
         source: InputStream,
-        flags: OutputStreamSpliceFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _OutputStreamSpliceFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
+    @overload
     def splice_async(
         self,
         source: InputStream,
-        flags: OutputStreamSpliceFlags,
+        flags: _OutputStreamSpliceFlagsValueType,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[int]: ...
+    @overload
+    def splice_async(
+        self,
+        source: InputStream,
+        flags: _OutputStreamSpliceFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def splice_async(
+        self,
+        source: InputStream,
+        flags: _OutputStreamSpliceFlagsValueType,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
     ) -> None: ...
     def splice_finish(self, result: AsyncResult) -> int: ...
     def write(
-        self,
-        buffer: typing.Sequence[int],
-        cancellable: typing.Optional[Cancellable] = None,
+        self, buffer: Sequence[int], cancellable: Cancellable | None = None
     ) -> int: ...
     def write_all(
-        self,
-        buffer: typing.Sequence[int],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, int]: ...
+        self, buffer: Sequence[int], cancellable: Cancellable | None = None
+    ) -> tuple[bool, int]: ...
+    @overload
     def write_all_async(
         self,
-        buffer: typing.Sequence[int],
+        buffer: Sequence[int],
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, int]]: ...
+    @overload
+    def write_all_async(
+        self,
+        buffer: Sequence[int],
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def write_all_finish(self, result: AsyncResult) -> typing.Tuple[bool, int]: ...
+    @overload
+    def write_all_async(
+        self,
+        buffer: Sequence[int],
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
+    ) -> None: ...
+    def write_all_finish(self, result: AsyncResult) -> tuple[bool, int]: ...
+    @overload
     def write_async(
         self,
-        buffer: typing.Sequence[int],
+        buffer: Sequence[int],
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[int]: ...
+    @overload
+    def write_async(
+        self,
+        buffer: Sequence[int],
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def write_async(
+        self,
+        buffer: Sequence[int],
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
     ) -> None: ...
     def write_bytes(
-        self, bytes: GLib.Bytes, cancellable: typing.Optional[Cancellable] = None
+        self, bytes: GLib.Bytes, cancellable: Cancellable | None = None
     ) -> int: ...
+    @overload
     def write_bytes_async(
         self,
         bytes: GLib.Bytes,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[int]: ...
+    @overload
+    def write_bytes_async(
+        self,
+        bytes: GLib.Bytes,
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def write_bytes_async(
+        self,
+        bytes: GLib.Bytes,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
     ) -> None: ...
     def write_bytes_finish(self, result: AsyncResult) -> int: ...
     def write_finish(self, result: AsyncResult) -> int: ...
     def writev(
-        self,
-        vectors: typing.Sequence[OutputVector],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, int]: ...
+        self, vectors: Sequence[OutputVector], cancellable: Cancellable | None = None
+    ) -> tuple[bool, int]: ...
     def writev_all(
-        self,
-        vectors: typing.Sequence[OutputVector],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, int]: ...
+        self, vectors: Sequence[OutputVector], cancellable: Cancellable | None = None
+    ) -> tuple[bool, int]: ...
+    @overload
     def writev_all_async(
         self,
-        vectors: typing.Sequence[OutputVector],
+        vectors: Sequence[OutputVector],
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, int]]: ...
+    @overload
+    def writev_all_async(
+        self,
+        vectors: Sequence[OutputVector],
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def writev_all_finish(self, result: AsyncResult) -> typing.Tuple[bool, int]: ...
+    @overload
+    def writev_all_async(
+        self,
+        vectors: Sequence[OutputVector],
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
+    ) -> None: ...
+    def writev_all_finish(self, result: AsyncResult) -> tuple[bool, int]: ...
+    @overload
     def writev_async(
         self,
-        vectors: typing.Sequence[OutputVector],
+        vectors: Sequence[OutputVector],
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, int]]: ...
+    @overload
+    def writev_async(
+        self,
+        vectors: Sequence[OutputVector],
+        io_priority: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[OutputStream, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def writev_finish(self, result: AsyncResult) -> typing.Tuple[bool, int]: ...
+    @overload
+    def writev_async(
+        self,
+        vectors: Sequence[OutputVector],
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[OutputStream] | None,
+    ) -> None: ...
+    def writev_finish(self, result: AsyncResult) -> tuple[bool, int]: ...
 
-class OutputStreamClass(GObject.GPointer):
+class OutputStreamClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7400,52 +9966,124 @@ class OutputStreamClass(GObject.GPointer):
 
         OutputStreamClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    write_fn: typing.Callable[
-        [
-            OutputStream,
-            typing.Optional[typing.Sequence[int]],
-            typing.Optional[Cancellable],
-        ],
-        int,
-    ] = ...
-    splice: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def write_fn(
+        self,
+    ) -> Callable[
+        [OutputStream, Sequence[int] | None, int, Cancellable | None], int
+    ]: ...
+    @property
+    def splice(
+        self,
+    ) -> Callable[
         [
             OutputStream,
             InputStream,
-            OutputStreamSpliceFlags,
-            typing.Optional[Cancellable],
+            _OutputStreamSpliceFlagsValueType,
+            Cancellable | None,
         ],
         int,
-    ] = ...
-    flush: typing.Callable[[OutputStream, typing.Optional[Cancellable]], bool] = ...
-    close_fn: typing.Callable[[OutputStream, typing.Optional[Cancellable]], bool] = ...
-    write_async: typing.Callable[..., None] = ...
-    write_finish: typing.Callable[[OutputStream, AsyncResult], int] = ...
-    splice_async: typing.Callable[..., None] = ...
-    splice_finish: typing.Callable[[OutputStream, AsyncResult], int] = ...
-    flush_async: typing.Callable[..., None] = ...
-    flush_finish: typing.Callable[[OutputStream, AsyncResult], bool] = ...
-    close_async: typing.Callable[..., None] = ...
-    close_finish: typing.Callable[[OutputStream, AsyncResult], bool] = ...
-    writev_fn: typing.Callable[
-        [OutputStream, typing.Sequence[OutputVector], typing.Optional[Cancellable]],
-        typing.Tuple[bool, int],
-    ] = ...
-    writev_async: typing.Callable[..., None] = ...
-    writev_finish: typing.Callable[
-        [OutputStream, AsyncResult], typing.Tuple[bool, int]
-    ] = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
-    _g_reserved8: None = ...
+    ]: ...
+    @property
+    def flush(self) -> Callable[[OutputStream, Cancellable | None], bool]: ...
+    @property
+    def close_fn(self) -> Callable[[OutputStream, Cancellable | None], bool]: ...
+    @property
+    def write_async(
+        self,
+    ) -> Callable[
+        [
+            OutputStream,
+            Sequence[int] | None,
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def write_finish(self) -> Callable[[OutputStream, AsyncResult], int]: ...
+    @property
+    def splice_async(
+        self,
+    ) -> Callable[
+        [
+            OutputStream,
+            InputStream,
+            _OutputStreamSpliceFlagsValueType,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def splice_finish(self) -> Callable[[OutputStream, AsyncResult], int]: ...
+    @property
+    def flush_async(
+        self,
+    ) -> Callable[
+        [
+            OutputStream,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def flush_finish(self) -> Callable[[OutputStream, AsyncResult], bool]: ...
+    @property
+    def close_async(
+        self,
+    ) -> Callable[
+        [
+            OutputStream,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def close_finish(self) -> Callable[[OutputStream, AsyncResult], bool]: ...
+    @property
+    def writev_fn(
+        self,
+    ) -> Callable[
+        [OutputStream, Sequence[OutputVector], int, Cancellable | None],
+        tuple[bool, int],
+    ]: ...
+    @property
+    def writev_async(
+        self,
+    ) -> Callable[
+        [
+            OutputStream,
+            Sequence[OutputVector],
+            int,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def writev_finish(
+        self,
+    ) -> Callable[[OutputStream, AsyncResult], tuple[bool, int]]: ...
 
-class OutputStreamPrivate(GObject.GPointer): ...
+class OutputStreamPrivate(_gi.Struct): ...
 
-class OutputVector(GObject.GPointer):
+class OutputVector(_gi.Struct):
     """
     :Constructors:
 
@@ -7454,8 +10092,8 @@ class OutputVector(GObject.GPointer):
         OutputVector()
     """
 
-    buffer: None = ...
-    size: int = ...
+    buffer: int
+    size: int
 
 class Permission(GObject.Object):
     """
@@ -7475,55 +10113,87 @@ class Permission(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def allowed(self) -> bool: ...
+        @property
+        def can_acquire(self) -> bool: ...
+        @property
+        def can_release(self) -> bool: ...
 
-    class Props:
-        allowed: bool
-        can_acquire: bool
-        can_release: bool
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: PermissionPrivate = ...
-    def acquire(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> PermissionPrivate: ...
+    def acquire(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def acquire_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def acquire_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Permission, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def acquire_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Permission] | None,
     ) -> None: ...
     def acquire_finish(self, result: AsyncResult) -> bool: ...
-    def do_acquire(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def do_acquire(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_acquire_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Permission, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_acquire_finish(self, result: AsyncResult) -> bool: ...
-    def do_release(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def do_acquire_finish(self, result: AsyncResult, /) -> bool: ...
+    def do_release(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_release_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Permission, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_release_finish(self, result: AsyncResult) -> bool: ...
+    def do_release_finish(self, result: AsyncResult, /) -> bool: ...
     def get_allowed(self) -> bool: ...
     def get_can_acquire(self) -> bool: ...
     def get_can_release(self) -> bool: ...
     def impl_update(
         self, allowed: bool, can_acquire: bool, can_release: bool
     ) -> None: ...
-    def release(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def release(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def release_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def release_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Permission, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def release_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Permission] | None,
     ) -> None: ...
     def release_finish(self, result: AsyncResult) -> bool: ...
 
-class PermissionClass(GObject.GPointer):
+class PermissionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7531,36 +10201,60 @@ class PermissionClass(GObject.GPointer):
 
         PermissionClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def acquire(self) -> Callable[[Permission, Cancellable | None], bool]: ...
+    @property
+    def acquire_async(
+        self,
+    ) -> Callable[
+        [
+            Permission,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def acquire_finish(self) -> Callable[[Permission, AsyncResult], bool]: ...
+    @property
+    def release(self) -> Callable[[Permission, Cancellable | None], bool]: ...
+    @property
+    def release_async(
+        self,
+    ) -> Callable[
+        [
+            Permission,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def release_finish(self) -> Callable[[Permission, AsyncResult], bool]: ...
+    @property
+    def reserved(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    acquire: typing.Callable[[Permission, typing.Optional[Cancellable]], bool] = ...
-    acquire_async: typing.Callable[..., None] = ...
-    acquire_finish: typing.Callable[[Permission, AsyncResult], bool] = ...
-    release: typing.Callable[[Permission, typing.Optional[Cancellable]], bool] = ...
-    release_async: typing.Callable[..., None] = ...
-    release_finish: typing.Callable[[Permission, AsyncResult], bool] = ...
-    reserved: list[None] = ...
+class PermissionPrivate(_gi.Struct): ...
 
-class PermissionPrivate(GObject.GPointer): ...
-
-class PollableInputStream(GObject.GInterface):
+class PollableInputStream(GObject.GInterface, Protocol):
     """
     Interface GPollableInputStream
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_poll(self) -> bool: ...
-    def create_source(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> GLib.Source: ...
+    def create_source(self, cancellable: Cancellable | None = None) -> GLib.Source: ...
     def is_readable(self) -> bool: ...
     def read_nonblocking(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[int, bytes]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[int, bytes]: ...
 
-class PollableInputStreamInterface(GObject.GPointer):
+class PollableInputStreamInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7568,42 +10262,39 @@ class PollableInputStreamInterface(GObject.GPointer):
 
         PollableInputStreamInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def can_poll(self) -> Callable[[PollableInputStream], bool]: ...
+    @property
+    def is_readable(self) -> Callable[[PollableInputStream], bool]: ...
+    @property
+    def create_source(
+        self,
+    ) -> Callable[[PollableInputStream, Cancellable | None], GLib.Source]: ...
+    @property
+    def read_nonblocking(
+        self,
+    ) -> Callable[[PollableInputStream, int], tuple[int, bytes]]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    can_poll: typing.Callable[[PollableInputStream], bool] = ...
-    is_readable: typing.Callable[[PollableInputStream], bool] = ...
-    create_source: typing.Callable[
-        [PollableInputStream, typing.Optional[Cancellable]], GLib.Source
-    ] = ...
-    read_nonblocking: typing.Callable[
-        [PollableInputStream], typing.Tuple[int, bytes]
-    ] = ...
-
-class PollableOutputStream(GObject.GInterface):
+class PollableOutputStream(GObject.GInterface, Protocol):
     """
     Interface GPollableOutputStream
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_poll(self) -> bool: ...
-    def create_source(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> GLib.Source: ...
+    def create_source(self, cancellable: Cancellable | None = None) -> GLib.Source: ...
     def is_writable(self) -> bool: ...
     def write_nonblocking(
-        self,
-        buffer: typing.Sequence[int],
-        cancellable: typing.Optional[Cancellable] = None,
+        self, buffer: Sequence[int], cancellable: Cancellable | None = None
     ) -> int: ...
     def writev_nonblocking(
-        self,
-        vectors: typing.Sequence[OutputVector],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[PollableReturn, int]: ...
+        self, vectors: Sequence[OutputVector], cancellable: Cancellable | None = None
+    ) -> tuple[PollableReturn, int]: ...
 
-class PollableOutputStreamInterface(GObject.GPointer):
+class PollableOutputStreamInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7611,34 +10302,39 @@ class PollableOutputStreamInterface(GObject.GPointer):
 
         PollableOutputStreamInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def can_poll(self) -> Callable[[PollableOutputStream], bool]: ...
+    @property
+    def is_writable(self) -> Callable[[PollableOutputStream], bool]: ...
+    @property
+    def create_source(
+        self,
+    ) -> Callable[[PollableOutputStream, Cancellable | None], GLib.Source]: ...
+    @property
+    def write_nonblocking(
+        self,
+    ) -> Callable[[PollableOutputStream, Sequence[int] | None, int], int]: ...
+    @property
+    def writev_nonblocking(
+        self,
+    ) -> Callable[
+        [PollableOutputStream, Sequence[OutputVector], int], tuple[PollableReturn, int]
+    ]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    can_poll: typing.Callable[[PollableOutputStream], bool] = ...
-    is_writable: typing.Callable[[PollableOutputStream], bool] = ...
-    create_source: typing.Callable[
-        [PollableOutputStream, typing.Optional[Cancellable]], GLib.Source
-    ] = ...
-    write_nonblocking: typing.Callable[
-        [PollableOutputStream, typing.Optional[typing.Sequence[int]]], int
-    ] = ...
-    writev_nonblocking: typing.Callable[
-        [PollableOutputStream, typing.Sequence[OutputVector]],
-        typing.Tuple[PollableReturn, int],
-    ] = ...
-
-class PowerProfileMonitor(GObject.GInterface):
+class PowerProfileMonitor(GObject.GInterface, Protocol):
     """
     Interface GPowerProfileMonitor
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def dup_default() -> PowerProfileMonitor: ...
     def get_power_saver_enabled(self) -> bool: ...
 
-class PowerProfileMonitorInterface(GObject.GPointer):
+class PowerProfileMonitorInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7646,8 +10342,8 @@ class PowerProfileMonitorInterface(GObject.GPointer):
 
         PowerProfileMonitorInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
 
 class PropertyAction(GObject.Object, Action):
     """
@@ -7673,58 +10369,80 @@ class PropertyAction(GObject.Object, Action):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def enabled(self) -> bool: ...
+        @property
+        def invert_boolean(self) -> bool: ...
+        @property
+        def name(self) -> str | None: ...
+        @property
+        def parameter_type(self) -> GLib.VariantType | None: ...
+        @property
+        def state(self) -> GLib.Variant | None: ...
+        @property
+        def state_type(self) -> GLib.VariantType | None: ...
 
-    class Props:
-        enabled: bool
-        invert_boolean: bool
-        name: str
-        parameter_type: GLib.VariantType
-        state: GLib.Variant
-        state_type: GLib.VariantType
-        object: GObject.Object
-        property_name: str
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
+        *,
         invert_boolean: bool = ...,
-        name: str = ...,
-        object: GObject.Object = ...,
-        property_name: str = ...,
+        name: str | None = ...,
+        object: GObject.Object | None = ...,
+        property_name: str | None = ...,
     ) -> None: ...
     @classmethod
     def new(
         cls, name: str, object: GObject.Object, property_name: str
     ) -> PropertyAction: ...
 
-class Proxy(GObject.GInterface):
+class Proxy(GObject.GInterface, Protocol):
     """
     Interface GProxy
 
     Signals from GObject:
       notify (GParam)
     """
-
     def connect(
         self,
         connection: IOStream,
         proxy_address: ProxyAddress,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> IOStream: ...
+    @overload
     def connect_async(
         self,
         connection: IOStream,
         proxy_address: ProxyAddress,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[IOStream]: ...
+    @overload
+    def connect_async(
+        self,
+        connection: IOStream,
+        proxy_address: ProxyAddress,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Proxy, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_async(
+        self,
+        connection: IOStream,
+        proxy_address: ProxyAddress,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Proxy] | None,
     ) -> None: ...
     def connect_finish(self, result: AsyncResult) -> IOStream: ...
     @staticmethod
-    def get_default_for_protocol(protocol: str) -> typing.Optional[Proxy]: ...
+    def get_default_for_protocol(protocol: str) -> Proxy | None: ...
     def supports_hostname(self) -> bool: ...
 
-class ProxyAddress(InetSocketAddress, SocketConnectable):
+class ProxyAddress(InetSocketAddress):
     """
     :Constructors:
 
@@ -7756,34 +10474,40 @@ class ProxyAddress(InetSocketAddress, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(InetSocketAddress.Props):
+        @property
+        def destination_hostname(self) -> str: ...
+        @property
+        def destination_port(self) -> int: ...
+        @property
+        def destination_protocol(self) -> str: ...
+        @property
+        def password(self) -> str | None: ...
+        @property
+        def protocol(self) -> str: ...
+        @property
+        def uri(self) -> str | None: ...
+        @property
+        def username(self) -> str | None: ...
 
-    class Props:
-        destination_hostname: str
-        destination_port: int
-        destination_protocol: str
-        password: typing.Optional[str]
-        protocol: str
-        uri: typing.Optional[str]
-        username: typing.Optional[str]
-        address: InetAddress
-        flowinfo: int
-        port: int
-        scope_id: int
-        family: SocketFamily
-
-    props: Props = ...
-    parent_instance: InetSocketAddress = ...
-    priv: ProxyAddressPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> InetSocketAddress: ...
+    @property
+    def priv(self) -> ProxyAddressPrivate: ...
     def __init__(
         self,
-        destination_hostname: str = ...,
+        *,
+        destination_hostname: str | None = ...,
         destination_port: int = ...,
-        destination_protocol: str = ...,
-        password: str = ...,
-        protocol: str = ...,
-        uri: str = ...,
-        username: str = ...,
-        address: InetAddress = ...,
+        destination_protocol: str | None = ...,
+        password: str | None = ...,
+        protocol: str | None = ...,
+        uri: str | None = ...,
+        username: str | None = ...,
+        address: InetAddress | None = ...,
         flowinfo: int = ...,
         port: int = ...,
         scope_id: int = ...,
@@ -7791,10 +10515,10 @@ class ProxyAddress(InetSocketAddress, SocketConnectable):
     def get_destination_hostname(self) -> str: ...
     def get_destination_port(self) -> int: ...
     def get_destination_protocol(self) -> str: ...
-    def get_password(self) -> typing.Optional[str]: ...
+    def get_password(self) -> str | None: ...
     def get_protocol(self) -> str: ...
-    def get_uri(self) -> typing.Optional[str]: ...
-    def get_username(self) -> typing.Optional[str]: ...
+    def get_uri(self) -> str | None: ...
+    def get_username(self) -> str | None: ...
     @classmethod
     def new(
         cls,
@@ -7803,11 +10527,11 @@ class ProxyAddress(InetSocketAddress, SocketConnectable):
         protocol: str,
         dest_hostname: str,
         dest_port: int,
-        username: typing.Optional[str] = None,
-        password: typing.Optional[str] = None,
+        username: str | None = None,
+        password: str | None = None,
     ) -> ProxyAddress: ...
 
-class ProxyAddressClass(GObject.GPointer):
+class ProxyAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7815,8 +10539,8 @@ class ProxyAddressClass(GObject.GPointer):
 
         ProxyAddressClass()
     """
-
-    parent_class: InetSocketAddressClass = ...
+    @property
+    def parent_class(self) -> InetSocketAddressClass: ...
 
 class ProxyAddressEnumerator(SocketAddressEnumerator):
     """
@@ -7837,25 +10561,32 @@ class ProxyAddressEnumerator(SocketAddressEnumerator):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(SocketAddressEnumerator.Props):
+        @property
+        def connectable(self) -> SocketConnectable | None: ...
+        @property
+        def default_port(self) -> int: ...
+        proxy_resolver: ProxyResolver | None
+        @property
+        def uri(self) -> str | None: ...
 
-    class Props:
-        connectable: SocketConnectable
-        default_port: int
-        proxy_resolver: ProxyResolver
-        uri: str
-
-    props: Props = ...
-    parent_instance: SocketAddressEnumerator = ...
-    priv: ProxyAddressEnumeratorPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketAddressEnumerator: ...
+    @property
+    def priv(self) -> ProxyAddressEnumeratorPrivate: ...
     def __init__(
         self,
-        connectable: SocketConnectable = ...,
+        *,
+        connectable: SocketConnectable | None = ...,
         default_port: int = ...,
-        proxy_resolver: ProxyResolver = ...,
-        uri: str = ...,
+        proxy_resolver: ProxyResolver | None = ...,
+        uri: str | None = ...,
     ) -> None: ...
 
-class ProxyAddressEnumeratorClass(GObject.GPointer):
+class ProxyAddressEnumeratorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -7863,20 +10594,13 @@ class ProxyAddressEnumeratorClass(GObject.GPointer):
 
         ProxyAddressEnumeratorClass()
     """
+    @property
+    def parent_class(self) -> SocketAddressEnumeratorClass: ...
 
-    parent_class: SocketAddressEnumeratorClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
+class ProxyAddressEnumeratorPrivate(_gi.Struct): ...
+class ProxyAddressPrivate(_gi.Struct): ...
 
-class ProxyAddressEnumeratorPrivate(GObject.GPointer): ...
-class ProxyAddressPrivate(GObject.GPointer): ...
-
-class ProxyInterface(GObject.GPointer):
+class ProxyInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7884,39 +10608,65 @@ class ProxyInterface(GObject.GPointer):
 
         ProxyInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def connect(
+        self,
+    ) -> Callable[[Proxy, IOStream, ProxyAddress, Cancellable | None], IOStream]: ...
+    @property
+    def connect_async(
+        self,
+    ) -> Callable[
+        [
+            Proxy,
+            IOStream,
+            ProxyAddress,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def connect_finish(self) -> Callable[[Proxy, AsyncResult], IOStream]: ...
+    @property
+    def supports_hostname(self) -> Callable[[Proxy], bool]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    connect: typing.Callable[
-        [Proxy, IOStream, ProxyAddress, typing.Optional[Cancellable]], IOStream
-    ] = ...
-    connect_async: typing.Callable[..., None] = ...
-    connect_finish: typing.Callable[[Proxy, AsyncResult], IOStream] = ...
-    supports_hostname: typing.Callable[[Proxy], bool] = ...
-
-class ProxyResolver(GObject.GInterface):
+class ProxyResolver(GObject.GInterface, Protocol):
     """
     Interface GProxyResolver
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def get_default() -> ProxyResolver: ...
     def is_supported(self) -> bool: ...
-    def lookup(
-        self, uri: str, cancellable: typing.Optional[Cancellable] = None
-    ) -> list[str]: ...
+    def lookup(self, uri: str, cancellable: Cancellable | None = None) -> list[str]: ...
+    @overload
+    def lookup_async(
+        self, uri: str, cancellable: Cancellable | None = None
+    ) -> _gi.Async[list[str]]: ...
+    @overload
     def lookup_async(
         self,
         uri: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[ProxyResolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_async(
+        self,
+        uri: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[ProxyResolver] | None,
     ) -> None: ...
     def lookup_finish(self, result: AsyncResult) -> list[str]: ...
 
-class ProxyResolverInterface(GObject.GPointer):
+class ProxyResolverInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7924,34 +10674,48 @@ class ProxyResolverInterface(GObject.GPointer):
 
         ProxyResolverInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def is_supported(self) -> Callable[[ProxyResolver], bool]: ...
+    @property
+    def lookup(
+        self,
+    ) -> Callable[[ProxyResolver, str, Cancellable | None], list[str]]: ...
+    @property
+    def lookup_async(
+        self,
+    ) -> Callable[
+        [
+            ProxyResolver,
+            str,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_finish(self) -> Callable[[ProxyResolver, AsyncResult], list[str]]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    is_supported: typing.Callable[[ProxyResolver], bool] = ...
-    lookup: typing.Callable[
-        [ProxyResolver, str, typing.Optional[Cancellable]], list[str]
-    ] = ...
-    lookup_async: typing.Callable[..., None] = ...
-    lookup_finish: typing.Callable[[ProxyResolver, AsyncResult], list[str]] = ...
-
-class RemoteActionGroup(GObject.GInterface):
+class RemoteActionGroup(GObject.GInterface, Protocol):
     """
     Interface GRemoteActionGroup
 
     Signals from GObject:
       notify (GParam)
     """
-
     def activate_action_full(
         self,
         action_name: str,
-        parameter: typing.Optional[GLib.Variant],
+        parameter: GLib.Variant | None,
         platform_data: GLib.Variant,
     ) -> None: ...
     def change_action_state_full(
         self, action_name: str, value: GLib.Variant, platform_data: GLib.Variant
     ) -> None: ...
 
-class RemoteActionGroupInterface(GObject.GPointer):
+class RemoteActionGroupInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -7959,14 +10723,18 @@ class RemoteActionGroupInterface(GObject.GPointer):
 
         RemoteActionGroupInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    activate_action_full: typing.Callable[
-        [RemoteActionGroup, str, typing.Optional[GLib.Variant], GLib.Variant], None
-    ] = ...
-    change_action_state_full: typing.Callable[
-        [RemoteActionGroup, str, GLib.Variant, GLib.Variant], None
-    ] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def activate_action_full(
+        self,
+    ) -> Callable[
+        [RemoteActionGroup, str, GLib.Variant | None, GLib.Variant], None
+    ]: ...
+    @property
+    def change_action_state_full(
+        self,
+    ) -> Callable[[RemoteActionGroup, str, GLib.Variant, GLib.Variant], None]: ...
 
 class Resolver(GObject.Object):
     """
@@ -7987,115 +10755,170 @@ class Resolver(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         timeout: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: ResolverPrivate = ...
-    def __init__(self, timeout: int = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> ResolverPrivate: ...
+    def __init__(self, *, timeout: int = ...) -> None: ...
     def do_lookup_by_address(
-        self, address: InetAddress, cancellable: typing.Optional[Cancellable] = None
+        self, address: InetAddress, cancellable: Cancellable | None, /
     ) -> str: ...
     def do_lookup_by_address_async(
         self,
         address: InetAddress,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Resolver, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_lookup_by_address_finish(self, result: AsyncResult) -> str: ...
+    def do_lookup_by_address_finish(self, result: AsyncResult, /) -> str: ...
     def do_lookup_by_name(
-        self, hostname: str, cancellable: typing.Optional[Cancellable] = None
+        self, hostname: str, cancellable: Cancellable | None, /
     ) -> list[InetAddress]: ...
     def do_lookup_by_name_async(
         self,
         hostname: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Resolver, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_lookup_by_name_finish(self, result: AsyncResult) -> list[InetAddress]: ...
+    def do_lookup_by_name_finish(self, result: AsyncResult, /) -> list[InetAddress]: ...
     def do_lookup_by_name_with_flags(
         self,
         hostname: str,
-        flags: ResolverNameLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> list[InetAddress]: ...
     def do_lookup_by_name_with_flags_async(
         self,
         hostname: str,
-        flags: ResolverNameLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Resolver, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
     def do_lookup_by_name_with_flags_finish(
-        self, result: AsyncResult
+        self, result: AsyncResult, /
     ) -> list[InetAddress]: ...
     def do_lookup_records(
         self,
         rrname: str,
-        record_type: ResolverRecordType,
-        cancellable: typing.Optional[Cancellable] = None,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> list[GLib.Variant]: ...
     def do_lookup_records_async(
         self,
         rrname: str,
-        record_type: ResolverRecordType,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Resolver, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_lookup_records_finish(self, result: AsyncResult) -> list[GLib.Variant]: ...
+    def do_lookup_records_finish(
+        self, result: AsyncResult, /
+    ) -> list[GLib.Variant]: ...
     def do_lookup_service_async(
         self,
         rrname: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[Resolver, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_lookup_service_finish(self, result: AsyncResult) -> list[SrvTarget]: ...
+    def do_lookup_service_finish(self, result: AsyncResult, /) -> list[SrvTarget]: ...
     def do_reload(self) -> None: ...
     @staticmethod
     def get_default() -> Resolver: ...
     def get_timeout(self) -> int: ...
     def lookup_by_address(
-        self, address: InetAddress, cancellable: typing.Optional[Cancellable] = None
+        self, address: InetAddress, cancellable: Cancellable | None = None
     ) -> str: ...
+    @overload
+    def lookup_by_address_async(
+        self, address: InetAddress, cancellable: Cancellable | None = None
+    ) -> _gi.Async[str]: ...
+    @overload
     def lookup_by_address_async(
         self,
         address: InetAddress,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Resolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_by_address_async(
+        self,
+        address: InetAddress,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Resolver] | None,
     ) -> None: ...
     def lookup_by_address_finish(self, result: AsyncResult) -> str: ...
     def lookup_by_name(
-        self, hostname: str, cancellable: typing.Optional[Cancellable] = None
+        self, hostname: str, cancellable: Cancellable | None = None
     ) -> list[InetAddress]: ...
+    @overload
+    def lookup_by_name_async(
+        self, hostname: str, cancellable: Cancellable | None = None
+    ) -> _gi.Async[list[InetAddress]]: ...
+    @overload
     def lookup_by_name_async(
         self,
         hostname: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Resolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_by_name_async(
+        self,
+        hostname: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Resolver] | None,
     ) -> None: ...
     def lookup_by_name_finish(self, result: AsyncResult) -> list[InetAddress]: ...
     def lookup_by_name_with_flags(
         self,
         hostname: str,
-        flags: ResolverNameLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> list[InetAddress]: ...
+    @overload
     def lookup_by_name_with_flags_async(
         self,
         hostname: str,
-        flags: ResolverNameLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[list[InetAddress]]: ...
+    @overload
+    def lookup_by_name_with_flags_async(
+        self,
+        hostname: str,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Resolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_by_name_with_flags_async(
+        self,
+        hostname: str,
+        flags: _ResolverNameLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Resolver] | None,
     ) -> None: ...
     def lookup_by_name_with_flags_finish(
         self, result: AsyncResult
@@ -8103,16 +10926,33 @@ class Resolver(GObject.Object):
     def lookup_records(
         self,
         rrname: str,
-        record_type: ResolverRecordType,
-        cancellable: typing.Optional[Cancellable] = None,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None = None,
     ) -> list[GLib.Variant]: ...
+    @overload
     def lookup_records_async(
         self,
         rrname: str,
-        record_type: ResolverRecordType,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[list[GLib.Variant]]: ...
+    @overload
+    def lookup_records_async(
+        self,
+        rrname: str,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Resolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_records_async(
+        self,
+        rrname: str,
+        record_type: _ResolverRecordTypeValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Resolver] | None,
     ) -> None: ...
     def lookup_records_finish(self, result: AsyncResult) -> list[GLib.Variant]: ...
     def lookup_service(
@@ -8120,22 +10960,41 @@ class Resolver(GObject.Object):
         service: str,
         protocol: str,
         domain: str,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> list[SrvTarget]: ...
+    @overload
     def lookup_service_async(
         self,
         service: str,
         protocol: str,
         domain: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[list[SrvTarget]]: ...
+    @overload
+    def lookup_service_async(
+        self,
+        service: str,
+        protocol: str,
+        domain: str,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Resolver, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_service_async(
+        self,
+        service: str,
+        protocol: str,
+        domain: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Resolver] | None,
     ) -> None: ...
     def lookup_service_finish(self, result: AsyncResult) -> list[SrvTarget]: ...
     def set_default(self) -> None: ...
     def set_timeout(self, timeout_ms: int) -> None: ...
 
-class ResolverClass(GObject.GPointer):
+class ResolverClass(_gi.Struct):
     """
     :Constructors:
 
@@ -8143,44 +11002,121 @@ class ResolverClass(GObject.GPointer):
 
         ResolverClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    reload: typing.Callable[[Resolver], None] = ...
-    lookup_by_name: typing.Callable[
-        [Resolver, str, typing.Optional[Cancellable]], list[InetAddress]
-    ] = ...
-    lookup_by_name_async: typing.Callable[..., None] = ...
-    lookup_by_name_finish: typing.Callable[
-        [Resolver, AsyncResult], list[InetAddress]
-    ] = ...
-    lookup_by_address: typing.Callable[
-        [Resolver, InetAddress, typing.Optional[Cancellable]], str
-    ] = ...
-    lookup_by_address_async: typing.Callable[..., None] = ...
-    lookup_by_address_finish: typing.Callable[[Resolver, AsyncResult], str] = ...
-    lookup_service: None = ...
-    lookup_service_async: typing.Callable[..., None] = ...
-    lookup_service_finish: typing.Callable[
-        [Resolver, AsyncResult], list[SrvTarget]
-    ] = ...
-    lookup_records: typing.Callable[
-        [Resolver, str, ResolverRecordType, typing.Optional[Cancellable]],
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def reload(self) -> Callable[[Resolver], None]: ...
+    @property
+    def lookup_by_name(
+        self,
+    ) -> Callable[[Resolver, str, Cancellable | None], list[InetAddress]]: ...
+    @property
+    def lookup_by_name_async(
+        self,
+    ) -> Callable[
+        [
+            Resolver,
+            str,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_by_name_finish(
+        self,
+    ) -> Callable[[Resolver, AsyncResult], list[InetAddress]]: ...
+    @property
+    def lookup_by_address(
+        self,
+    ) -> Callable[[Resolver, InetAddress, Cancellable | None], str]: ...
+    @property
+    def lookup_by_address_async(
+        self,
+    ) -> Callable[
+        [
+            Resolver,
+            InetAddress,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_by_address_finish(self) -> Callable[[Resolver, AsyncResult], str]: ...
+    @property
+    def lookup_service(self) -> int: ...
+    @property
+    def lookup_service_async(
+        self,
+    ) -> Callable[
+        [
+            Resolver,
+            str,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_service_finish(
+        self,
+    ) -> Callable[[Resolver, AsyncResult], list[SrvTarget]]: ...
+    @property
+    def lookup_records(
+        self,
+    ) -> Callable[
+        [Resolver, str, _ResolverRecordTypeValueType, Cancellable | None],
         list[GLib.Variant],
-    ] = ...
-    lookup_records_async: typing.Callable[..., None] = ...
-    lookup_records_finish: typing.Callable[
-        [Resolver, AsyncResult], list[GLib.Variant]
-    ] = ...
-    lookup_by_name_with_flags_async: typing.Callable[..., None] = ...
-    lookup_by_name_with_flags_finish: typing.Callable[
-        [Resolver, AsyncResult], list[InetAddress]
-    ] = ...
-    lookup_by_name_with_flags: typing.Callable[
-        [Resolver, str, ResolverNameLookupFlags, typing.Optional[Cancellable]],
+    ]: ...
+    @property
+    def lookup_records_async(
+        self,
+    ) -> Callable[
+        [
+            Resolver,
+            str,
+            _ResolverRecordTypeValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_records_finish(
+        self,
+    ) -> Callable[[Resolver, AsyncResult], list[GLib.Variant]]: ...
+    @property
+    def lookup_by_name_with_flags_async(
+        self,
+    ) -> Callable[
+        [
+            Resolver,
+            str,
+            _ResolverNameLookupFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_by_name_with_flags_finish(
+        self,
+    ) -> Callable[[Resolver, AsyncResult], list[InetAddress]]: ...
+    @property
+    def lookup_by_name_with_flags(
+        self,
+    ) -> Callable[
+        [Resolver, str, _ResolverNameLookupFlagsValueType, Cancellable | None],
         list[InetAddress],
-    ] = ...
+    ]: ...
 
-class ResolverPrivate(GObject.GPointer): ...
+class ResolverPrivate(_gi.Struct): ...
 
 class Resource(GObject.GBoxed):
     """
@@ -8190,49 +11126,42 @@ class Resource(GObject.GBoxed):
 
         new_from_data(data:GLib.Bytes) -> Gio.Resource
     """
-
     def enumerate_children(
-        self, path: str, lookup_flags: ResourceLookupFlags
+        self, path: str, lookup_flags: _ResourceLookupFlagsValueType
     ) -> list[str]: ...
     def get_info(
-        self, path: str, lookup_flags: ResourceLookupFlags
-    ) -> typing.Tuple[bool, int, int]: ...
+        self, path: str, lookup_flags: _ResourceLookupFlagsValueType
+    ) -> tuple[bool, int, int]: ...
     def has_children(self, path: str) -> bool: ...
     @staticmethod
     def load(filename: str) -> Resource: ...
     def lookup_data(
-        self, path: str, lookup_flags: ResourceLookupFlags
+        self, path: str, lookup_flags: _ResourceLookupFlagsValueType
     ) -> GLib.Bytes: ...
     @classmethod
     def new_from_data(cls, data: GLib.Bytes) -> Resource: ...
     def open_stream(
-        self, path: str, lookup_flags: ResourceLookupFlags
+        self, path: str, lookup_flags: _ResourceLookupFlagsValueType
     ) -> InputStream: ...
     def ref(self) -> Resource: ...
     def unref(self) -> None: ...
 
-class Seekable(GObject.GInterface):
+class Seekable(GObject.GInterface, Protocol):
     """
     Interface GSeekable
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_seek(self) -> bool: ...
     def can_truncate(self) -> bool: ...
     def seek(
-        self,
-        offset: int,
-        type: GLib.SeekType,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, offset: int, type: GLib.SeekType, cancellable: Cancellable | None = None
     ) -> bool: ...
     def tell(self) -> int: ...
-    def truncate(
-        self, offset: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    def truncate(self, offset: int, cancellable: Cancellable | None = None) -> bool: ...
 
-class SeekableIface(GObject.GPointer):
+class SeekableIface(_gi.Struct):
     """
     :Constructors:
 
@@ -8240,17 +11169,20 @@ class SeekableIface(GObject.GPointer):
 
         SeekableIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    tell: typing.Callable[[Seekable], int] = ...
-    can_seek: typing.Callable[[Seekable], bool] = ...
-    seek: typing.Callable[
-        [Seekable, int, GLib.SeekType, typing.Optional[Cancellable]], bool
-    ] = ...
-    can_truncate: typing.Callable[[Seekable], bool] = ...
-    truncate_fn: typing.Callable[
-        [Seekable, int, typing.Optional[Cancellable]], bool
-    ] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def tell(self) -> Callable[[Seekable], int]: ...
+    @property
+    def can_seek(self) -> Callable[[Seekable], bool]: ...
+    @property
+    def seek(
+        self,
+    ) -> Callable[[Seekable, int, GLib.SeekType, Cancellable | None], bool]: ...
+    @property
+    def can_truncate(self) -> Callable[[Seekable], bool]: ...
+    @property
+    def truncate_fn(self) -> Callable[[Seekable, int, Cancellable | None], bool]: ...
 
 class Settings(GObject.Object):
     """
@@ -8278,52 +11210,75 @@ class Settings(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def backend(self) -> SettingsBackend | None: ...
+        @property
+        def delay_apply(self) -> bool: ...
+        @property
+        def has_unapplied(self) -> bool: ...
+        @property
+        def path(self) -> str | None: ...
+        @property
+        def schema(self) -> str | None: ...
+        @property
+        def schema_id(self) -> str | None: ...
+        @property
+        def settings_schema(self) -> SettingsSchema | None: ...
 
-    class Props:
-        backend: SettingsBackend
-        delay_apply: bool
-        has_unapplied: bool
-        path: str
-        schema: str
-        schema_id: str
-        settings_schema: SettingsSchema
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: SettingsPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SettingsPrivate: ...
     def __init__(
         self,
-        backend: SettingsBackend = ...,
-        path: str = ...,
-        schema: str = ...,
-        schema_id: str = ...,
-        settings_schema: SettingsSchema = ...,
+        *,
+        backend: SettingsBackend | None = ...,
+        path: str | None = ...,
+        schema: str | None = ...,
+        schema_id: str | None = ...,
+        settings_schema: SettingsSchema | None = ...,
     ) -> None: ...
+    def __bool__(self): ...  # FIXME: Override is missing typing annotation
+    def __contains__(self, key): ...  # FIXME: Override is missing typing annotation
+    def __getitem__(self, key): ...  # FIXME: Override is missing typing annotation
+    def __iter__(self): ...  # FIXME: Override is missing typing annotation
+    def __len__(self): ...  # FIXME: Override is missing typing annotation
+    def __setitem__(
+        self, key, value
+    ): ...  # FIXME: Override is missing typing annotation
     def apply(self) -> None: ...
     def bind(
-        self, key: str, object: GObject.Object, property: str, flags: SettingsBindFlags
+        self,
+        key: str,
+        object: GObject.Object,
+        property: str,
+        flags: _SettingsBindFlagsValueType,
     ) -> None: ...
     def bind_with_mapping(
         self,
         key: str,
         object: GObject.Object,
         property: str,
-        flags: SettingsBindFlags,
-        get_mapping: typing.Optional[typing.Callable[..., typing.Any]] = None,
-        set_mapping: typing.Optional[typing.Callable[..., typing.Any]] = None,
+        flags: _SettingsBindFlagsValueType,
+        get_mapping: Callable[..., Any] | None = None,
+        set_mapping: Callable[..., Any] | None = None,
     ) -> None: ...
     def bind_writable(
         self, key: str, object: GObject.Object, property: str, inverted: bool
     ) -> None: ...
     def create_action(self, key: str) -> Action: ...
     def delay(self) -> None: ...
-    def do_change_event(self, keys: int, n_keys: int) -> bool: ...
-    def do_changed(self, key: str) -> None: ...
-    def do_writable_change_event(self, key: int) -> bool: ...
-    def do_writable_changed(self, key: str) -> None: ...
+    def do_change_event(self, keys: int, n_keys: int, /) -> bool: ...
+    def do_changed(self, key: str, /) -> None: ...
+    def do_writable_change_event(self, key: int, /) -> bool: ...
+    def do_writable_changed(self, key: str, /) -> None: ...
     def get_boolean(self, key: str) -> bool: ...
     def get_child(self, name: str) -> Settings: ...
-    def get_default_value(self, key: str) -> typing.Optional[GLib.Variant]: ...
+    def get_default_value(self, key: str) -> GLib.Variant | None: ...
     def get_double(self, key: str) -> float: ...
     def get_enum(self, key: str) -> int: ...
     def get_flags(self, key: str) -> int: ...
@@ -8333,18 +11288,18 @@ class Settings(GObject.Object):
     def get_mapped(
         self,
         key: str,
-        mapping: typing.Callable[..., typing.Tuple[bool, None]],
-        *user_data: typing.Any,
-    ) -> None: ...
+        mapping: Callable[[GLib.Variant | None, Unpack[_DataTs]], tuple[bool, int]],
+        *user_data: Unpack[_DataTs],
+    ) -> int: ...
     def get_range(self, key: str) -> GLib.Variant: ...
     def get_string(self, key: str) -> str: ...
     def get_strv(self, key: str) -> list[str]: ...
     def get_uint(self, key: str) -> int: ...
     def get_uint64(self, key: str) -> int: ...
-    def get_user_value(self, key: str) -> typing.Optional[GLib.Variant]: ...
+    def get_user_value(self, key: str) -> GLib.Variant | None: ...
     def get_value(self, key: str) -> GLib.Variant: ...
     def is_writable(self, name: str) -> bool: ...
-    def keys(self): ...  # FIXME Function
+    def keys(self): ...  # FIXME: Override is missing typing annotation
     def list_children(self) -> list[str]: ...
     def list_keys(self) -> list[str]: ...
     @staticmethod
@@ -8357,8 +11312,8 @@ class Settings(GObject.Object):
     def new_full(
         cls,
         schema: SettingsSchema,
-        backend: typing.Optional[SettingsBackend] = None,
-        path: typing.Optional[str] = None,
+        backend: SettingsBackend | None = None,
+        path: str | None = None,
     ) -> Settings: ...
     @classmethod
     def new_with_backend(cls, schema_id: str, backend: SettingsBackend) -> Settings: ...
@@ -8378,9 +11333,7 @@ class Settings(GObject.Object):
     def set_int(self, key: str, value: int) -> bool: ...
     def set_int64(self, key: str, value: int) -> bool: ...
     def set_string(self, key: str, value: str) -> bool: ...
-    def set_strv(
-        self, key: str, value: typing.Optional[typing.Sequence[str]] = None
-    ) -> bool: ...
+    def set_strv(self, key: str, value: Sequence[str] | None = None) -> bool: ...
     def set_uint(self, key: str, value: int) -> bool: ...
     def set_uint64(self, key: str, value: int) -> bool: ...
     def set_value(self, key: str, value: GLib.Variant) -> bool: ...
@@ -8402,38 +11355,43 @@ class SettingsBackend(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: SettingsBackendPrivate = ...
-    def changed(self, key: str, origin_tag: None) -> None: ...
-    def changed_tree(self, tree: GLib.Tree, origin_tag: None) -> None: ...
-    def do_get_writable(self, key: str) -> bool: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SettingsBackendPrivate: ...
+    def changed(self, key: str, origin_tag: int | Any | None = None) -> None: ...
+    def changed_tree(
+        self, tree: GLib.Tree, origin_tag: int | Any | None = None
+    ) -> None: ...
+    def do_get_writable(self, key: str, /) -> bool: ...
     def do_read(
-        self, key: str, expected_type: GLib.VariantType, default_value: bool
+        self, key: str, expected_type: GLib.VariantType, default_value: bool, /
     ) -> GLib.Variant: ...
     def do_read_user_value(
-        self, key: str, expected_type: GLib.VariantType
+        self, key: str, expected_type: GLib.VariantType, /
     ) -> GLib.Variant: ...
-    def do_reset(self, key: str, origin_tag: None) -> None: ...
-    def do_subscribe(self, name: str) -> None: ...
+    def do_reset(self, key: str, origin_tag: int | Any | None, /) -> None: ...
+    def do_subscribe(self, name: str, /) -> None: ...
     def do_sync(self) -> None: ...
-    def do_unsubscribe(self, name: str) -> None: ...
-    def do_write(self, key: str, value: GLib.Variant, origin_tag: None) -> bool: ...
-    def do_write_tree(self, tree: GLib.Tree, origin_tag: None) -> bool: ...
+    def do_unsubscribe(self, name: str, /) -> None: ...
+    def do_write(
+        self, key: str, value: GLib.Variant, origin_tag: int | Any | None, /
+    ) -> bool: ...
+    def do_write_tree(
+        self, tree: GLib.Tree, origin_tag: int | Any | None, /
+    ) -> bool: ...
     @staticmethod
-    def flatten_tree(
-        tree: GLib.Tree,
-    ) -> typing.Tuple[str, list[str], list[GLib.Variant]]: ...
+    def flatten_tree(tree: GLib.Tree) -> tuple[str, list[str], list[GLib.Variant]]: ...
     @staticmethod
     def get_default() -> SettingsBackend: ...
     def keys_changed(
-        self, path: str, items: typing.Sequence[str], origin_tag: None
+        self, path: str, items: Sequence[str], origin_tag: int | Any | None = None
     ) -> None: ...
-    def path_changed(self, path: str, origin_tag: None) -> None: ...
+    def path_changed(self, path: str, origin_tag: int | Any | None = None) -> None: ...
     def path_writable_changed(self, path: str) -> None: ...
     def writable_changed(self, key: str) -> None: ...
 
-class SettingsBackendClass(GObject.GPointer):
+class SettingsBackendClass(_gi.Struct):
     """
     :Constructors:
 
@@ -8441,27 +11399,42 @@ class SettingsBackendClass(GObject.GPointer):
 
         SettingsBackendClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def read(
+        self,
+    ) -> Callable[[SettingsBackend, str, GLib.VariantType, bool], GLib.Variant]: ...
+    @property
+    def get_writable(self) -> Callable[[SettingsBackend, str], bool]: ...
+    @property
+    def write(
+        self,
+    ) -> Callable[[SettingsBackend, str, GLib.Variant, Any | None], bool]: ...
+    @property
+    def write_tree(
+        self,
+    ) -> Callable[[SettingsBackend, GLib.Tree, Any | None], bool]: ...
+    @property
+    def reset(self) -> Callable[[SettingsBackend, str, Any | None], None]: ...
+    @property
+    def subscribe(self) -> Callable[[SettingsBackend, str], None]: ...
+    @property
+    def unsubscribe(self) -> Callable[[SettingsBackend, str], None]: ...
+    @property
+    def sync(self) -> Callable[[SettingsBackend], None]: ...
+    @property
+    def get_permission(self) -> int: ...
+    @property
+    def read_user_value(
+        self,
+    ) -> Callable[[SettingsBackend, str, GLib.VariantType], GLib.Variant]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    read: typing.Callable[
-        [SettingsBackend, str, GLib.VariantType, bool], GLib.Variant
-    ] = ...
-    get_writable: typing.Callable[[SettingsBackend, str], bool] = ...
-    write: typing.Callable[[SettingsBackend, str, GLib.Variant, None], bool] = ...
-    write_tree: typing.Callable[[SettingsBackend, GLib.Tree, None], bool] = ...
-    reset: typing.Callable[[SettingsBackend, str, None], None] = ...
-    subscribe: typing.Callable[[SettingsBackend, str], None] = ...
-    unsubscribe: typing.Callable[[SettingsBackend, str], None] = ...
-    sync: typing.Callable[[SettingsBackend], None] = ...
-    get_permission: None = ...
-    read_user_value: typing.Callable[
-        [SettingsBackend, str, GLib.VariantType], GLib.Variant
-    ] = ...
-    padding: list[None] = ...
+class SettingsBackendPrivate(_gi.Struct): ...
 
-class SettingsBackendPrivate(GObject.GPointer): ...
-
-class SettingsClass(GObject.GPointer):
+class SettingsClass(_gi.Struct):
     """
     :Constructors:
 
@@ -8469,20 +11442,25 @@ class SettingsClass(GObject.GPointer):
 
         SettingsClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def writable_changed(self) -> Callable[[Settings, str], None]: ...
+    @property
+    def changed(self) -> Callable[[Settings, str], None]: ...
+    @property
+    def writable_change_event(self) -> Callable[[Settings, int], bool]: ...
+    @property
+    def change_event(self) -> Callable[[Settings, int, int], bool]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    writable_changed: typing.Callable[[Settings, str], None] = ...
-    changed: typing.Callable[[Settings, str], None] = ...
-    writable_change_event: typing.Callable[[Settings, int], bool] = ...
-    change_event: typing.Callable[[Settings, int, int], bool] = ...
-    padding: list[None] = ...
-
-class SettingsPrivate(GObject.GPointer): ...
+class SettingsPrivate(_gi.Struct): ...
 
 class SettingsSchema(GObject.GBoxed):
     def get_id(self) -> str: ...
     def get_key(self, name: str) -> SettingsSchemaKey: ...
-    def get_path(self) -> typing.Optional[str]: ...
+    def get_path(self) -> str | None: ...
     def has_key(self, name: str) -> bool: ...
     def list_children(self) -> list[str]: ...
     def list_keys(self) -> list[str]: ...
@@ -8491,10 +11469,10 @@ class SettingsSchema(GObject.GBoxed):
 
 class SettingsSchemaKey(GObject.GBoxed):
     def get_default_value(self) -> GLib.Variant: ...
-    def get_description(self) -> typing.Optional[str]: ...
+    def get_description(self) -> str | None: ...
     def get_name(self) -> str: ...
     def get_range(self) -> GLib.Variant: ...
-    def get_summary(self) -> typing.Optional[str]: ...
+    def get_summary(self) -> str | None: ...
     def get_value_type(self) -> GLib.VariantType: ...
     def range_check(self, value: GLib.Variant) -> bool: ...
     def ref(self) -> SettingsSchemaKey: ...
@@ -8508,19 +11486,13 @@ class SettingsSchemaSource(GObject.GBoxed):
 
         new_from_directory(directory:str, parent:Gio.SettingsSchemaSource=None, trusted:bool) -> Gio.SettingsSchemaSource
     """
-
     @staticmethod
-    def get_default() -> typing.Optional[SettingsSchemaSource]: ...
-    def list_schemas(self, recursive: bool) -> typing.Tuple[list[str], list[str]]: ...
-    def lookup(
-        self, schema_id: str, recursive: bool
-    ) -> typing.Optional[SettingsSchema]: ...
+    def get_default() -> SettingsSchemaSource | None: ...
+    def list_schemas(self, recursive: bool) -> tuple[list[str], list[str]]: ...
+    def lookup(self, schema_id: str, recursive: bool) -> SettingsSchema | None: ...
     @classmethod
     def new_from_directory(
-        cls,
-        directory: str,
-        parent: typing.Optional[SettingsSchemaSource],
-        trusted: bool,
+        cls, directory: str, parent: SettingsSchemaSource | None, trusted: bool
     ) -> SettingsSchemaSource: ...
     def ref(self) -> SettingsSchemaSource: ...
     def unref(self) -> None: ...
@@ -8551,38 +11523,41 @@ class SimpleAction(GObject.Object, Action):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         enabled: bool
-        name: str
-        parameter_type: GLib.VariantType
-        state: GLib.Variant
-        state_type: GLib.VariantType
+        @property
+        def name(self) -> str | None: ...
+        @property
+        def parameter_type(self) -> GLib.VariantType | None: ...
+        @property
+        def state(self) -> GLib.Variant | None: ...
+        @state.setter
+        def state(self, value: GLib.Variant) -> None: ...
+        @property
+        def state_type(self) -> GLib.VariantType | None: ...
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
+        *,
         enabled: bool = ...,
-        name: str = ...,
-        parameter_type: GLib.VariantType = ...,
+        name: str | None = ...,
+        parameter_type: GLib.VariantType | None = ...,
         state: GLib.Variant = ...,
     ) -> None: ...
     @classmethod
     def new(
-        cls, name: str, parameter_type: typing.Optional[GLib.VariantType] = None
+        cls, name: str, parameter_type: GLib.VariantType | None = None
     ) -> SimpleAction: ...
     @classmethod
     def new_stateful(
-        cls,
-        name: str,
-        parameter_type: typing.Optional[GLib.VariantType],
-        state: GLib.Variant,
+        cls, name: str, parameter_type: GLib.VariantType | None, state: GLib.Variant
     ) -> SimpleAction: ...
     def set_enabled(self, enabled: bool) -> None: ...
     def set_state(self, value: GLib.Variant) -> None: ...
-    def set_state_hint(
-        self, state_hint: typing.Optional[GLib.Variant] = None
-    ) -> None: ...
+    def set_state_hint(self, state_hint: GLib.Variant | None = None) -> None: ...
 
 class SimpleActionGroup(GObject.Object, ActionGroup, ActionMap):
     """
@@ -8604,11 +11579,12 @@ class SimpleActionGroup(GObject.Object, ActionGroup, ActionMap):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: SimpleActionGroupPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SimpleActionGroupPrivate: ...
     def add_entries(
-        self, entries: typing.Sequence[ActionEntry], user_data: None
+        self, entries: Sequence[ActionEntry], user_data: int | Any | None = None
     ) -> None: ...
     def insert(self, action: Action) -> None: ...
     def lookup(self, action_name: str) -> Action: ...
@@ -8616,7 +11592,7 @@ class SimpleActionGroup(GObject.Object, ActionGroup, ActionMap):
     def new(cls) -> SimpleActionGroup: ...
     def remove(self, action_name: str) -> None: ...
 
-class SimpleActionGroupClass(GObject.GPointer):
+class SimpleActionGroupClass(_gi.Struct):
     """
     :Constructors:
 
@@ -8624,11 +11600,12 @@ class SimpleActionGroupClass(GObject.GPointer):
 
         SimpleActionGroupClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    padding: list[None] = ...
-
-class SimpleActionGroupPrivate(GObject.GPointer): ...
+class SimpleActionGroupPrivate(_gi.Struct): ...
 
 class SimpleAsyncResult(GObject.Object, AsyncResult):
     """
@@ -8645,41 +11622,42 @@ class SimpleAsyncResult(GObject.Object, AsyncResult):
     Signals from GObject:
       notify (GParam)
     """
-
     def complete(self) -> None: ...
     def complete_in_idle(self) -> None: ...
     def get_op_res_gboolean(self) -> bool: ...
     def get_op_res_gssize(self) -> int: ...
     @staticmethod
     def is_valid(
-        result: AsyncResult, source: typing.Optional[GObject.Object], source_tag: None
+        result: AsyncResult,
+        source: GObject.Object | None = None,
+        source_tag: int | Any | None = None,
     ) -> bool: ...
     @classmethod
     def new(
         cls,
-        source_object: typing.Optional[GObject.Object],
-        callback: typing.Optional[typing.Callable[..., None]],
-        source_tag: None,
-        *user_data: typing.Any,
+        source_object: GObject.Object | None = None,
+        callback: _AsyncReadyCallback[SimpleAsyncResult, Any | None] | None = None,
+        user_data: Any | None = None,
+        source_tag: int | Any | None = None,
     ) -> SimpleAsyncResult: ...
     @classmethod
     def new_from_error(
         cls,
-        source_object: typing.Optional[GObject.Object],
-        callback: typing.Optional[typing.Callable[..., None]],
+        source_object: GObject.Object | None,
+        callback: _AsyncReadyCallback[SimpleAsyncResult, Any | None] | None,
+        user_data: Any | None,
         error: GLib.Error,
-        *user_data: typing.Any,
     ) -> SimpleAsyncResult: ...
     def propagate_error(self) -> bool: ...
     def set_check_cancellable(
-        self, check_cancellable: typing.Optional[Cancellable] = None
+        self, check_cancellable: Cancellable | None = None
     ) -> None: ...
     def set_from_error(self, error: GLib.Error) -> None: ...
     def set_handle_cancellation(self, handle_cancellation: bool) -> None: ...
     def set_op_res_gboolean(self, op_res: bool) -> None: ...
     def set_op_res_gssize(self, op_res: int) -> None: ...
 
-class SimpleAsyncResultClass(GObject.GPointer): ...
+class SimpleAsyncResultClass(_gi.Struct): ...
 
 class SimpleIOStream(IOStream):
     """
@@ -8704,15 +11682,20 @@ class SimpleIOStream(IOStream):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(IOStream.Props):
+        @property
+        def input_stream(self) -> InputStream | None: ...
+        @property
+        def output_stream(self) -> OutputStream | None: ...
 
-    class Props:
-        input_stream: InputStream
-        output_stream: OutputStream
-        closed: bool
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
-        self, input_stream: InputStream = ..., output_stream: OutputStream = ...
+        self,
+        *,
+        input_stream: InputStream | None = ...,
+        output_stream: OutputStream | None = ...,
     ) -> None: ...
     @classmethod
     def new(
@@ -8738,13 +11721,6 @@ class SimplePermission(Permission):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        allowed: bool
-        can_acquire: bool
-        can_release: bool
-
-    props: Props = ...
     @classmethod
     def new(cls, allowed: bool) -> SimplePermission: ...
 
@@ -8765,29 +11741,32 @@ class SimpleProxyResolver(GObject.Object, ProxyResolver):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        default_proxy: str | None
+        @property
+        def ignore_hosts(self) -> list[str]: ...
+        @ignore_hosts.setter
+        def ignore_hosts(self, value: Sequence[str]) -> None: ...
 
-    class Props:
-        default_proxy: typing.Optional[str]
-        ignore_hosts: list[str]
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: SimpleProxyResolverPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SimpleProxyResolverPrivate: ...
     def __init__(
-        self,
-        default_proxy: typing.Optional[str] = ...,
-        ignore_hosts: typing.Sequence[str] = ...,
+        self, *, default_proxy: str | None = ..., ignore_hosts: Sequence[str] = ...
     ) -> None: ...
     @staticmethod
     def new(
-        default_proxy: typing.Optional[str] = None,
-        ignore_hosts: typing.Optional[typing.Sequence[str]] = None,
+        default_proxy: str | None = None, ignore_hosts: Sequence[str] | None = None
     ) -> ProxyResolver: ...
-    def set_default_proxy(self, default_proxy: typing.Optional[str] = None) -> None: ...
-    def set_ignore_hosts(self, ignore_hosts: typing.Sequence[str]) -> None: ...
+    def set_default_proxy(self, default_proxy: str | None = None) -> None: ...
+    def set_ignore_hosts(self, ignore_hosts: Sequence[str]) -> None: ...
     def set_uri_proxy(self, uri_scheme: str, proxy: str) -> None: ...
 
-class SimpleProxyResolverClass(GObject.GPointer):
+class SimpleProxyResolverClass(_gi.Struct):
     """
     :Constructors:
 
@@ -8795,15 +11774,10 @@ class SimpleProxyResolverClass(GObject.GPointer):
 
         SimpleProxyResolverClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class SimpleProxyResolverPrivate(GObject.GPointer): ...
+class SimpleProxyResolverPrivate(_gi.Struct): ...
 
 class Socket(GObject.Object, DatagramBased, Initable):
     """
@@ -8836,59 +11810,71 @@ class Socket(GObject.Object, DatagramBased, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         blocking: bool
         broadcast: bool
-        family: SocketFamily
-        fd: int
+        @property
+        def family(self) -> SocketFamily: ...
+        @property
+        def fd(self) -> int: ...
         keepalive: bool
         listen_backlog: int
-        local_address: SocketAddress
+        @property
+        def local_address(self) -> SocketAddress: ...
         multicast_loopback: bool
         multicast_ttl: int
-        protocol: SocketProtocol
-        remote_address: SocketAddress
+        @property
+        def protocol(self) -> SocketProtocol: ...
+        @property
+        def remote_address(self) -> SocketAddress: ...
         timeout: int
         ttl: int
-        type: SocketType
+        @property
+        def type(self) -> SocketType: ...
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: SocketPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SocketPrivate: ...
     def __init__(
         self,
+        *,
         blocking: bool = ...,
         broadcast: bool = ...,
-        family: SocketFamily = ...,
+        family: _SocketFamilyValueType = ...,
         fd: int = ...,
         keepalive: bool = ...,
         listen_backlog: int = ...,
         multicast_loopback: bool = ...,
         multicast_ttl: int = ...,
-        protocol: SocketProtocol = ...,
+        protocol: _SocketProtocolValueType = ...,
         timeout: int = ...,
         ttl: int = ...,
-        type: SocketType = ...,
+        type: _SocketTypeValueType = ...,
     ) -> None: ...
-    def accept(self, cancellable: typing.Optional[Cancellable] = None) -> Socket: ...
+    def accept(self, cancellable: Cancellable | None = None) -> Socket: ...
     def bind(self, address: SocketAddress, allow_reuse: bool) -> bool: ...
     def check_connect_result(self) -> bool: ...
     def close(self) -> bool: ...
-    def condition_check(self, condition: GLib.IOCondition) -> GLib.IOCondition: ...
+    def condition_check(
+        self, condition: GLib._IOConditionValueType
+    ) -> GLib.IOCondition: ...
     def condition_timed_wait(
         self,
-        condition: GLib.IOCondition,
+        condition: GLib._IOConditionValueType,
         timeout_us: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def condition_wait(
         self,
-        condition: GLib.IOCondition,
-        cancellable: typing.Optional[Cancellable] = None,
+        condition: GLib._IOConditionValueType,
+        cancellable: Cancellable | None = None,
     ) -> bool: ...
     def connect(
-        self, address: SocketAddress, cancellable: typing.Optional[Cancellable] = None
+        self, address: SocketAddress, cancellable: Cancellable | None = None
     ) -> bool: ...
     def connection_factory_create_connection(self) -> SocketConnection: ...
     def get_available_bytes(self) -> int: ...
@@ -8902,7 +11888,7 @@ class Socket(GObject.Object, DatagramBased, Initable):
     def get_local_address(self) -> SocketAddress: ...
     def get_multicast_loopback(self) -> bool: ...
     def get_multicast_ttl(self) -> int: ...
-    def get_option(self, level: int, optname: int) -> typing.Tuple[bool, int]: ...
+    def get_option(self, level: int, optname: int) -> tuple[bool, int]: ...
     def get_protocol(self) -> SocketProtocol: ...
     def get_remote_address(self) -> SocketAddress: ...
     def get_socket_type(self) -> SocketType: ...
@@ -8911,107 +11897,95 @@ class Socket(GObject.Object, DatagramBased, Initable):
     def is_closed(self) -> bool: ...
     def is_connected(self) -> bool: ...
     def join_multicast_group(
-        self,
-        group: InetAddress,
-        source_specific: bool,
-        iface: typing.Optional[str] = None,
+        self, group: InetAddress, source_specific: bool, iface: str | None = None
     ) -> bool: ...
     def join_multicast_group_ssm(
         self,
         group: InetAddress,
-        source_specific: typing.Optional[InetAddress] = None,
-        iface: typing.Optional[str] = None,
+        source_specific: InetAddress | None = None,
+        iface: str | None = None,
     ) -> bool: ...
     def leave_multicast_group(
-        self,
-        group: InetAddress,
-        source_specific: bool,
-        iface: typing.Optional[str] = None,
+        self, group: InetAddress, source_specific: bool, iface: str | None = None
     ) -> bool: ...
     def leave_multicast_group_ssm(
         self,
         group: InetAddress,
-        source_specific: typing.Optional[InetAddress] = None,
-        iface: typing.Optional[str] = None,
+        source_specific: InetAddress | None = None,
+        iface: str | None = None,
     ) -> bool: ...
     def listen(self) -> bool: ...
     @classmethod
     def new(
-        cls, family: SocketFamily, type: SocketType, protocol: SocketProtocol
+        cls,
+        family: _SocketFamilyValueType,
+        type: _SocketTypeValueType,
+        protocol: _SocketProtocolValueType,
     ) -> Socket: ...
     @classmethod
     def new_from_fd(cls, fd: int) -> Socket: ...
-    def receive(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[int, bytes]: ...
+    def receive(self, cancellable: Cancellable | None = None) -> tuple[int, bytes]: ...
     def receive_bytes(
-        self,
-        size: int,
-        timeout_us: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, size: int, timeout_us: int, cancellable: Cancellable | None = None
     ) -> GLib.Bytes: ...
     def receive_bytes_from(
-        self,
-        size: int,
-        timeout_us: int,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[GLib.Bytes, SocketAddress]: ...
+        self, size: int, timeout_us: int, cancellable: Cancellable | None = None
+    ) -> tuple[GLib.Bytes, SocketAddress]: ...
     def receive_from(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[int, SocketAddress, bytes]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[int, SocketAddress, bytes]: ...
     def receive_message(
         self,
-        vectors: typing.Sequence[InputVector],
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[int, SocketAddress, list[SocketControlMessage], int]: ...
+        vectors: Sequence[InputVector],
+        flags: int,
+        cancellable: Cancellable | None = None,
+    ) -> tuple[int, SocketAddress, list[SocketControlMessage], int]: ...
     def receive_messages(
         self,
-        messages: typing.Sequence[InputMessage],
+        messages: Sequence[InputMessage],
         flags: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def receive_with_blocking(
-        self, blocking: bool, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[int, bytes]: ...
+        self, blocking: bool, cancellable: Cancellable | None = None
+    ) -> tuple[int, bytes]: ...
     def send(
-        self,
-        buffer: typing.Sequence[int],
-        cancellable: typing.Optional[Cancellable] = None,
+        self, buffer: Sequence[int], cancellable: Cancellable | None = None
     ) -> int: ...
     def send_message(
         self,
-        address: typing.Optional[SocketAddress],
-        vectors: typing.Sequence[OutputVector],
-        messages: typing.Optional[typing.Sequence[SocketControlMessage]],
+        address: SocketAddress | None,
+        vectors: Sequence[OutputVector],
+        messages: Sequence[SocketControlMessage] | None,
         flags: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def send_message_with_timeout(
         self,
-        address: typing.Optional[SocketAddress],
-        vectors: typing.Sequence[OutputVector],
-        messages: typing.Optional[typing.Sequence[SocketControlMessage]],
+        address: SocketAddress | None,
+        vectors: Sequence[OutputVector],
+        messages: Sequence[SocketControlMessage] | None,
         flags: int,
         timeout_us: int,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[PollableReturn, int]: ...
+        cancellable: Cancellable | None = None,
+    ) -> tuple[PollableReturn, int]: ...
     def send_messages(
         self,
-        messages: typing.Sequence[OutputMessage],
+        messages: Sequence[OutputMessage],
         flags: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def send_to(
         self,
-        address: typing.Optional[SocketAddress],
-        buffer: typing.Sequence[int],
-        cancellable: typing.Optional[Cancellable] = None,
+        address: SocketAddress | None,
+        buffer: Sequence[int],
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def send_with_blocking(
         self,
-        buffer: typing.Sequence[int],
+        buffer: Sequence[int],
         blocking: bool,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> int: ...
     def set_blocking(self, blocking: bool) -> None: ...
     def set_broadcast(self, broadcast: bool) -> None: ...
@@ -9042,22 +12016,25 @@ class SocketAddress(GObject.Object, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def family(self) -> SocketFamily: ...
 
-    class Props:
-        family: SocketFamily
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def do_get_family(self) -> SocketFamily: ...
     def do_get_native_size(self) -> int: ...
-    def do_to_native(self, dest: None, destlen: int) -> bool: ...
+    def do_to_native(self, dest: int | Any | None, destlen: int, /) -> bool: ...
     def get_family(self) -> SocketFamily: ...
     def get_native_size(self) -> int: ...
     @classmethod
-    def new_from_native(cls, native: None, len: int) -> SocketAddress: ...
-    def to_native(self, dest: None, destlen: int) -> bool: ...
+    def new_from_native(cls, native: int | Any | None, len: int) -> SocketAddress: ...
+    def to_native(self, dest: int | Any | None, destlen: int) -> bool: ...
 
-class SocketAddressClass(GObject.GPointer):
+class SocketAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9065,11 +12042,14 @@ class SocketAddressClass(GObject.GPointer):
 
         SocketAddressClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    get_family: typing.Callable[[SocketAddress], SocketFamily] = ...
-    get_native_size: typing.Callable[[SocketAddress], int] = ...
-    to_native: typing.Callable[[SocketAddress, None, int], bool] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_family(self) -> Callable[[SocketAddress], SocketFamily]: ...
+    @property
+    def get_native_size(self) -> Callable[[SocketAddress], int]: ...
+    @property
+    def to_native(self) -> Callable[[SocketAddress, Any | None, int], bool]: ...
 
 class SocketAddressEnumerator(GObject.Object):
     """
@@ -9084,30 +12064,40 @@ class SocketAddressEnumerator(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    def do_next(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Optional[SocketAddress]: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def do_next(self, cancellable: Cancellable | None, /) -> SocketAddress | None: ...
     def do_next_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[SocketAddressEnumerator, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_next_finish(self, result: AsyncResult) -> typing.Optional[SocketAddress]: ...
-    def next(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Optional[SocketAddress]: ...
+    def do_next_finish(self, result: AsyncResult, /) -> SocketAddress | None: ...
+    def next(self, cancellable: Cancellable | None = None) -> SocketAddress | None: ...
+    @overload
+    def next_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[SocketAddress | None]: ...
+    @overload
     def next_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketAddressEnumerator, Unpack[_DataTs]]
+        | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def next_finish(self, result: AsyncResult) -> typing.Optional[SocketAddress]: ...
+    @overload
+    def next_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketAddressEnumerator] | None,
+    ) -> None: ...
+    def next_finish(self, result: AsyncResult) -> SocketAddress | None: ...
 
-class SocketAddressEnumeratorClass(GObject.GPointer):
+class SocketAddressEnumeratorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9115,18 +12105,32 @@ class SocketAddressEnumeratorClass(GObject.GPointer):
 
         SocketAddressEnumeratorClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def next(
+        self,
+    ) -> Callable[
+        [SocketAddressEnumerator, Cancellable | None], SocketAddress | None
+    ]: ...
+    @property
+    def next_async(
+        self,
+    ) -> Callable[
+        [
+            SocketAddressEnumerator,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def next_finish(
+        self,
+    ) -> Callable[[SocketAddressEnumerator, AsyncResult], SocketAddress | None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    next: typing.Callable[
-        [SocketAddressEnumerator, typing.Optional[Cancellable]],
-        typing.Optional[SocketAddress],
-    ] = ...
-    next_async: typing.Callable[..., None] = ...
-    next_finish: typing.Callable[
-        [SocketAddressEnumerator, AsyncResult], typing.Optional[SocketAddress]
-    ] = ...
-
-class SocketClass(GObject.GPointer):
+class SocketClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9134,18 +12138,8 @@ class SocketClass(GObject.GPointer):
 
         SocketClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-    _g_reserved7: None = ...
-    _g_reserved8: None = ...
-    _g_reserved9: None = ...
-    _g_reserved10: None = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class SocketClient(GObject.Object):
     """
@@ -9175,101 +12169,173 @@ class SocketClient(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         enable_proxy: bool
-        family: SocketFamily
-        local_address: typing.Optional[SocketAddress]
-        protocol: SocketProtocol
-        proxy_resolver: ProxyResolver
+        @property
+        def family(self) -> SocketFamily: ...
+        @family.setter
+        def family(self, value: _SocketFamilyValueType) -> None: ...
+        local_address: SocketAddress | None
+        @property
+        def protocol(self) -> SocketProtocol: ...
+        @protocol.setter
+        def protocol(self, value: _SocketProtocolValueType) -> None: ...
+        @property
+        def proxy_resolver(self) -> ProxyResolver: ...
+        @proxy_resolver.setter
+        def proxy_resolver(self, value: ProxyResolver | None) -> None: ...
         timeout: int
         tls: bool
-        tls_validation_flags: TlsCertificateFlags
-        type: SocketType
+        @property
+        def tls_validation_flags(self) -> TlsCertificateFlags: ...
+        @tls_validation_flags.setter
+        def tls_validation_flags(
+            self, value: _TlsCertificateFlagsValueType
+        ) -> None: ...
+        @property
+        def type(self) -> SocketType: ...
+        @type.setter
+        def type(self, value: _SocketTypeValueType) -> None: ...
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: SocketClientPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SocketClientPrivate: ...
     def __init__(
         self,
+        *,
         enable_proxy: bool = ...,
-        family: SocketFamily = ...,
-        local_address: typing.Optional[SocketAddress] = ...,
-        protocol: SocketProtocol = ...,
-        proxy_resolver: typing.Optional[ProxyResolver] = ...,
+        family: _SocketFamilyValueType = ...,
+        local_address: SocketAddress | None = ...,
+        protocol: _SocketProtocolValueType = ...,
+        proxy_resolver: ProxyResolver | None = ...,
         timeout: int = ...,
         tls: bool = ...,
-        tls_validation_flags: TlsCertificateFlags = ...,
-        type: SocketType = ...,
+        tls_validation_flags: _TlsCertificateFlagsValueType = ...,
+        type: _SocketTypeValueType = ...,
     ) -> None: ...
     def add_application_proxy(self, protocol: str) -> None: ...
     def connect(
-        self,
-        connectable: SocketConnectable,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, connectable: SocketConnectable, cancellable: Cancellable | None = None
     ) -> SocketConnection: ...
+    @overload
+    def connect_async(
+        self, connectable: SocketConnectable, cancellable: Cancellable | None = None
+    ) -> _gi.Async[SocketConnection]: ...
+    @overload
     def connect_async(
         self,
         connectable: SocketConnectable,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketClient, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_async(
+        self,
+        connectable: SocketConnectable,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketClient] | None,
     ) -> None: ...
     def connect_finish(self, result: AsyncResult) -> SocketConnection: ...
     def connect_to_host(
         self,
         host_and_port: str,
         default_port: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        cancellable: Cancellable | None = None,
     ) -> SocketConnection: ...
+    @overload
     def connect_to_host_async(
         self,
         host_and_port: str,
         default_port: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[SocketConnection]: ...
+    @overload
+    def connect_to_host_async(
+        self,
+        host_and_port: str,
+        default_port: int,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketClient, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_to_host_async(
+        self,
+        host_and_port: str,
+        default_port: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketClient] | None,
     ) -> None: ...
     def connect_to_host_finish(self, result: AsyncResult) -> SocketConnection: ...
     def connect_to_service(
-        self,
-        domain: str,
-        service: str,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, domain: str, service: str, cancellable: Cancellable | None = None
     ) -> SocketConnection: ...
+    @overload
+    def connect_to_service_async(
+        self, domain: str, service: str, cancellable: Cancellable | None = None
+    ) -> _gi.Async[SocketConnection]: ...
+    @overload
     def connect_to_service_async(
         self,
         domain: str,
         service: str,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketClient, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_to_service_async(
+        self,
+        domain: str,
+        service: str,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketClient] | None,
     ) -> None: ...
     def connect_to_service_finish(self, result: AsyncResult) -> SocketConnection: ...
     def connect_to_uri(
-        self,
-        uri: str,
-        default_port: int,
-        cancellable: typing.Optional[Cancellable] = None,
+        self, uri: str, default_port: int, cancellable: Cancellable | None = None
     ) -> SocketConnection: ...
+    @overload
+    def connect_to_uri_async(
+        self, uri: str, default_port: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[SocketConnection]: ...
+    @overload
     def connect_to_uri_async(
         self,
         uri: str,
         default_port: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketClient, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_to_uri_async(
+        self,
+        uri: str,
+        default_port: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketClient] | None,
     ) -> None: ...
     def connect_to_uri_finish(self, result: AsyncResult) -> SocketConnection: ...
     def do_event(
         self,
-        event: SocketClientEvent,
+        event: _SocketClientEventValueType,
         connectable: SocketConnectable,
         connection: IOStream,
+        /,
     ) -> None: ...
     def get_enable_proxy(self) -> bool: ...
     def get_family(self) -> SocketFamily: ...
-    def get_local_address(self) -> typing.Optional[SocketAddress]: ...
+    def get_local_address(self) -> SocketAddress | None: ...
     def get_protocol(self) -> SocketProtocol: ...
     def get_proxy_resolver(self) -> ProxyResolver: ...
     def get_socket_type(self) -> SocketType: ...
@@ -9279,20 +12345,20 @@ class SocketClient(GObject.Object):
     @classmethod
     def new(cls) -> SocketClient: ...
     def set_enable_proxy(self, enable: bool) -> None: ...
-    def set_family(self, family: SocketFamily) -> None: ...
-    def set_local_address(
-        self, address: typing.Optional[SocketAddress] = None
-    ) -> None: ...
-    def set_protocol(self, protocol: SocketProtocol) -> None: ...
+    def set_family(self, family: _SocketFamilyValueType) -> None: ...
+    def set_local_address(self, address: SocketAddress | None = None) -> None: ...
+    def set_protocol(self, protocol: _SocketProtocolValueType) -> None: ...
     def set_proxy_resolver(
-        self, proxy_resolver: typing.Optional[ProxyResolver] = None
+        self, proxy_resolver: ProxyResolver | None = None
     ) -> None: ...
-    def set_socket_type(self, type: SocketType) -> None: ...
+    def set_socket_type(self, type: _SocketTypeValueType) -> None: ...
     def set_timeout(self, timeout: int) -> None: ...
     def set_tls(self, tls: bool) -> None: ...
-    def set_tls_validation_flags(self, flags: TlsCertificateFlags) -> None: ...
+    def set_tls_validation_flags(
+        self, flags: _TlsCertificateFlagsValueType
+    ) -> None: ...
 
-class SocketClientClass(GObject.GPointer):
+class SocketClientClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9300,31 +12366,29 @@ class SocketClientClass(GObject.GPointer):
 
         SocketClientClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def event(
+        self,
+    ) -> Callable[
+        [SocketClient, _SocketClientEventValueType, SocketConnectable, IOStream], None
+    ]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    event: typing.Callable[
-        [SocketClient, SocketClientEvent, SocketConnectable, IOStream], None
-    ] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
+class SocketClientPrivate(_gi.Struct): ...
 
-class SocketClientPrivate(GObject.GPointer): ...
-
-class SocketConnectable(GObject.GInterface):
+class SocketConnectable(GObject.GInterface, Protocol):
     """
     Interface GSocketConnectable
 
     Signals from GObject:
       notify (GParam)
     """
-
     def enumerate(self) -> SocketAddressEnumerator: ...
     def proxy_enumerate(self) -> SocketAddressEnumerator: ...
     def to_string(self) -> str: ...
 
-class SocketConnectableIface(GObject.GPointer):
+class SocketConnectableIface(_gi.Struct):
     """
     :Constructors:
 
@@ -9332,11 +12396,16 @@ class SocketConnectableIface(GObject.GPointer):
 
         SocketConnectableIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    enumerate: typing.Callable[[SocketConnectable], SocketAddressEnumerator] = ...
-    proxy_enumerate: typing.Callable[[SocketConnectable], SocketAddressEnumerator] = ...
-    to_string: typing.Callable[[SocketConnectable], str] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def enumerate(self) -> Callable[[SocketConnectable], SocketAddressEnumerator]: ...
+    @property
+    def proxy_enumerate(
+        self,
+    ) -> Callable[[SocketConnectable], SocketAddressEnumerator]: ...
+    @property
+    def to_string(self) -> Callable[[SocketConnectable], str]: ...
 
 class SocketConnection(IOStream):
     """
@@ -9359,37 +12428,51 @@ class SocketConnection(IOStream):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(IOStream.Props):
+        @property
+        def socket(self) -> Socket: ...
 
-    class Props:
-        socket: Socket
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
-
-    props: Props = ...
-    parent_instance: IOStream = ...
-    priv: SocketConnectionPrivate = ...
-    def __init__(self, socket: Socket = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> IOStream: ...
+    @property
+    def priv(self) -> SocketConnectionPrivate: ...
+    def __init__(self, *, socket: Socket | None = ...) -> None: ...
     def connect(
-        self, address: SocketAddress, cancellable: typing.Optional[Cancellable] = None
+        self, address: SocketAddress, cancellable: Cancellable | None = None
     ) -> bool: ...
+    @overload
+    def connect_async(
+        self, address: SocketAddress, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def connect_async(
         self,
         address: SocketAddress,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def connect_async(
+        self,
+        address: SocketAddress,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketConnection] | None,
     ) -> None: ...
     def connect_finish(self, result: AsyncResult) -> bool: ...
     @staticmethod
     def factory_lookup_type(
-        family: SocketFamily, type: SocketType, protocol_id: int
-    ) -> typing.Type[typing.Any]: ...
+        family: _SocketFamilyValueType, type: _SocketTypeValueType, protocol_id: int
+    ) -> type[Any]: ...
     @staticmethod
     def factory_register_type(
-        g_type: typing.Type[typing.Any],
-        family: SocketFamily,
-        type: SocketType,
+        g_type: type[Any],
+        family: _SocketFamilyValueType,
+        type: _SocketTypeValueType,
         protocol: int,
     ) -> None: ...
     def get_local_address(self) -> SocketAddress: ...
@@ -9397,7 +12480,7 @@ class SocketConnection(IOStream):
     def get_socket(self) -> Socket: ...
     def is_connected(self) -> bool: ...
 
-class SocketConnectionClass(GObject.GPointer):
+class SocketConnectionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9405,16 +12488,10 @@ class SocketConnectionClass(GObject.GPointer):
 
         SocketConnectionClass()
     """
+    @property
+    def parent_class(self) -> IOStreamClass: ...
 
-    parent_class: IOStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-
-class SocketConnectionPrivate(GObject.GPointer): ...
+class SocketConnectionPrivate(_gi.Struct): ...
 
 class SocketControlMessage(GObject.Object):
     """
@@ -9429,23 +12506,24 @@ class SocketControlMessage(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: SocketControlMessagePrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SocketControlMessagePrivate: ...
     @staticmethod
     def deserialize(
-        level: int, type: int, data: typing.Sequence[int]
-    ) -> typing.Optional[SocketControlMessage]: ...
+        level: int, type: int, data: Sequence[int]
+    ) -> SocketControlMessage | None: ...
     def do_get_level(self) -> int: ...
     def do_get_size(self) -> int: ...
     def do_get_type(self) -> int: ...
-    def do_serialize(self, data: None) -> None: ...
+    def do_serialize(self, data: int | Any | None, /) -> None: ...
     def get_level(self) -> int: ...
     def get_msg_type(self) -> int: ...
     def get_size(self) -> int: ...
-    def serialize(self, data: None) -> None: ...
+    def serialize(self, data: int | Any | None) -> None: ...
 
-class SocketControlMessageClass(GObject.GPointer):
+class SocketControlMessageClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9453,20 +12531,20 @@ class SocketControlMessageClass(GObject.GPointer):
 
         SocketControlMessageClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_size(self) -> Callable[[SocketControlMessage], int]: ...
+    @property
+    def get_level(self) -> Callable[[SocketControlMessage], int]: ...
+    @property
+    def get_type(self) -> Callable[[SocketControlMessage], int]: ...
+    @property
+    def serialize(self) -> Callable[[SocketControlMessage, Any | None], None]: ...
+    @property
+    def deserialize(self) -> int: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_size: typing.Callable[[SocketControlMessage], int] = ...
-    get_level: typing.Callable[[SocketControlMessage], int] = ...
-    get_type: typing.Callable[[SocketControlMessage], int] = ...
-    serialize: typing.Callable[[SocketControlMessage, None], None] = ...
-    deserialize: None = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class SocketControlMessagePrivate(GObject.GPointer): ...
+class SocketControlMessagePrivate(_gi.Struct): ...
 
 class SocketListener(GObject.Object):
     """
@@ -9488,62 +12566,89 @@ class SocketListener(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         listen_backlog: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: SocketListenerPrivate = ...
-    def __init__(self, listen_backlog: int = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> SocketListenerPrivate: ...
+    def __init__(self, *, listen_backlog: int = ...) -> None: ...
     def accept(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[SocketConnection, GObject.Object]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[SocketConnection, GObject.Object | None]: ...
+    @overload
+    def accept_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[SocketConnection, GObject.Object | None]]: ...
+    @overload
     def accept_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketListener, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def accept_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketListener] | None,
     ) -> None: ...
     def accept_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[SocketConnection, GObject.Object]: ...
+    ) -> tuple[SocketConnection, GObject.Object | None]: ...
     def accept_socket(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> typing.Tuple[Socket, GObject.Object]: ...
+        self, cancellable: Cancellable | None = None
+    ) -> tuple[Socket, GObject.Object | None]: ...
+    @overload
+    def accept_socket_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[Socket, GObject.Object | None]]: ...
+    @overload
     def accept_socket_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[SocketListener, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def accept_socket_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[SocketListener] | None,
     ) -> None: ...
     def accept_socket_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[Socket, GObject.Object]: ...
+    ) -> tuple[Socket, GObject.Object | None]: ...
     def add_address(
         self,
         address: SocketAddress,
-        type: SocketType,
-        protocol: SocketProtocol,
-        source_object: typing.Optional[GObject.Object] = None,
-    ) -> typing.Tuple[bool, SocketAddress]: ...
-    def add_any_inet_port(
-        self, source_object: typing.Optional[GObject.Object] = None
-    ) -> int: ...
+        type: _SocketTypeValueType,
+        protocol: _SocketProtocolValueType,
+        source_object: GObject.Object | None = None,
+    ) -> tuple[bool, SocketAddress]: ...
+    def add_any_inet_port(self, source_object: GObject.Object | None = None) -> int: ...
     def add_inet_port(
-        self, port: int, source_object: typing.Optional[GObject.Object] = None
+        self, port: int, source_object: GObject.Object | None = None
     ) -> bool: ...
     def add_socket(
-        self, socket: Socket, source_object: typing.Optional[GObject.Object] = None
+        self, socket: Socket, source_object: GObject.Object | None = None
     ) -> bool: ...
     def close(self) -> None: ...
     def do_changed(self) -> None: ...
-    def do_event(self, event: SocketListenerEvent, socket: Socket) -> None: ...
+    def do_event(
+        self, event: _SocketListenerEventValueType, socket: Socket, /
+    ) -> None: ...
     @classmethod
     def new(cls) -> SocketListener: ...
     def set_backlog(self, listen_backlog: int) -> None: ...
 
-class SocketListenerClass(GObject.GPointer):
+class SocketListenerClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9551,18 +12656,17 @@ class SocketListenerClass(GObject.GPointer):
 
         SocketListenerClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def changed(self) -> Callable[[SocketListener], None]: ...
+    @property
+    def event(
+        self,
+    ) -> Callable[[SocketListener, _SocketListenerEventValueType, Socket], None]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    changed: typing.Callable[[SocketListener], None] = ...
-    event: typing.Callable[[SocketListener, SocketListenerEvent, Socket], None] = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-
-class SocketListenerPrivate(GObject.GPointer): ...
-class SocketPrivate(GObject.GPointer): ...
+class SocketListenerPrivate(_gi.Struct): ...
+class SocketPrivate(_gi.Struct): ...
 
 class SocketService(SocketListener):
     """
@@ -9590,17 +12694,19 @@ class SocketService(SocketListener):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(SocketListener.Props):
         active: bool
-        listen_backlog: int
 
-    props: Props = ...
-    parent_instance: SocketListener = ...
-    priv: SocketServicePrivate = ...
-    def __init__(self, active: bool = ..., listen_backlog: int = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketListener: ...
+    @property
+    def priv(self) -> SocketServicePrivate: ...
+    def __init__(self, *, active: bool = ..., listen_backlog: int = ...) -> None: ...
     def do_incoming(
-        self, connection: SocketConnection, source_object: GObject.Object
+        self, connection: SocketConnection, source_object: GObject.Object, /
     ) -> bool: ...
     def is_active(self) -> bool: ...
     @classmethod
@@ -9608,7 +12714,7 @@ class SocketService(SocketListener):
     def start(self) -> None: ...
     def stop(self) -> None: ...
 
-class SocketServiceClass(GObject.GPointer):
+class SocketServiceClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9616,19 +12722,14 @@ class SocketServiceClass(GObject.GPointer):
 
         SocketServiceClass()
     """
+    @property
+    def parent_class(self) -> SocketListenerClass: ...
+    @property
+    def incoming(
+        self,
+    ) -> Callable[[SocketService, SocketConnection, GObject.Object], bool]: ...
 
-    parent_class: SocketListenerClass = ...
-    incoming: typing.Callable[
-        [SocketService, SocketConnection, GObject.Object], bool
-    ] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
-
-class SocketServicePrivate(GObject.GPointer): ...
+class SocketServicePrivate(_gi.Struct): ...
 
 class SrvTarget(GObject.GBoxed):
     """
@@ -9638,7 +12739,9 @@ class SrvTarget(GObject.GBoxed):
 
         new(hostname:str, port:int, priority:int, weight:int) -> Gio.SrvTarget
     """
-
+    def __init__(
+        self, hostname: str, port: int, priority: int, weight: int
+    ) -> None: ...
     def copy(self) -> SrvTarget: ...
     def free(self) -> None: ...
     def get_hostname(self) -> str: ...
@@ -9648,7 +12751,7 @@ class SrvTarget(GObject.GBoxed):
     @classmethod
     def new(cls, hostname: str, port: int, priority: int, weight: int) -> SrvTarget: ...
 
-class StaticResource(GObject.GPointer):
+class StaticResource(_gi.Struct):
     """
     :Constructors:
 
@@ -9656,12 +12759,16 @@ class StaticResource(GObject.GPointer):
 
         StaticResource()
     """
-
-    data: int = ...
-    data_len: int = ...
-    resource: Resource = ...
-    next: StaticResource = ...
-    padding: None = ...
+    @property
+    def data(self) -> int: ...
+    @property
+    def data_len(self) -> int: ...
+    @property
+    def resource(self) -> Resource: ...
+    @property
+    def next(self) -> StaticResource: ...
+    @property
+    def padding(self) -> int: ...
     def fini(self) -> None: ...
     def get_resource(self) -> Resource: ...
     def init(self) -> None: ...
@@ -9684,72 +12791,119 @@ class Subprocess(GObject.Object, Initable):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        argv: list[str]
-        flags: SubprocessFlags
-
-    props: Props = ...
     def __init__(
-        self, argv: typing.Sequence[str] = ..., flags: SubprocessFlags = ...
+        self,
+        *,
+        argv: Sequence[str] | None = ...,
+        flags: _SubprocessFlagsValueType = ...,
     ) -> None: ...
     def communicate(
         self,
-        stdin_buf: typing.Optional[GLib.Bytes] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, GLib.Bytes, GLib.Bytes]: ...
+        stdin_buf: GLib.Bytes | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> tuple[bool, GLib.Bytes | None, GLib.Bytes | None]: ...
+    @overload
     def communicate_async(
         self,
-        stdin_buf: typing.Optional[GLib.Bytes] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        stdin_buf: GLib.Bytes | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[tuple[bool, GLib.Bytes | None, GLib.Bytes | None]]: ...
+    @overload
+    def communicate_async(
+        self,
+        stdin_buf: GLib.Bytes | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Subprocess, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def communicate_async(
+        self,
+        stdin_buf: GLib.Bytes | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Subprocess] | None,
     ) -> None: ...
     def communicate_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[bool, GLib.Bytes, GLib.Bytes]: ...
+    ) -> tuple[bool, GLib.Bytes | None, GLib.Bytes | None]: ...
     def communicate_utf8(
-        self,
-        stdin_buf: typing.Optional[str] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Tuple[bool, str, str]: ...
+        self, stdin_buf: str | None = None, cancellable: Cancellable | None = None
+    ) -> tuple[bool, str | None, str | None]: ...
+    @overload
+    def communicate_utf8_async(
+        self, stdin_buf: str | None = None, cancellable: Cancellable | None = None
+    ) -> _gi.Async[tuple[bool, str | None, str | None]]: ...
+    @overload
     def communicate_utf8_async(
         self,
-        stdin_buf: typing.Optional[str] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        stdin_buf: str | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Subprocess, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def communicate_utf8_async(
+        self,
+        stdin_buf: str | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Subprocess] | None,
     ) -> None: ...
     def communicate_utf8_finish(
         self, result: AsyncResult
-    ) -> typing.Tuple[bool, str, str]: ...
+    ) -> tuple[bool, str | None, str | None]: ...
     def force_exit(self) -> None: ...
     def get_exit_status(self) -> int: ...
-    def get_identifier(self) -> typing.Optional[str]: ...
+    def get_identifier(self) -> str | None: ...
     def get_if_exited(self) -> bool: ...
     def get_if_signaled(self) -> bool: ...
     def get_status(self) -> int: ...
-    def get_stderr_pipe(self) -> typing.Optional[InputStream]: ...
-    def get_stdin_pipe(self) -> typing.Optional[OutputStream]: ...
-    def get_stdout_pipe(self) -> typing.Optional[InputStream]: ...
+    def get_stderr_pipe(self) -> InputStream | None: ...
+    def get_stdin_pipe(self) -> OutputStream | None: ...
+    def get_stdout_pipe(self) -> InputStream | None: ...
     def get_successful(self) -> bool: ...
     def get_term_sig(self) -> int: ...
     @classmethod
-    def new(cls, argv: typing.Sequence[str], flags: SubprocessFlags) -> Subprocess: ...
+    def new(
+        cls, argv: Sequence[str], flags: _SubprocessFlagsValueType
+    ) -> Subprocess: ...
     def send_signal(self, signal_num: int) -> None: ...
-    def wait(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def wait(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def wait_async(self, cancellable: Cancellable | None = None) -> _gi.Async[bool]: ...
+    @overload
     def wait_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Subprocess, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
     ) -> None: ...
-    def wait_check(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    @overload
+    def wait_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Subprocess] | None,
+    ) -> None: ...
+    def wait_check(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def wait_check_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def wait_check_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Subprocess, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def wait_check_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Subprocess] | None,
     ) -> None: ...
     def wait_check_finish(self, result: AsyncResult) -> bool: ...
     def wait_finish(self, result: AsyncResult) -> bool: ...
@@ -9771,24 +12925,19 @@ class SubprocessLauncher(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        flags: SubprocessFlags
-
-    props: Props = ...
-    def __init__(self, flags: SubprocessFlags = ...) -> None: ...
+    def __init__(self, *, flags: _SubprocessFlagsValueType = ...) -> None: ...
     def close(self) -> None: ...
-    def getenv(self, variable: str) -> typing.Optional[str]: ...
+    def getenv(self, variable: str) -> str | None: ...
     @classmethod
-    def new(cls, flags: SubprocessFlags) -> SubprocessLauncher: ...
+    def new(cls, flags: _SubprocessFlagsValueType) -> SubprocessLauncher: ...
     def set_cwd(self, cwd: str) -> None: ...
-    def set_environ(self, env: typing.Sequence[str]) -> None: ...
-    def set_flags(self, flags: SubprocessFlags) -> None: ...
-    def set_stderr_file_path(self, path: typing.Optional[str] = None) -> None: ...
-    def set_stdin_file_path(self, path: typing.Optional[str] = None) -> None: ...
-    def set_stdout_file_path(self, path: typing.Optional[str] = None) -> None: ...
+    def set_environ(self, env: Sequence[str]) -> None: ...
+    def set_flags(self, flags: _SubprocessFlagsValueType) -> None: ...
+    def set_stderr_file_path(self, path: str | None = None) -> None: ...
+    def set_stdin_file_path(self, path: str | None = None) -> None: ...
+    def set_stdout_file_path(self, path: str | None = None) -> None: ...
     def setenv(self, variable: str, value: str, overwrite: bool) -> None: ...
-    def spawnv(self, argv: typing.Sequence[str]) -> Subprocess: ...
+    def spawnv(self, argv: Sequence[str]) -> Subprocess: ...
     def take_fd(self, source_fd: int, target_fd: int) -> None: ...
     def take_stderr_fd(self, fd: int) -> None: ...
     def take_stdin_fd(self, fd: int) -> None: ...
@@ -9812,45 +12961,47 @@ class Task(GObject.Object, AsyncResult):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def completed(self) -> bool: ...
 
-    class Props:
-        completed: bool
-
-    props: Props = ...
-    def get_cancellable(self) -> typing.Optional[Cancellable]: ...
+    @property
+    def props(self) -> Props: ...
+    def get_cancellable(self) -> Cancellable | None: ...
     def get_check_cancellable(self) -> bool: ...
     def get_completed(self) -> bool: ...
     def get_context(self) -> GLib.MainContext: ...
-    def get_name(self) -> typing.Optional[str]: ...
+    def get_name(self) -> str | None: ...
     def get_priority(self) -> int: ...
     def get_return_on_cancel(self) -> bool: ...
-    def get_source_object(self) -> typing.Optional[GObject.Object]: ...
-    def get_source_tag(self) -> None: ...
-    def get_task_data(self) -> None: ...
+    def get_source_object(self) -> GObject.Object | None: ...
+    def get_source_tag(self) -> int: ...
+    def get_task_data(self) -> int: ...
     def had_error(self) -> bool: ...
     @staticmethod
     def is_valid(
-        result: AsyncResult, source_object: typing.Optional[GObject.Object] = None
+        result: AsyncResult, source_object: GObject.Object | None = None
     ) -> bool: ...
     @classmethod
     def new(
         cls,
-        source_object: typing.Optional[GObject.Object] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *callback_data: typing.Any,
+        source_object: GObject.Object | None = None,
+        cancellable: Cancellable | None = None,
+        callback: _AsyncReadyVarArgsCallback[Task, Unpack[_DataTs]] | None = None,
+        *callback_data: Unpack[_DataTs],
     ) -> Task: ...
     def propagate_boolean(self) -> bool: ...
     def propagate_int(self) -> int: ...
-    def propagate_pointer(self) -> None: ...
-    def propagate_value(self) -> typing.Tuple[bool, typing.Any]: ...
+    def propagate_pointer(self) -> int: ...
+    def propagate_value(self) -> tuple[bool, Any]: ...
     @staticmethod
     def report_error(
-        source_object: typing.Optional[GObject.Object],
-        callback: typing.Optional[typing.Callable[..., None]],
-        source_tag: None,
+        source_object: GObject.Object | None,
+        callback: _AsyncReadyCallback[None, Any | None] | None,
+        callback_data: Any | None,
+        source_tag: int | Any | None,
         error: GLib.Error,
-        *callback_data: typing.Any,
     ) -> None: ...
     def return_boolean(self, result: bool) -> None: ...
     def return_error(self, error: GLib.Error) -> None: ...
@@ -9861,35 +13012,35 @@ class Task(GObject.Object, AsyncResult):
     ) -> None: ...
     def return_pointer(
         self,
-        result: None,
-        result_destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        result: int | Any | None = None,
+        result_destroy: Callable[[Any | None], None] | None = None,
     ) -> None: ...
-    def return_value(self, result: typing.Optional[typing.Any] = None) -> None: ...
+    def return_value(self, result: Any | None = None) -> None: ...
     def run_in_thread(
         self,
-        task_func: typing.Callable[
-            [Task, GObject.Object, None, typing.Optional[Cancellable]], None
+        task_func: Callable[
+            [Task, GObject.Object, Any | None, Cancellable | None], None
         ],
     ) -> None: ...
     def run_in_thread_sync(
         self,
-        task_func: typing.Callable[
-            [Task, GObject.Object, None, typing.Optional[Cancellable]], None
+        task_func: Callable[
+            [Task, GObject.Object, Any | None, Cancellable | None], None
         ],
     ) -> None: ...
     def set_check_cancellable(self, check_cancellable: bool) -> None: ...
-    def set_name(self, name: typing.Optional[str] = None) -> None: ...
+    def set_name(self, name: str | None = None) -> None: ...
     def set_priority(self, priority: int) -> None: ...
     def set_return_on_cancel(self, return_on_cancel: bool) -> bool: ...
-    def set_source_tag(self, source_tag: None) -> None: ...
-    def set_static_name(self, name: typing.Optional[str] = None) -> None: ...
+    def set_source_tag(self, source_tag: int | Any | None = None) -> None: ...
+    def set_static_name(self, name: str | None = None) -> None: ...
     def set_task_data(
         self,
-        task_data: None,
-        task_data_destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        task_data: int | Any | None = None,
+        task_data_destroy: Callable[[Any | None], None] | None = None,
     ) -> None: ...
 
-class TaskClass(GObject.GPointer): ...
+class TaskClass(_gi.Struct): ...
 
 class TcpConnection(SocketConnection):
     """
@@ -9915,24 +13066,23 @@ class TcpConnection(SocketConnection):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(SocketConnection.Props):
         graceful_disconnect: bool
-        socket: Socket
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
 
-    props: Props = ...
-    parent_instance: SocketConnection = ...
-    priv: TcpConnectionPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketConnection: ...
+    @property
+    def priv(self) -> TcpConnectionPrivate: ...
     def __init__(
-        self, graceful_disconnect: bool = ..., socket: Socket = ...
+        self, *, graceful_disconnect: bool = ..., socket: Socket | None = ...
     ) -> None: ...
     def get_graceful_disconnect(self) -> bool: ...
     def set_graceful_disconnect(self, graceful_disconnect: bool) -> None: ...
 
-class TcpConnectionClass(GObject.GPointer):
+class TcpConnectionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -9940,10 +13090,10 @@ class TcpConnectionClass(GObject.GPointer):
 
         TcpConnectionClass()
     """
+    @property
+    def parent_class(self) -> SocketConnectionClass: ...
 
-    parent_class: SocketConnectionClass = ...
-
-class TcpConnectionPrivate(GObject.GPointer): ...
+class TcpConnectionPrivate(_gi.Struct): ...
 
 class TcpWrapperConnection(TcpConnection):
     """
@@ -9973,29 +13123,29 @@ class TcpWrapperConnection(TcpConnection):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(TcpConnection.Props):
+        @property
+        def base_io_stream(self) -> IOStream: ...
 
-    class Props:
-        base_io_stream: IOStream
-        graceful_disconnect: bool
-        socket: Socket
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
-
-    props: Props = ...
-    parent_instance: TcpConnection = ...
-    priv: TcpWrapperConnectionPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> TcpConnection: ...
+    @property
+    def priv(self) -> TcpWrapperConnectionPrivate: ...
     def __init__(
         self,
-        base_io_stream: IOStream = ...,
+        *,
+        base_io_stream: IOStream | None = ...,
         graceful_disconnect: bool = ...,
-        socket: Socket = ...,
+        socket: Socket | None = ...,
     ) -> None: ...
     def get_base_io_stream(self) -> IOStream: ...
     @classmethod
     def new(cls, base_io_stream: IOStream, socket: Socket) -> TcpWrapperConnection: ...
 
-class TcpWrapperConnectionClass(GObject.GPointer):
+class TcpWrapperConnectionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10003,10 +13153,10 @@ class TcpWrapperConnectionClass(GObject.GPointer):
 
         TcpWrapperConnectionClass()
     """
+    @property
+    def parent_class(self) -> TcpConnectionClass: ...
 
-    parent_class: TcpConnectionClass = ...
-
-class TcpWrapperConnectionPrivate(GObject.GPointer): ...
+class TcpWrapperConnectionPrivate(_gi.Struct): ...
 
 class TestDBus(GObject.Object):
     """
@@ -10025,18 +13175,20 @@ class TestDBus(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def flags(self) -> TestDBusFlags: ...
 
-    class Props:
-        flags: TestDBusFlags
-
-    props: Props = ...
-    def __init__(self, flags: TestDBusFlags = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, flags: _TestDBusFlagsValueType = ...) -> None: ...
     def add_service_dir(self, path: str) -> None: ...
     def down(self) -> None: ...
-    def get_bus_address(self) -> typing.Optional[str]: ...
+    def get_bus_address(self) -> str | None: ...
     def get_flags(self) -> TestDBusFlags: ...
     @classmethod
-    def new(cls, flags: TestDBusFlags) -> TestDBus: ...
+    def new(cls, flags: _TestDBusFlagsValueType) -> TestDBus: ...
     def stop(self) -> None: ...
     @staticmethod
     def unset() -> None: ...
@@ -10063,19 +13215,20 @@ class ThemedIcon(GObject.Object, Icon):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def names(self) -> list[str]: ...
+        @property
+        def use_default_fallbacks(self) -> bool: ...
 
-    class Props:
-        names: list[str]
-        use_default_fallbacks: bool
-        name: str
-
-    props: Props = ...
-    # override
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         *,
-        name: str = ...,
-        names: typing.Sequence[str] = ...,
+        name: str | None = ...,
+        names: Sequence[str] | None = ...,
         use_default_fallbacks: bool = ...,
     ) -> None: ...
     def append_name(self, iconname: str) -> None: ...
@@ -10083,12 +13236,12 @@ class ThemedIcon(GObject.Object, Icon):
     @classmethod
     def new(cls, iconname: str) -> ThemedIcon: ...
     @classmethod
-    def new_from_names(cls, iconnames: typing.Sequence[str]) -> ThemedIcon: ...
+    def new_from_names(cls, iconnames: Sequence[str]) -> ThemedIcon: ...
     @classmethod
     def new_with_default_fallbacks(cls, iconname: str) -> ThemedIcon: ...
     def prepend_name(self, iconname: str) -> None: ...
 
-class ThemedIconClass(GObject.GPointer): ...
+class ThemedIconClass(_gi.Struct): ...
 
 class ThreadedResolver(Resolver):
     """
@@ -10109,14 +13262,9 @@ class ThreadedResolver(Resolver):
     Signals from GObject:
       notify (GParam)
     """
+    def __init__(self, *, timeout: int = ...) -> None: ...
 
-    class Props:
-        timeout: int
-
-    props: Props = ...
-    def __init__(self, timeout: int = ...) -> None: ...
-
-class ThreadedResolverClass(GObject.GPointer):
+class ThreadedResolverClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10124,8 +13272,8 @@ class ThreadedResolverClass(GObject.GPointer):
 
         ThreadedResolverClass()
     """
-
-    parent_class: ResolverClass = ...
+    @property
+    def parent_class(self) -> ResolverClass: ...
 
 class ThreadedSocketService(SocketService):
     """
@@ -10159,25 +13307,27 @@ class ThreadedSocketService(SocketService):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(SocketService.Props):
+        @property
+        def max_threads(self) -> int: ...
 
-    class Props:
-        max_threads: int
-        active: bool
-        listen_backlog: int
-
-    props: Props = ...
-    parent_instance: SocketService = ...
-    priv: ThreadedSocketServicePrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketService: ...
+    @property
+    def priv(self) -> ThreadedSocketServicePrivate: ...
     def __init__(
-        self, max_threads: int = ..., active: bool = ..., listen_backlog: int = ...
+        self, *, max_threads: int = ..., active: bool = ..., listen_backlog: int = ...
     ) -> None: ...
     def do_run(
-        self, connection: SocketConnection, source_object: GObject.Object
+        self, connection: SocketConnection, source_object: GObject.Object, /
     ) -> bool: ...
     @classmethod
     def new(cls, max_threads: int) -> ThreadedSocketService: ...
 
-class ThreadedSocketServiceClass(GObject.GPointer):
+class ThreadedSocketServiceClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10185,43 +13335,36 @@ class ThreadedSocketServiceClass(GObject.GPointer):
 
         ThreadedSocketServiceClass()
     """
+    @property
+    def parent_class(self) -> SocketServiceClass: ...
+    @property
+    def run(
+        self,
+    ) -> Callable[[ThreadedSocketService, SocketConnection, GObject.Object], bool]: ...
 
-    parent_class: SocketServiceClass = ...
-    run: typing.Callable[
-        [ThreadedSocketService, SocketConnection, GObject.Object], bool
-    ] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+class ThreadedSocketServicePrivate(_gi.Struct): ...
 
-class ThreadedSocketServicePrivate(GObject.GPointer): ...
-
-class TlsBackend(GObject.GInterface):
+class TlsBackend(GObject.GInterface, Protocol):
     """
     Interface GTlsBackend
 
     Signals from GObject:
       notify (GParam)
     """
-
-    def get_certificate_type(self) -> typing.Type[typing.Any]: ...
-    def get_client_connection_type(self) -> typing.Type[typing.Any]: ...
+    def get_certificate_type(self) -> type[Any]: ...
+    def get_client_connection_type(self) -> type[Any]: ...
     @staticmethod
     def get_default() -> TlsBackend: ...
     def get_default_database(self) -> TlsDatabase: ...
-    def get_dtls_client_connection_type(self) -> typing.Type[typing.Any]: ...
-    def get_dtls_server_connection_type(self) -> typing.Type[typing.Any]: ...
-    def get_file_database_type(self) -> typing.Type[typing.Any]: ...
-    def get_server_connection_type(self) -> typing.Type[typing.Any]: ...
-    def set_default_database(
-        self, database: typing.Optional[TlsDatabase] = None
-    ) -> None: ...
+    def get_dtls_client_connection_type(self) -> type[Any]: ...
+    def get_dtls_server_connection_type(self) -> type[Any]: ...
+    def get_file_database_type(self) -> type[Any]: ...
+    def get_server_connection_type(self) -> type[Any]: ...
+    def set_default_database(self, database: TlsDatabase | None = None) -> None: ...
     def supports_dtls(self) -> bool: ...
     def supports_tls(self) -> bool: ...
 
-class TlsBackendInterface(GObject.GPointer):
+class TlsBackendInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -10229,17 +13372,26 @@ class TlsBackendInterface(GObject.GPointer):
 
         TlsBackendInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    supports_tls: typing.Callable[[TlsBackend], bool] = ...
-    get_certificate_type: typing.Callable[[], typing.Type[typing.Any]] = ...
-    get_client_connection_type: typing.Callable[[], typing.Type[typing.Any]] = ...
-    get_server_connection_type: typing.Callable[[], typing.Type[typing.Any]] = ...
-    get_file_database_type: typing.Callable[[], typing.Type[typing.Any]] = ...
-    get_default_database: typing.Callable[[TlsBackend], TlsDatabase] = ...
-    supports_dtls: typing.Callable[[TlsBackend], bool] = ...
-    get_dtls_client_connection_type: typing.Callable[[], typing.Type[typing.Any]] = ...
-    get_dtls_server_connection_type: typing.Callable[[], typing.Type[typing.Any]] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def supports_tls(self) -> Callable[[TlsBackend], bool]: ...
+    @property
+    def get_certificate_type(self) -> Callable[[], type[Any]]: ...
+    @property
+    def get_client_connection_type(self) -> Callable[[], type[Any]]: ...
+    @property
+    def get_server_connection_type(self) -> Callable[[], type[Any]]: ...
+    @property
+    def get_file_database_type(self) -> Callable[[], type[Any]]: ...
+    @property
+    def get_default_database(self) -> Callable[[TlsBackend], TlsDatabase]: ...
+    @property
+    def supports_dtls(self) -> Callable[[TlsBackend], bool]: ...
+    @property
+    def get_dtls_client_connection_type(self) -> Callable[[], type[Any]]: ...
+    @property
+    def get_dtls_server_connection_type(self) -> Callable[[], type[Any]]: ...
 
 class TlsCertificate(GObject.Object):
     """
@@ -10277,51 +13429,64 @@ class TlsCertificate(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def certificate(self) -> bytes: ...
+        @property
+        def certificate_pem(self) -> str | None: ...
+        @property
+        def dns_names(self) -> list[int]: ...
+        @property
+        def ip_addresses(self) -> list[int]: ...
+        @property
+        def issuer(self) -> TlsCertificate | None: ...
+        @property
+        def issuer_name(self) -> str | None: ...
+        @property
+        def not_valid_after(self) -> GLib.DateTime | None: ...
+        @property
+        def not_valid_before(self) -> GLib.DateTime | None: ...
+        @property
+        def pkcs11_uri(self) -> str | None: ...
+        @property
+        def private_key(self) -> bytes: ...
+        @property
+        def private_key_pem(self) -> str | None: ...
+        @property
+        def private_key_pkcs11_uri(self) -> str | None: ...
+        @property
+        def subject_name(self) -> str | None: ...
 
-    class Props:
-        certificate: bytes
-        certificate_pem: str
-        dns_names: typing.Optional[list[None]]
-        ip_addresses: typing.Optional[list[None]]
-        issuer: typing.Optional[TlsCertificate]
-        issuer_name: typing.Optional[str]
-        not_valid_after: typing.Optional[GLib.DateTime]
-        not_valid_before: typing.Optional[GLib.DateTime]
-        pkcs11_uri: str
-        private_key: bytes
-        private_key_pem: str
-        private_key_pkcs11_uri: str
-        subject_name: typing.Optional[str]
-        password: str
-        pkcs12_data: bytes
-
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: TlsCertificatePrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> TlsCertificatePrivate: ...
     def __init__(
         self,
-        certificate: typing.Sequence[int] = ...,
-        certificate_pem: str = ...,
-        issuer: TlsCertificate = ...,
-        password: str = ...,
-        pkcs11_uri: str = ...,
-        pkcs12_data: typing.Sequence[int] = ...,
-        private_key: typing.Sequence[int] = ...,
-        private_key_pem: str = ...,
-        private_key_pkcs11_uri: str = ...,
+        *,
+        certificate: Sequence[int] | None = ...,
+        certificate_pem: str | None = ...,
+        issuer: TlsCertificate | None = ...,
+        password: str | None = ...,
+        pkcs11_uri: str | None = ...,
+        pkcs12_data: Sequence[int] | None = ...,
+        private_key: Sequence[int] | None = ...,
+        private_key_pem: str | None = ...,
+        private_key_pkcs11_uri: str | None = ...,
     ) -> None: ...
     def do_verify(
-        self,
-        identity: typing.Optional[SocketConnectable] = None,
-        trusted_ca: typing.Optional[TlsCertificate] = None,
+        self, identity: SocketConnectable | None, trusted_ca: TlsCertificate | None, /
     ) -> TlsCertificateFlags: ...
-    def get_dns_names(self) -> typing.Optional[list[GLib.Bytes]]: ...
-    def get_ip_addresses(self) -> typing.Optional[list[InetAddress]]: ...
-    def get_issuer(self) -> typing.Optional[TlsCertificate]: ...
-    def get_issuer_name(self) -> typing.Optional[str]: ...
-    def get_not_valid_after(self) -> typing.Optional[GLib.DateTime]: ...
-    def get_not_valid_before(self) -> typing.Optional[GLib.DateTime]: ...
-    def get_subject_name(self) -> typing.Optional[str]: ...
+    def get_dns_names(self) -> list[GLib.Bytes]: ...
+    def get_ip_addresses(self) -> list[InetAddress]: ...
+    def get_issuer(self) -> TlsCertificate | None: ...
+    def get_issuer_name(self) -> str | None: ...
+    def get_not_valid_after(self) -> GLib.DateTime | None: ...
+    def get_not_valid_before(self) -> GLib.DateTime | None: ...
+    def get_subject_name(self) -> str | None: ...
     def is_same(self, cert_two: TlsCertificate) -> bool: ...
     @staticmethod
     def list_new_from_file(file: str) -> list[TlsCertificate]: ...
@@ -10337,19 +13502,19 @@ class TlsCertificate(GObject.Object):
     def new_from_pem(cls, data: str, length: int) -> TlsCertificate: ...
     @classmethod
     def new_from_pkcs11_uris(
-        cls, pkcs11_uri: str, private_key_pkcs11_uri: typing.Optional[str] = None
+        cls, pkcs11_uri: str, private_key_pkcs11_uri: str | None = None
     ) -> TlsCertificate: ...
     @classmethod
     def new_from_pkcs12(
-        cls, data: typing.Sequence[int], password: typing.Optional[str] = None
+        cls, data: Sequence[int], password: str | None = None
     ) -> TlsCertificate: ...
     def verify(
         self,
-        identity: typing.Optional[SocketConnectable] = None,
-        trusted_ca: typing.Optional[TlsCertificate] = None,
+        identity: SocketConnectable | None = None,
+        trusted_ca: TlsCertificate | None = None,
     ) -> TlsCertificateFlags: ...
 
-class TlsCertificateClass(GObject.GPointer):
+class TlsCertificateClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10357,43 +13522,41 @@ class TlsCertificateClass(GObject.GPointer):
 
         TlsCertificateClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    verify: typing.Callable[
-        [
-            TlsCertificate,
-            typing.Optional[SocketConnectable],
-            typing.Optional[TlsCertificate],
-        ],
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def verify(
+        self,
+    ) -> Callable[
+        [TlsCertificate, SocketConnectable | None, TlsCertificate | None],
         TlsCertificateFlags,
-    ] = ...
-    padding: list[None] = ...
+    ]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class TlsCertificatePrivate(GObject.GPointer): ...
+class TlsCertificatePrivate(_gi.Struct): ...
 
-class TlsClientConnection(GObject.GInterface):
+class TlsClientConnection(GObject.GInterface, Protocol):
     """
     Interface GTlsClientConnection
 
     Signals from GObject:
       notify (GParam)
     """
-
     def copy_session_state(self, source: TlsClientConnection) -> None: ...
-    def get_accepted_cas(self) -> list[typing.Sequence[int]]: ...
-    def get_server_identity(self) -> typing.Optional[SocketConnectable]: ...
+    def get_accepted_cas(self) -> list[bytes]: ...
+    def get_server_identity(self) -> SocketConnectable | None: ...
     def get_use_ssl3(self) -> bool: ...
     def get_validation_flags(self) -> TlsCertificateFlags: ...
     @staticmethod
     def new(
-        base_io_stream: IOStream,
-        server_identity: typing.Optional[SocketConnectable] = None,
+        base_io_stream: IOStream, server_identity: SocketConnectable | None = None
     ) -> TlsClientConnection: ...
     def set_server_identity(self, identity: SocketConnectable) -> None: ...
     def set_use_ssl3(self, use_ssl3: bool) -> None: ...
-    def set_validation_flags(self, flags: TlsCertificateFlags) -> None: ...
+    def set_validation_flags(self, flags: _TlsCertificateFlagsValueType) -> None: ...
 
-class TlsClientConnectionInterface(GObject.GPointer):
+class TlsClientConnectionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -10401,11 +13564,12 @@ class TlsClientConnectionInterface(GObject.GPointer):
 
         TlsClientConnectionInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    copy_session_state: typing.Callable[
-        [TlsClientConnection, TlsClientConnection], None
-    ] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def copy_session_state(
+        self,
+    ) -> Callable[[TlsClientConnection, TlsClientConnection], None]: ...
 
 class TlsConnection(IOStream):
     """
@@ -10443,96 +13607,122 @@ class TlsConnection(IOStream):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        advertised_protocols: typing.Optional[list[str]]
-        base_io_stream: IOStream
-        certificate: typing.Optional[TlsCertificate]
-        ciphersuite_name: typing.Optional[str]
-        database: typing.Optional[TlsDatabase]
-        interaction: typing.Optional[TlsInteraction]
-        negotiated_protocol: typing.Optional[str]
-        peer_certificate: typing.Optional[TlsCertificate]
-        peer_certificate_errors: TlsCertificateFlags
-        protocol_version: TlsProtocolVersion
-        rehandshake_mode: TlsRehandshakeMode
+    @type_check_only
+    class Props(IOStream.Props):
+        @property
+        def advertised_protocols(self) -> list[str]: ...
+        @advertised_protocols.setter
+        def advertised_protocols(self, value: Sequence[str] | None) -> None: ...
+        @property
+        def base_io_stream(self) -> IOStream | None: ...
+        @property
+        def certificate(self) -> TlsCertificate | None: ...
+        @certificate.setter
+        def certificate(self, value: TlsCertificate) -> None: ...
+        @property
+        def ciphersuite_name(self) -> str | None: ...
+        database: TlsDatabase | None
+        interaction: TlsInteraction | None
+        @property
+        def negotiated_protocol(self) -> str | None: ...
+        @property
+        def peer_certificate(self) -> TlsCertificate | None: ...
+        @property
+        def peer_certificate_errors(self) -> TlsCertificateFlags: ...
+        @property
+        def protocol_version(self) -> TlsProtocolVersion: ...
+        @property
+        def rehandshake_mode(self) -> TlsRehandshakeMode: ...
+        @rehandshake_mode.setter
+        def rehandshake_mode(self, value: _TlsRehandshakeModeValueType) -> None: ...
         require_close_notify: bool
         use_system_certdb: bool
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
 
-    props: Props = ...
-    parent_instance: IOStream = ...
-    priv: TlsConnectionPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> IOStream: ...
+    @property
+    def priv(self) -> TlsConnectionPrivate: ...
     def __init__(
         self,
-        advertised_protocols: typing.Optional[typing.Sequence[str]] = ...,
-        base_io_stream: IOStream = ...,
+        *,
+        advertised_protocols: Sequence[str] | None = ...,
+        base_io_stream: IOStream | None = ...,
         certificate: TlsCertificate = ...,
-        database: typing.Optional[TlsDatabase] = ...,
-        interaction: typing.Optional[TlsInteraction] = ...,
-        rehandshake_mode: TlsRehandshakeMode = ...,
+        database: TlsDatabase | None = ...,
+        interaction: TlsInteraction | None = ...,
+        rehandshake_mode: _TlsRehandshakeModeValueType = ...,
         require_close_notify: bool = ...,
         use_system_certdb: bool = ...,
     ) -> None: ...
     def do_accept_certificate(
-        self, peer_cert: TlsCertificate, errors: TlsCertificateFlags
+        self, peer_cert: TlsCertificate, errors: _TlsCertificateFlagsValueType, /
     ) -> bool: ...
     def do_get_binding_data(
-        self, type: TlsChannelBindingType, data: typing.Sequence[int]
+        self, type: _TlsChannelBindingTypeValueType, data: Sequence[int], /
     ) -> bool: ...
-    def do_get_negotiated_protocol(self) -> typing.Optional[str]: ...
-    def do_handshake(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    def do_get_negotiated_protocol(self) -> str | None: ...
+    def do_handshake(self, cancellable: Cancellable | None, /) -> bool: ...
     def do_handshake_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsConnection, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_handshake_finish(self, result: AsyncResult) -> bool: ...
+    def do_handshake_finish(self, result: AsyncResult, /) -> bool: ...
     def emit_accept_certificate(
-        self, peer_cert: TlsCertificate, errors: TlsCertificateFlags
+        self, peer_cert: TlsCertificate, errors: _TlsCertificateFlagsValueType
     ) -> bool: ...
-    def get_certificate(self) -> typing.Optional[TlsCertificate]: ...
+    def get_certificate(self) -> TlsCertificate | None: ...
     def get_channel_binding_data(
-        self, type: TlsChannelBindingType
-    ) -> typing.Tuple[bool, bytes]: ...
-    def get_ciphersuite_name(self) -> typing.Optional[str]: ...
-    def get_database(self) -> typing.Optional[TlsDatabase]: ...
-    def get_interaction(self) -> typing.Optional[TlsInteraction]: ...
-    def get_negotiated_protocol(self) -> typing.Optional[str]: ...
-    def get_peer_certificate(self) -> typing.Optional[TlsCertificate]: ...
+        self, type: _TlsChannelBindingTypeValueType
+    ) -> tuple[bool, bytes]: ...
+    def get_ciphersuite_name(self) -> str | None: ...
+    def get_database(self) -> TlsDatabase | None: ...
+    def get_interaction(self) -> TlsInteraction | None: ...
+    def get_negotiated_protocol(self) -> str | None: ...
+    def get_peer_certificate(self) -> TlsCertificate | None: ...
     def get_peer_certificate_errors(self) -> TlsCertificateFlags: ...
     def get_protocol_version(self) -> TlsProtocolVersion: ...
     def get_rehandshake_mode(self) -> TlsRehandshakeMode: ...
     def get_require_close_notify(self) -> bool: ...
     def get_use_system_certdb(self) -> bool: ...
-    def handshake(self, cancellable: typing.Optional[Cancellable] = None) -> bool: ...
+    def handshake(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def handshake_async(
+        self, io_priority: int, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def handshake_async(
         self,
         io_priority: int,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def handshake_async(
+        self,
+        io_priority: int,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsConnection] | None,
     ) -> None: ...
     def handshake_finish(self, result: AsyncResult) -> bool: ...
     def set_advertised_protocols(
-        self, protocols: typing.Optional[typing.Sequence[str]] = None
+        self, protocols: Sequence[str] | None = None
     ) -> None: ...
     def set_certificate(self, certificate: TlsCertificate) -> None: ...
-    def set_database(self, database: typing.Optional[TlsDatabase] = None) -> None: ...
-    def set_interaction(
-        self, interaction: typing.Optional[TlsInteraction] = None
-    ) -> None: ...
-    def set_rehandshake_mode(self, mode: TlsRehandshakeMode) -> None: ...
+    def set_database(self, database: TlsDatabase | None = None) -> None: ...
+    def set_interaction(self, interaction: TlsInteraction | None = None) -> None: ...
+    def set_rehandshake_mode(self, mode: _TlsRehandshakeModeValueType) -> None: ...
     def set_require_close_notify(self, require_close_notify: bool) -> None: ...
     def set_use_system_certdb(self, use_system_certdb: bool) -> None: ...
 
-class TlsConnectionClass(GObject.GPointer):
+class TlsConnectionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10540,25 +13730,43 @@ class TlsConnectionClass(GObject.GPointer):
 
         TlsConnectionClass()
     """
+    @property
+    def parent_class(self) -> IOStreamClass: ...
+    @property
+    def accept_certificate(
+        self,
+    ) -> Callable[
+        [TlsConnection, TlsCertificate, _TlsCertificateFlagsValueType], bool
+    ]: ...
+    @property
+    def handshake(self) -> Callable[[TlsConnection, Cancellable | None], bool]: ...
+    @property
+    def handshake_async(
+        self,
+    ) -> Callable[
+        [
+            TlsConnection,
+            int,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def handshake_finish(self) -> Callable[[TlsConnection, AsyncResult], bool]: ...
+    @property
+    def get_binding_data(
+        self,
+    ) -> Callable[
+        [TlsConnection, _TlsChannelBindingTypeValueType, Sequence[int]], bool
+    ]: ...
+    @property
+    def get_negotiated_protocol(self) -> Callable[[TlsConnection], str | None]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: IOStreamClass = ...
-    accept_certificate: typing.Callable[
-        [TlsConnection, TlsCertificate, TlsCertificateFlags], bool
-    ] = ...
-    handshake: typing.Callable[
-        [TlsConnection, typing.Optional[Cancellable]], bool
-    ] = ...
-    handshake_async: typing.Callable[..., None] = ...
-    handshake_finish: typing.Callable[[TlsConnection, AsyncResult], bool] = ...
-    get_binding_data: typing.Callable[
-        [TlsConnection, TlsChannelBindingType, typing.Sequence[int]], bool
-    ] = ...
-    get_negotiated_protocol: typing.Callable[
-        [TlsConnection], typing.Optional[str]
-    ] = ...
-    padding: list[None] = ...
-
-class TlsConnectionPrivate(GObject.GPointer): ...
+class TlsConnectionPrivate(_gi.Struct): ...
 
 class TlsDatabase(GObject.Object):
     """
@@ -10573,108 +13781,134 @@ class TlsDatabase(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: TlsDatabasePrivate = ...
-    def create_certificate_handle(
-        self, certificate: TlsCertificate
-    ) -> typing.Optional[str]: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> TlsDatabasePrivate: ...
+    def create_certificate_handle(self, certificate: TlsCertificate) -> str | None: ...
     def do_create_certificate_handle(
-        self, certificate: TlsCertificate
-    ) -> typing.Optional[str]: ...
+        self, certificate: TlsCertificate, /
+    ) -> str | None: ...
     def do_lookup_certificate_for_handle(
         self,
         handle: str,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Optional[TlsCertificate]: ...
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
+    ) -> TlsCertificate | None: ...
     def do_lookup_certificate_for_handle_async(
         self,
         handle: str,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsDatabase, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
     def do_lookup_certificate_for_handle_finish(
-        self, result: AsyncResult
+        self, result: AsyncResult, /
     ) -> TlsCertificate: ...
     def do_lookup_certificate_issuer(
         self,
         certificate: TlsCertificate,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> TlsCertificate: ...
     def do_lookup_certificate_issuer_async(
         self,
         certificate: TlsCertificate,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsDatabase, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
     def do_lookup_certificate_issuer_finish(
-        self, result: AsyncResult
+        self, result: AsyncResult, /
     ) -> TlsCertificate: ...
     def do_lookup_certificates_issued_by(
         self,
-        issuer_raw_dn: typing.Sequence[int],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> list[TlsCertificate]: ...
     def do_lookup_certificates_issued_by_async(
         self,
-        issuer_raw_dn: typing.Sequence[int],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsDatabase, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
     def do_lookup_certificates_issued_by_finish(
-        self, result: AsyncResult
+        self, result: AsyncResult, /
     ) -> list[TlsCertificate]: ...
     def do_verify_chain(
         self,
         chain: TlsCertificate,
         purpose: str,
-        identity: typing.Optional[SocketConnectable],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseVerifyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> TlsCertificateFlags: ...
     def do_verify_chain_async(
         self,
         chain: TlsCertificate,
         purpose: str,
-        identity: typing.Optional[SocketConnectable],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseVerifyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsDatabase, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_verify_chain_finish(self, result: AsyncResult) -> TlsCertificateFlags: ...
+    def do_verify_chain_finish(self, result: AsyncResult, /) -> TlsCertificateFlags: ...
     def lookup_certificate_for_handle(
         self,
         handle: str,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-    ) -> typing.Optional[TlsCertificate]: ...
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> TlsCertificate | None: ...
+    @overload
     def lookup_certificate_for_handle_async(
         self,
         handle: str,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[TlsCertificate]: ...
+    @overload
+    def lookup_certificate_for_handle_async(
+        self,
+        handle: str,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_certificate_for_handle_async(
+        self,
+        handle: str,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase] | None,
     ) -> None: ...
     def lookup_certificate_for_handle_finish(
         self, result: AsyncResult
@@ -10682,37 +13916,75 @@ class TlsDatabase(GObject.Object):
     def lookup_certificate_issuer(
         self,
         certificate: TlsCertificate,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> TlsCertificate: ...
+    @overload
     def lookup_certificate_issuer_async(
         self,
         certificate: TlsCertificate,
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[TlsCertificate]: ...
+    @overload
+    def lookup_certificate_issuer_async(
+        self,
+        certificate: TlsCertificate,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_certificate_issuer_async(
+        self,
+        certificate: TlsCertificate,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase] | None,
     ) -> None: ...
     def lookup_certificate_issuer_finish(
         self, result: AsyncResult
     ) -> TlsCertificate: ...
     def lookup_certificates_issued_by(
         self,
-        issuer_raw_dn: typing.Sequence[int],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> list[TlsCertificate]: ...
+    @overload
     def lookup_certificates_issued_by_async(
         self,
-        issuer_raw_dn: typing.Sequence[int],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseLookupFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[list[TlsCertificate]]: ...
+    @overload
+    def lookup_certificates_issued_by_async(
+        self,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def lookup_certificates_issued_by_async(
+        self,
+        issuer_raw_dn: Sequence[int],
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseLookupFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase] | None,
     ) -> None: ...
     def lookup_certificates_issued_by_finish(
         self, result: AsyncResult
@@ -10721,25 +13993,48 @@ class TlsDatabase(GObject.Object):
         self,
         chain: TlsCertificate,
         purpose: str,
-        identity: typing.Optional[SocketConnectable],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseVerifyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> TlsCertificateFlags: ...
+    @overload
     def verify_chain_async(
         self,
         chain: TlsCertificate,
         purpose: str,
-        identity: typing.Optional[SocketConnectable],
-        interaction: typing.Optional[TlsInteraction],
-        flags: TlsDatabaseVerifyFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[TlsCertificateFlags]: ...
+    @overload
+    def verify_chain_async(
+        self,
+        chain: TlsCertificate,
+        purpose: str,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def verify_chain_async(
+        self,
+        chain: TlsCertificate,
+        purpose: str,
+        identity: SocketConnectable | None,
+        interaction: TlsInteraction | None,
+        flags: _TlsDatabaseVerifyFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsDatabase] | None,
     ) -> None: ...
     def verify_chain_finish(self, result: AsyncResult) -> TlsCertificateFlags: ...
 
-class TlsDatabaseClass(GObject.GPointer):
+class TlsDatabaseClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10747,85 +14042,160 @@ class TlsDatabaseClass(GObject.GPointer):
 
         TlsDatabaseClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    verify_chain: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def verify_chain(
+        self,
+    ) -> Callable[
         [
             TlsDatabase,
             TlsCertificate,
             str,
-            typing.Optional[SocketConnectable],
-            typing.Optional[TlsInteraction],
-            TlsDatabaseVerifyFlags,
-            typing.Optional[Cancellable],
+            SocketConnectable | None,
+            TlsInteraction | None,
+            _TlsDatabaseVerifyFlagsValueType,
+            Cancellable | None,
         ],
         TlsCertificateFlags,
-    ] = ...
-    verify_chain_async: typing.Callable[..., None] = ...
-    verify_chain_finish: typing.Callable[
-        [TlsDatabase, AsyncResult], TlsCertificateFlags
-    ] = ...
-    create_certificate_handle: typing.Callable[
-        [TlsDatabase, TlsCertificate], typing.Optional[str]
-    ] = ...
-    lookup_certificate_for_handle: typing.Callable[
-        [
-            TlsDatabase,
-            str,
-            typing.Optional[TlsInteraction],
-            TlsDatabaseLookupFlags,
-            typing.Optional[Cancellable],
-        ],
-        typing.Optional[TlsCertificate],
-    ] = ...
-    lookup_certificate_for_handle_async: typing.Callable[..., None] = ...
-    lookup_certificate_for_handle_finish: typing.Callable[
-        [TlsDatabase, AsyncResult], TlsCertificate
-    ] = ...
-    lookup_certificate_issuer: typing.Callable[
+    ]: ...
+    @property
+    def verify_chain_async(
+        self,
+    ) -> Callable[
         [
             TlsDatabase,
             TlsCertificate,
-            typing.Optional[TlsInteraction],
-            TlsDatabaseLookupFlags,
-            typing.Optional[Cancellable],
+            str,
+            SocketConnectable | None,
+            TlsInteraction | None,
+            _TlsDatabaseVerifyFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
         ],
-        TlsCertificate,
-    ] = ...
-    lookup_certificate_issuer_async: typing.Callable[..., None] = ...
-    lookup_certificate_issuer_finish: typing.Callable[
-        [TlsDatabase, AsyncResult], TlsCertificate
-    ] = ...
-    lookup_certificates_issued_by: typing.Callable[
+        None,
+    ]: ...
+    @property
+    def verify_chain_finish(
+        self,
+    ) -> Callable[[TlsDatabase, AsyncResult], TlsCertificateFlags]: ...
+    @property
+    def create_certificate_handle(
+        self,
+    ) -> Callable[[TlsDatabase, TlsCertificate], str | None]: ...
+    @property
+    def lookup_certificate_for_handle(
+        self,
+    ) -> Callable[
         [
             TlsDatabase,
-            typing.Sequence[int],
-            typing.Optional[TlsInteraction],
-            TlsDatabaseLookupFlags,
-            typing.Optional[Cancellable],
+            str,
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
+        ],
+        TlsCertificate | None,
+    ]: ...
+    @property
+    def lookup_certificate_for_handle_async(
+        self,
+    ) -> Callable[
+        [
+            TlsDatabase,
+            str,
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_certificate_for_handle_finish(
+        self,
+    ) -> Callable[[TlsDatabase, AsyncResult], TlsCertificate]: ...
+    @property
+    def lookup_certificate_issuer(
+        self,
+    ) -> Callable[
+        [
+            TlsDatabase,
+            TlsCertificate,
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
+        ],
+        TlsCertificate,
+    ]: ...
+    @property
+    def lookup_certificate_issuer_async(
+        self,
+    ) -> Callable[
+        [
+            TlsDatabase,
+            TlsCertificate,
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_certificate_issuer_finish(
+        self,
+    ) -> Callable[[TlsDatabase, AsyncResult], TlsCertificate]: ...
+    @property
+    def lookup_certificates_issued_by(
+        self,
+    ) -> Callable[
+        [
+            TlsDatabase,
+            Sequence[int],
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
         ],
         list[TlsCertificate],
-    ] = ...
-    lookup_certificates_issued_by_async: typing.Callable[..., None] = ...
-    lookup_certificates_issued_by_finish: typing.Callable[
-        [TlsDatabase, AsyncResult], list[TlsCertificate]
-    ] = ...
-    padding: list[None] = ...
+    ]: ...
+    @property
+    def lookup_certificates_issued_by_async(
+        self,
+    ) -> Callable[
+        [
+            TlsDatabase,
+            Sequence[int],
+            TlsInteraction | None,
+            _TlsDatabaseLookupFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def lookup_certificates_issued_by_finish(
+        self,
+    ) -> Callable[[TlsDatabase, AsyncResult], list[TlsCertificate]]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class TlsDatabasePrivate(GObject.GPointer): ...
+class TlsDatabasePrivate(_gi.Struct): ...
 
-class TlsFileDatabase(GObject.GInterface):
+class TlsFileDatabase(GObject.GInterface, Protocol):
     """
     Interface GTlsFileDatabase
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def new(anchors: str) -> TlsFileDatabase: ...
 
-class TlsFileDatabaseInterface(GObject.GPointer):
+class TlsFileDatabaseInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -10833,9 +14203,10 @@ class TlsFileDatabaseInterface(GObject.GPointer):
 
         TlsFileDatabaseInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    padding: list[None] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def padding(self) -> list[int]: ...
 
 class TlsInteraction(GObject.Object):
     """
@@ -10850,76 +14221,112 @@ class TlsInteraction(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: TlsInteractionPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> TlsInteractionPrivate: ...
     def ask_password(
-        self, password: TlsPassword, cancellable: typing.Optional[Cancellable] = None
+        self, password: TlsPassword, cancellable: Cancellable | None = None
     ) -> TlsInteractionResult: ...
+    @overload
+    def ask_password_async(
+        self, password: TlsPassword, cancellable: Cancellable | None = None
+    ) -> _gi.Async[TlsInteractionResult]: ...
+    @overload
     def ask_password_async(
         self,
         password: TlsPassword,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsInteraction, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def ask_password_async(
+        self,
+        password: TlsPassword,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsInteraction] | None,
     ) -> None: ...
     def ask_password_finish(self, result: AsyncResult) -> TlsInteractionResult: ...
     def do_ask_password(
-        self, password: TlsPassword, cancellable: typing.Optional[Cancellable] = None
+        self, password: TlsPassword, cancellable: Cancellable | None, /
     ) -> TlsInteractionResult: ...
     def do_ask_password_async(
         self,
         password: TlsPassword,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsInteraction, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
-    def do_ask_password_finish(self, result: AsyncResult) -> TlsInteractionResult: ...
+    def do_ask_password_finish(
+        self, result: AsyncResult, /
+    ) -> TlsInteractionResult: ...
     def do_request_certificate(
         self,
         connection: TlsConnection,
-        flags: TlsCertificateRequestFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> TlsInteractionResult: ...
     def do_request_certificate_async(
         self,
         connection: TlsConnection,
-        flags: TlsCertificateRequestFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyCallback[TlsInteraction, int | Any | None] | None,
+        user_data: int | Any | None,
+        /,
     ) -> None: ...
     def do_request_certificate_finish(
-        self, result: AsyncResult
+        self, result: AsyncResult, /
     ) -> TlsInteractionResult: ...
     def invoke_ask_password(
-        self, password: TlsPassword, cancellable: typing.Optional[Cancellable] = None
+        self, password: TlsPassword, cancellable: Cancellable | None = None
     ) -> TlsInteractionResult: ...
     def invoke_request_certificate(
         self,
         connection: TlsConnection,
-        flags: TlsCertificateRequestFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> TlsInteractionResult: ...
     def request_certificate(
         self,
         connection: TlsConnection,
-        flags: TlsCertificateRequestFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None = None,
     ) -> TlsInteractionResult: ...
+    @overload
     def request_certificate_async(
         self,
         connection: TlsConnection,
-        flags: TlsCertificateRequestFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[TlsInteractionResult]: ...
+    @overload
+    def request_certificate_async(
+        self,
+        connection: TlsConnection,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[TlsInteraction, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def request_certificate_async(
+        self,
+        connection: TlsConnection,
+        flags: _TlsCertificateRequestFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[TlsInteraction] | None,
     ) -> None: ...
     def request_certificate_finish(
         self, result: AsyncResult
     ) -> TlsInteractionResult: ...
 
-class TlsInteractionClass(GObject.GPointer):
+class TlsInteractionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -10927,32 +14334,65 @@ class TlsInteractionClass(GObject.GPointer):
 
         TlsInteractionClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    ask_password: typing.Callable[
-        [TlsInteraction, TlsPassword, typing.Optional[Cancellable]],
-        TlsInteractionResult,
-    ] = ...
-    ask_password_async: typing.Callable[..., None] = ...
-    ask_password_finish: typing.Callable[
-        [TlsInteraction, AsyncResult], TlsInteractionResult
-    ] = ...
-    request_certificate: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def ask_password(
+        self,
+    ) -> Callable[
+        [TlsInteraction, TlsPassword, Cancellable | None], TlsInteractionResult
+    ]: ...
+    @property
+    def ask_password_async(
+        self,
+    ) -> Callable[
+        [
+            TlsInteraction,
+            TlsPassword,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def ask_password_finish(
+        self,
+    ) -> Callable[[TlsInteraction, AsyncResult], TlsInteractionResult]: ...
+    @property
+    def request_certificate(
+        self,
+    ) -> Callable[
         [
             TlsInteraction,
             TlsConnection,
-            TlsCertificateRequestFlags,
-            typing.Optional[Cancellable],
+            _TlsCertificateRequestFlagsValueType,
+            Cancellable | None,
         ],
         TlsInteractionResult,
-    ] = ...
-    request_certificate_async: typing.Callable[..., None] = ...
-    request_certificate_finish: typing.Callable[
-        [TlsInteraction, AsyncResult], TlsInteractionResult
-    ] = ...
-    padding: list[None] = ...
+    ]: ...
+    @property
+    def request_certificate_async(
+        self,
+    ) -> Callable[
+        [
+            TlsInteraction,
+            TlsConnection,
+            _TlsCertificateRequestFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def request_certificate_finish(
+        self,
+    ) -> Callable[[TlsInteraction, AsyncResult], TlsInteractionResult]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-class TlsInteractionPrivate(GObject.GPointer): ...
+class TlsInteractionPrivate(_gi.Struct): ...
 
 class TlsPassword(GObject.Object):
     """
@@ -10973,42 +14413,50 @@ class TlsPassword(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
+    @type_check_only
+    class Props(GObject.Object.Props):
         description: str
-        flags: TlsPasswordFlags
+        @property
+        def flags(self) -> TlsPasswordFlags: ...
+        @flags.setter
+        def flags(self, value: _TlsPasswordFlagsValueType) -> None: ...
         warning: str
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
-    priv: TlsPasswordPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> TlsPasswordPrivate: ...
     def __init__(
-        self, description: str = ..., flags: TlsPasswordFlags = ..., warning: str = ...
+        self,
+        *,
+        description: str = ...,
+        flags: _TlsPasswordFlagsValueType = ...,
+        warning: str = ...,
     ) -> None: ...
     def do_get_default_warning(self) -> str: ...
     def do_get_value(self) -> bytes: ...
     def do_set_value(
-        self,
-        value: typing.Sequence[int],
-        destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        self, value: Sequence[int], destroy: Callable[[Any | None], None] | None, /
     ) -> None: ...
     def get_description(self) -> str: ...
     def get_flags(self) -> TlsPasswordFlags: ...
     def get_value(self) -> bytes: ...
     def get_warning(self) -> str: ...
     @classmethod
-    def new(cls, flags: TlsPasswordFlags, description: str) -> TlsPassword: ...
+    def new(
+        cls, flags: _TlsPasswordFlagsValueType, description: str
+    ) -> TlsPassword: ...
     def set_description(self, description: str) -> None: ...
-    def set_flags(self, flags: TlsPasswordFlags) -> None: ...
-    def set_value(self, value: typing.Sequence[int]) -> None: ...
+    def set_flags(self, flags: _TlsPasswordFlagsValueType) -> None: ...
+    def set_value(self, value: Sequence[int]) -> None: ...
     def set_value_full(
-        self,
-        value: typing.Sequence[int],
-        destroy: typing.Optional[typing.Callable[[None], None]] = None,
+        self, value: Sequence[int], destroy: Callable[[Any | None], None] | None = None
     ) -> None: ...
     def set_warning(self, warning: str) -> None: ...
 
-class TlsPasswordClass(GObject.GPointer):
+class TlsPasswordClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11016,36 +14464,36 @@ class TlsPasswordClass(GObject.GPointer):
 
         TlsPasswordClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_value(self) -> Callable[[TlsPassword], bytes]: ...
+    @property
+    def set_value(
+        self,
+    ) -> Callable[
+        [TlsPassword, Sequence[int], int, Callable[[Any | None], None] | None], None
+    ]: ...
+    @property
+    def get_default_warning(self) -> Callable[[TlsPassword], str]: ...
+    @property
+    def padding(self) -> list[int]: ...
 
-    parent_class: GObject.ObjectClass = ...
-    get_value: typing.Callable[[TlsPassword], bytes] = ...
-    set_value: typing.Callable[
-        [
-            TlsPassword,
-            typing.Sequence[int],
-            typing.Optional[typing.Callable[[None], None]],
-        ],
-        None,
-    ] = ...
-    get_default_warning: typing.Callable[[TlsPassword], str] = ...
-    padding: list[None] = ...
+class TlsPasswordPrivate(_gi.Struct): ...
 
-class TlsPasswordPrivate(GObject.GPointer): ...
-
-class TlsServerConnection(GObject.GInterface):
+class TlsServerConnection(GObject.GInterface, Protocol):
     """
     Interface GTlsServerConnection
 
     Signals from GObject:
       notify (GParam)
     """
-
     @staticmethod
     def new(
-        base_io_stream: IOStream, certificate: typing.Optional[TlsCertificate] = None
+        base_io_stream: IOStream, certificate: TlsCertificate | None = None
     ) -> TlsServerConnection: ...
 
-class TlsServerConnectionInterface(GObject.GPointer):
+class TlsServerConnectionInterface(_gi.Struct):
     """
     :Constructors:
 
@@ -11053,8 +14501,8 @@ class TlsServerConnectionInterface(GObject.GPointer):
 
         TlsServerConnectionInterface()
     """
-
-    g_iface: GObject.TypeInterface = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
 
 class UnixConnection(SocketConnection):
     """
@@ -11077,43 +14525,57 @@ class UnixConnection(SocketConnection):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        socket: Socket
-        closed: bool
-        input_stream: InputStream
-        output_stream: OutputStream
-
-    props: Props = ...
-    parent_instance: SocketConnection = ...
-    priv: UnixConnectionPrivate = ...
-    def __init__(self, socket: Socket = ...) -> None: ...
+    @property
+    def parent_instance(self) -> SocketConnection: ...
+    @property
+    def priv(self) -> UnixConnectionPrivate: ...
+    def __init__(self, *, socket: Socket | None = ...) -> None: ...
     def receive_credentials(
-        self, cancellable: typing.Optional[Cancellable] = None
+        self, cancellable: Cancellable | None = None
     ) -> Credentials: ...
+    @overload
+    def receive_credentials_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[Credentials]: ...
+    @overload
     def receive_credentials_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[UnixConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def receive_credentials_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[UnixConnection] | None,
     ) -> None: ...
     def receive_credentials_finish(self, result: AsyncResult) -> Credentials: ...
-    def receive_fd(self, cancellable: typing.Optional[Cancellable] = None) -> int: ...
-    def send_credentials(
-        self, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    def receive_fd(self, cancellable: Cancellable | None = None) -> int: ...
+    def send_credentials(self, cancellable: Cancellable | None = None) -> bool: ...
+    @overload
+    def send_credentials_async(
+        self, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def send_credentials_async(
         self,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[UnixConnection, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def send_credentials_async(
+        self,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[UnixConnection] | None,
     ) -> None: ...
     def send_credentials_finish(self, result: AsyncResult) -> bool: ...
-    def send_fd(
-        self, fd: int, cancellable: typing.Optional[Cancellable] = None
-    ) -> bool: ...
+    def send_fd(self, fd: int, cancellable: Cancellable | None = None) -> bool: ...
 
-class UnixConnectionClass(GObject.GPointer):
+class UnixConnectionClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11121,10 +14583,10 @@ class UnixConnectionClass(GObject.GPointer):
 
         UnixConnectionClass()
     """
+    @property
+    def parent_class(self) -> SocketConnectionClass: ...
 
-    parent_class: SocketConnectionClass = ...
-
-class UnixConnectionPrivate(GObject.GPointer): ...
+class UnixConnectionPrivate(_gi.Struct): ...
 
 class UnixCredentialsMessage(SocketControlMessage):
     """
@@ -11144,14 +14606,18 @@ class UnixCredentialsMessage(SocketControlMessage):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(SocketControlMessage.Props):
+        @property
+        def credentials(self) -> Credentials: ...
 
-    class Props:
-        credentials: Credentials
-
-    props: Props = ...
-    parent_instance: SocketControlMessage = ...
-    priv: UnixCredentialsMessagePrivate = ...
-    def __init__(self, credentials: Credentials = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketControlMessage: ...
+    @property
+    def priv(self) -> UnixCredentialsMessagePrivate: ...
+    def __init__(self, *, credentials: Credentials | None = ...) -> None: ...
     def get_credentials(self) -> Credentials: ...
     @staticmethod
     def is_supported() -> bool: ...
@@ -11162,7 +14628,7 @@ class UnixCredentialsMessage(SocketControlMessage):
         cls, credentials: Credentials
     ) -> UnixCredentialsMessage: ...
 
-class UnixCredentialsMessageClass(GObject.GPointer):
+class UnixCredentialsMessageClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11170,12 +14636,13 @@ class UnixCredentialsMessageClass(GObject.GPointer):
 
         UnixCredentialsMessageClass()
     """
+    @property
+    def parent_class(self) -> SocketControlMessageClass: ...
 
-    parent_class: SocketControlMessageClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
+class UnixCredentialsMessagePrivate(_gi.Struct): ...
 
-class UnixCredentialsMessagePrivate(GObject.GPointer): ...
+UnixDesktopAppInfoClass = GioUnix.DesktopAppInfoClass
+UnixDesktopAppInfoLookupIface = GioUnix.DesktopAppInfoLookupIface
 
 class UnixFDList(GObject.Object):
     """
@@ -11192,20 +14659,21 @@ class UnixFDList(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: UnixFDListPrivate = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> UnixFDListPrivate: ...
     def append(self, fd: int) -> int: ...
     def get(self, index_: int) -> int: ...
     def get_length(self) -> int: ...
     @classmethod
     def new(cls) -> UnixFDList: ...
     @classmethod
-    def new_from_array(cls, fds: typing.Sequence[int]) -> UnixFDList: ...
+    def new_from_array(cls, fds: Sequence[int]) -> UnixFDList: ...
     def peek_fds(self) -> list[int]: ...
     def steal_fds(self) -> list[int]: ...
 
-class UnixFDListClass(GObject.GPointer):
+class UnixFDListClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11213,234 +14681,27 @@ class UnixFDListClass(GObject.GPointer):
 
         UnixFDListClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
+class UnixFDListPrivate(_gi.Struct): ...
 
-class UnixFDListPrivate(GObject.GPointer): ...
+UnixFDMessage = GioUnix.FDMessage
+UnixFDMessageClass = GioUnix.FDMessageClass
+UnixFDMessagePrivate = GioUnix.FDMessagePrivate
+UnixFileDescriptorBasedIface = GioUnix.FileDescriptorBasedIface
+UnixInputStream = GioUnix.InputStream
+UnixInputStreamClass = GioUnix.InputStreamClass
+UnixInputStreamPrivate = GioUnix.InputStreamPrivate
+UnixMountEntry = GioUnix.MountEntry
+UnixMountMonitor = GioUnix.MountMonitor
+UnixMountMonitorClass = GioUnix.MountMonitorClass
+UnixMountPoint = GioUnix.MountPoint
+UnixOutputStream = GioUnix.OutputStream
+UnixOutputStreamClass = GioUnix.OutputStreamClass
+UnixOutputStreamPrivate = GioUnix.OutputStreamPrivate
 
-class UnixFDMessage(SocketControlMessage):
-    """
-    :Constructors:
-
-    ::
-
-        UnixFDMessage(**properties)
-        new() -> Gio.SocketControlMessage
-        new_with_fd_list(fd_list:Gio.UnixFDList) -> Gio.SocketControlMessage
-
-    Object GUnixFDMessage
-
-    Properties from GUnixFDMessage:
-      fd-list -> GUnixFDList: fd-list
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    class Props:
-        fd_list: UnixFDList
-
-    props: Props = ...
-    parent_instance: SocketControlMessage = ...
-    priv: UnixFDMessagePrivate = ...
-    def __init__(self, fd_list: UnixFDList = ...) -> None: ...
-    def append_fd(self, fd: int) -> bool: ...
-    def get_fd_list(self) -> UnixFDList: ...
-    @classmethod
-    def new(cls) -> UnixFDMessage: ...
-    @classmethod
-    def new_with_fd_list(cls, fd_list: UnixFDList) -> UnixFDMessage: ...
-    def steal_fds(self) -> list[int]: ...
-
-class UnixFDMessageClass(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        UnixFDMessageClass()
-    """
-
-    parent_class: SocketControlMessageClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-
-class UnixFDMessagePrivate(GObject.GPointer): ...
-
-class UnixInputStream(InputStream, FileDescriptorBased, PollableInputStream):
-    """
-    :Constructors:
-
-    ::
-
-        UnixInputStream(**properties)
-        new(fd:int, close_fd:bool) -> Gio.InputStream
-
-    Object GUnixInputStream
-
-    Properties from GUnixInputStream:
-      fd -> gint: fd
-      close-fd -> gboolean: close-fd
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    class Props:
-        close_fd: bool
-        fd: int
-
-    props: Props = ...
-    parent_instance: InputStream = ...
-    priv: UnixInputStreamPrivate = ...
-    def __init__(self, close_fd: bool = ..., fd: int = ...) -> None: ...
-    def get_close_fd(self) -> bool: ...
-    def get_fd(self) -> int: ...
-    @classmethod
-    def new(cls, fd: int, close_fd: bool) -> UnixInputStream: ...
-    def set_close_fd(self, close_fd: bool) -> None: ...
-
-class UnixInputStreamClass(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        UnixInputStreamClass()
-    """
-
-    parent_class: InputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class UnixInputStreamPrivate(GObject.GPointer): ...
-
-class UnixMountEntry(GObject.GBoxed):
-    @staticmethod
-    def at(mount_path: str) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-    def compare(self, mount2: UnixMountEntry) -> int: ...
-    def copy(self) -> UnixMountEntry: ...
-    @staticmethod
-    def for_(file_path: str) -> typing.Tuple[typing.Optional[UnixMountEntry], int]: ...
-    def free(self) -> None: ...
-    def get_device_path(self) -> str: ...
-    def get_fs_type(self) -> str: ...
-    def get_mount_path(self) -> str: ...
-    def get_options(self) -> typing.Optional[str]: ...
-    def get_root_path(self) -> typing.Optional[str]: ...
-    def guess_can_eject(self) -> bool: ...
-    def guess_icon(self) -> Icon: ...
-    def guess_name(self) -> str: ...
-    def guess_should_display(self) -> bool: ...
-    def guess_symbolic_icon(self) -> Icon: ...
-    def is_readonly(self) -> bool: ...
-    def is_system_internal(self) -> bool: ...
-
-class UnixMountMonitor(GObject.Object):
-    """
-    :Constructors:
-
-    ::
-
-        UnixMountMonitor(**properties)
-        new() -> Gio.UnixMountMonitor
-
-    Object GUnixMountMonitor
-
-    Signals from GUnixMountMonitor:
-      mounts-changed ()
-      mountpoints-changed ()
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    @staticmethod
-    def get() -> UnixMountMonitor: ...
-    @classmethod
-    def new(cls) -> UnixMountMonitor: ...
-    def set_rate_limit(self, limit_msec: int) -> None: ...
-
-class UnixMountMonitorClass(GObject.GPointer): ...
-
-class UnixMountPoint(GObject.GBoxed):
-    @staticmethod
-    def at(mount_path: str) -> typing.Tuple[typing.Optional[UnixMountPoint], int]: ...
-    def compare(self, mount2: UnixMountPoint) -> int: ...
-    def copy(self) -> UnixMountPoint: ...
-    def free(self) -> None: ...
-    def get_device_path(self) -> str: ...
-    def get_fs_type(self) -> str: ...
-    def get_mount_path(self) -> str: ...
-    def get_options(self) -> typing.Optional[str]: ...
-    def guess_can_eject(self) -> bool: ...
-    def guess_icon(self) -> Icon: ...
-    def guess_name(self) -> str: ...
-    def guess_symbolic_icon(self) -> Icon: ...
-    def is_loopback(self) -> bool: ...
-    def is_readonly(self) -> bool: ...
-    def is_user_mountable(self) -> bool: ...
-
-class UnixOutputStream(OutputStream, FileDescriptorBased, PollableOutputStream):
-    """
-    :Constructors:
-
-    ::
-
-        UnixOutputStream(**properties)
-        new(fd:int, close_fd:bool) -> Gio.OutputStream
-
-    Object GUnixOutputStream
-
-    Properties from GUnixOutputStream:
-      fd -> gint: fd
-      close-fd -> gboolean: close-fd
-
-    Signals from GObject:
-      notify (GParam)
-    """
-
-    class Props:
-        close_fd: bool
-        fd: int
-
-    props: Props = ...
-    parent_instance: OutputStream = ...
-    priv: UnixOutputStreamPrivate = ...
-    def __init__(self, close_fd: bool = ..., fd: int = ...) -> None: ...
-    def get_close_fd(self) -> bool: ...
-    def get_fd(self) -> int: ...
-    @classmethod
-    def new(cls, fd: int, close_fd: bool) -> UnixOutputStream: ...
-    def set_close_fd(self, close_fd: bool) -> None: ...
-
-class UnixOutputStreamClass(GObject.GPointer):
-    """
-    :Constructors:
-
-    ::
-
-        UnixOutputStreamClass()
-    """
-
-    parent_class: OutputStreamClass = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-
-class UnixOutputStreamPrivate(GObject.GPointer): ...
-
-class UnixSocketAddress(SocketAddress, SocketConnectable):
+class UnixSocketAddress(SocketAddress):
     """
     :Constructors:
 
@@ -11465,23 +14726,30 @@ class UnixSocketAddress(SocketAddress, SocketConnectable):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(SocketAddress.Props):
+        @property
+        def abstract(self) -> bool: ...
+        @property
+        def address_type(self) -> UnixSocketAddressType: ...
+        @property
+        def path(self) -> str: ...
+        @property
+        def path_as_array(self) -> bytes: ...
 
-    class Props:
-        abstract: bool
-        address_type: UnixSocketAddressType
-        path: str
-        path_as_array: bytes
-        family: SocketFamily
-
-    props: Props = ...
-    parent_instance: SocketAddress = ...
-    priv: UnixSocketAddressPrivate = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> SocketAddress: ...
+    @property
+    def priv(self) -> UnixSocketAddressPrivate: ...
     def __init__(
         self,
+        *,
         abstract: bool = ...,
-        address_type: UnixSocketAddressType = ...,
-        path: str = ...,
-        path_as_array: typing.Sequence[int] = ...,
+        address_type: _UnixSocketAddressTypeValueType = ...,
+        path: str | None = ...,
+        path_as_array: Sequence[int] | None = ...,
     ) -> None: ...
     @staticmethod
     def abstract_names_supported() -> bool: ...
@@ -11492,13 +14760,13 @@ class UnixSocketAddress(SocketAddress, SocketConnectable):
     @classmethod
     def new(cls, path: str) -> UnixSocketAddress: ...
     @classmethod
-    def new_abstract(cls, path: typing.Sequence[int]) -> UnixSocketAddress: ...
+    def new_abstract(cls, path: Sequence[int]) -> UnixSocketAddress: ...
     @classmethod
     def new_with_type(
-        cls, path: typing.Sequence[int], type: UnixSocketAddressType
+        cls, path: Sequence[int], type: _UnixSocketAddressTypeValueType
     ) -> UnixSocketAddress: ...
 
-class UnixSocketAddressClass(GObject.GPointer):
+class UnixSocketAddressClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11506,10 +14774,10 @@ class UnixSocketAddressClass(GObject.GPointer):
 
         UnixSocketAddressClass()
     """
+    @property
+    def parent_class(self) -> SocketAddressClass: ...
 
-    parent_class: SocketAddressClass = ...
-
-class UnixSocketAddressPrivate(GObject.GPointer): ...
+class UnixSocketAddressPrivate(_gi.Struct): ...
 
 class Vfs(GObject.Object):
     """
@@ -11524,11 +14792,11 @@ class Vfs(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    def do_add_writable_namespaces(self, list: FileAttributeInfoList) -> None: ...
-    def do_get_file_for_path(self, path: str) -> File: ...
-    def do_get_file_for_uri(self, uri: str) -> File: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def do_add_writable_namespaces(self, list: FileAttributeInfoList, /) -> None: ...
+    def do_get_file_for_path(self, path: str, /) -> File: ...
+    def do_get_file_for_uri(self, uri: str, /) -> File: ...
     def do_get_supported_uri_schemes(self) -> list[str]: ...
     def do_is_active(self) -> bool: ...
     def do_local_file_add_info(
@@ -11537,20 +14805,22 @@ class Vfs(GObject.Object):
         device: int,
         attribute_matcher: FileAttributeMatcher,
         info: FileInfo,
-        cancellable: typing.Optional[Cancellable],
-        extra_data: None,
-        free_extra_data: typing.Callable[[None], None],
+        cancellable: Cancellable | None,
+        extra_data: int | Any | None,
+        free_extra_data: Callable[[Any | None], None],
+        /,
     ) -> None: ...
-    def do_local_file_moved(self, source: str, dest: str) -> None: ...
-    def do_local_file_removed(self, filename: str) -> None: ...
+    def do_local_file_moved(self, source: str, dest: str, /) -> None: ...
+    def do_local_file_removed(self, filename: str, /) -> None: ...
     def do_local_file_set_attributes(
         self,
         filename: str,
         info: FileInfo,
-        flags: FileQueryInfoFlags,
-        cancellable: typing.Optional[Cancellable] = None,
+        flags: _FileQueryInfoFlagsValueType,
+        cancellable: Cancellable | None,
+        /,
     ) -> bool: ...
-    def do_parse_name(self, parse_name: str) -> File: ...
+    def do_parse_name(self, parse_name: str, /) -> File: ...
     @staticmethod
     def get_default() -> Vfs: ...
     def get_file_for_path(self, path: str) -> File: ...
@@ -11563,15 +14833,15 @@ class Vfs(GObject.Object):
     def register_uri_scheme(
         self,
         scheme: str,
-        uri_func: typing.Optional[typing.Callable[..., typing.Optional[File]]] = None,
-        parse_name_func: typing.Optional[
-            typing.Callable[..., typing.Optional[File]]
-        ] = None,
-        *parse_name_data: typing.Any,
+        uri_func: Callable[[Vfs, str, Any | None], File | None] | None = None,
+        uri_data: Any | None = None,
+        parse_name_func: Callable[[Vfs, str, Unpack[_DataTs]], File | None]
+        | None = None,
+        *parse_name_data: Unpack[_DataTs],
     ) -> bool: ...
     def unregister_uri_scheme(self, scheme: str) -> bool: ...
 
-class VfsClass(GObject.GPointer):
+class VfsClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11579,89 +14849,146 @@ class VfsClass(GObject.GPointer):
 
         VfsClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    is_active: typing.Callable[[Vfs], bool] = ...
-    get_file_for_path: typing.Callable[[Vfs, str], File] = ...
-    get_file_for_uri: typing.Callable[[Vfs, str], File] = ...
-    get_supported_uri_schemes: typing.Callable[[Vfs], list[str]] = ...
-    parse_name: typing.Callable[[Vfs, str], File] = ...
-    local_file_add_info: typing.Callable[
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def is_active(self) -> Callable[[Vfs], bool]: ...
+    @property
+    def get_file_for_path(self) -> Callable[[Vfs, str], File]: ...
+    @property
+    def get_file_for_uri(self) -> Callable[[Vfs, str], File]: ...
+    @property
+    def get_supported_uri_schemes(self) -> Callable[[Vfs], list[str]]: ...
+    @property
+    def parse_name(self) -> Callable[[Vfs, str], File]: ...
+    @property
+    def local_file_add_info(
+        self,
+    ) -> Callable[
         [
             Vfs,
             str,
             int,
             FileAttributeMatcher,
             FileInfo,
-            typing.Optional[Cancellable],
-            None,
-            typing.Callable[[None], None],
+            Cancellable | None,
+            Any | None,
+            Callable[[Any | None], None],
         ],
         None,
-    ] = ...
-    add_writable_namespaces: typing.Callable[[Vfs, FileAttributeInfoList], None] = ...
-    local_file_set_attributes: typing.Callable[
-        [Vfs, str, FileInfo, FileQueryInfoFlags, typing.Optional[Cancellable]], bool
-    ] = ...
-    local_file_removed: typing.Callable[[Vfs, str], None] = ...
-    local_file_moved: typing.Callable[[Vfs, str, str], None] = ...
-    deserialize_icon: None = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
+    ]: ...
+    @property
+    def add_writable_namespaces(
+        self,
+    ) -> Callable[[Vfs, FileAttributeInfoList], None]: ...
+    @property
+    def local_file_set_attributes(
+        self,
+    ) -> Callable[
+        [Vfs, str, FileInfo, _FileQueryInfoFlagsValueType, Cancellable | None], bool
+    ]: ...
+    @property
+    def local_file_removed(self) -> Callable[[Vfs, str], None]: ...
+    @property
+    def local_file_moved(self) -> Callable[[Vfs, str, str], None]: ...
+    @property
+    def deserialize_icon(self) -> int: ...
 
-class Volume(GObject.GInterface):
+class Volume(GObject.GInterface, Protocol):
     """
     Interface GVolume
 
     Signals from GObject:
       notify (GParam)
     """
-
     def can_eject(self) -> bool: ...
     def can_mount(self) -> bool: ...
+    @overload
+    def eject(
+        self, flags: _MountUnmountFlagsValueType, cancellable: Cancellable | None = None
+    ) -> _gi.Async[bool]: ...
+    @overload
     def eject(
         self,
-        flags: MountUnmountFlags,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Volume, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Volume] | None,
     ) -> None: ...
     def eject_finish(self, result: AsyncResult) -> bool: ...
+    @overload
     def eject_with_operation(
         self,
-        flags: MountUnmountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Volume, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def eject_with_operation(
+        self,
+        flags: _MountUnmountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Volume] | None,
     ) -> None: ...
     def eject_with_operation_finish(self, result: AsyncResult) -> bool: ...
     def enumerate_identifiers(self) -> list[str]: ...
-    def get_activation_root(self) -> typing.Optional[File]: ...
-    def get_drive(self) -> typing.Optional[Drive]: ...
+    def get_activation_root(self) -> File | None: ...
+    def get_drive(self) -> Drive | None: ...
     def get_icon(self) -> Icon: ...
-    def get_identifier(self, kind: str) -> typing.Optional[str]: ...
-    def get_mount(self) -> typing.Optional[Mount]: ...
+    def get_identifier(self, kind: str) -> str | None: ...
+    def get_mount(self) -> Mount | None: ...
     def get_name(self) -> str: ...
-    def get_sort_key(self) -> typing.Optional[str]: ...
+    def get_sort_key(self) -> str | None: ...
     def get_symbolic_icon(self) -> Icon: ...
-    def get_uuid(self) -> typing.Optional[str]: ...
+    def get_uuid(self) -> str | None: ...
+    @overload
     def mount(
         self,
-        flags: MountMountFlags,
-        mount_operation: typing.Optional[MountOperation] = None,
-        cancellable: typing.Optional[Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+    ) -> _gi.Async[bool]: ...
+    @overload
+    def mount(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None,
+        cancellable: Cancellable | None,
+        callback: _AsyncReadyVarArgsCallback[Volume, Unpack[_DataTs]] | None,
+        *user_data: Unpack[_DataTs],
+    ) -> None: ...
+    @overload
+    def mount(
+        self,
+        flags: _MountMountFlagsValueType,
+        mount_operation: MountOperation | None = None,
+        cancellable: Cancellable | None = None,
+        *,
+        callback: _AsyncReadyVarArgsCallback[Volume] | None,
     ) -> None: ...
     def mount_finish(self, result: AsyncResult) -> bool: ...
     def should_automount(self) -> bool: ...
 
-class VolumeIface(GObject.GPointer):
+class VolumeIface(_gi.Struct):
     """
     :Constructors:
 
@@ -11669,29 +14996,85 @@ class VolumeIface(GObject.GPointer):
 
         VolumeIface()
     """
-
-    g_iface: GObject.TypeInterface = ...
-    changed: typing.Callable[[Volume], None] = ...
-    removed: typing.Callable[[Volume], None] = ...
-    get_name: typing.Callable[[Volume], str] = ...
-    get_icon: typing.Callable[[Volume], Icon] = ...
-    get_uuid: typing.Callable[[Volume], typing.Optional[str]] = ...
-    get_drive: typing.Callable[[Volume], typing.Optional[Drive]] = ...
-    get_mount: typing.Callable[[Volume], typing.Optional[Mount]] = ...
-    can_mount: typing.Callable[[Volume], bool] = ...
-    can_eject: typing.Callable[[Volume], bool] = ...
-    mount_fn: typing.Callable[..., None] = ...
-    mount_finish: typing.Callable[[Volume, AsyncResult], bool] = ...
-    eject: typing.Callable[..., None] = ...
-    eject_finish: typing.Callable[[Volume, AsyncResult], bool] = ...
-    get_identifier: typing.Callable[[Volume, str], typing.Optional[str]] = ...
-    enumerate_identifiers: typing.Callable[[Volume], list[str]] = ...
-    should_automount: typing.Callable[[Volume], bool] = ...
-    get_activation_root: typing.Callable[[Volume], typing.Optional[File]] = ...
-    eject_with_operation: typing.Callable[..., None] = ...
-    eject_with_operation_finish: typing.Callable[[Volume, AsyncResult], bool] = ...
-    get_sort_key: typing.Callable[[Volume], typing.Optional[str]] = ...
-    get_symbolic_icon: typing.Callable[[Volume], Icon] = ...
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def changed(self) -> Callable[[Volume], None]: ...
+    @property
+    def removed(self) -> Callable[[Volume], None]: ...
+    @property
+    def get_name(self) -> Callable[[Volume], str]: ...
+    @property
+    def get_icon(self) -> Callable[[Volume], Icon]: ...
+    @property
+    def get_uuid(self) -> Callable[[Volume], str | None]: ...
+    @property
+    def get_drive(self) -> Callable[[Volume], Drive | None]: ...
+    @property
+    def get_mount(self) -> Callable[[Volume], Mount | None]: ...
+    @property
+    def can_mount(self) -> Callable[[Volume], bool]: ...
+    @property
+    def can_eject(self) -> Callable[[Volume], bool]: ...
+    @property
+    def mount_fn(
+        self,
+    ) -> Callable[
+        [
+            Volume,
+            _MountMountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def mount_finish(self) -> Callable[[Volume, AsyncResult], bool]: ...
+    @property
+    def eject(
+        self,
+    ) -> Callable[
+        [
+            Volume,
+            _MountUnmountFlagsValueType,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_finish(self) -> Callable[[Volume, AsyncResult], bool]: ...
+    @property
+    def get_identifier(self) -> Callable[[Volume, str], str | None]: ...
+    @property
+    def enumerate_identifiers(self) -> Callable[[Volume], list[str]]: ...
+    @property
+    def should_automount(self) -> Callable[[Volume], bool]: ...
+    @property
+    def get_activation_root(self) -> Callable[[Volume], File | None]: ...
+    @property
+    def eject_with_operation(
+        self,
+    ) -> Callable[
+        [
+            Volume,
+            _MountUnmountFlagsValueType,
+            MountOperation | None,
+            Cancellable | None,
+            Callable[[GObject.Object | None, AsyncResult, Any | None], None] | None,
+            Any | None,
+        ],
+        None,
+    ]: ...
+    @property
+    def eject_with_operation_finish(self) -> Callable[[Volume, AsyncResult], bool]: ...
+    @property
+    def get_sort_key(self) -> Callable[[Volume], str | None]: ...
+    @property
+    def get_symbolic_icon(self) -> Callable[[Volume], Icon]: ...
 
 class VolumeMonitor(GObject.Object):
     """
@@ -11720,37 +15103,38 @@ class VolumeMonitor(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
-
-    parent_instance: GObject.Object = ...
-    priv: None = ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    @property
+    def priv(self) -> int: ...
     @staticmethod
     def adopt_orphan_mount(mount: Mount) -> Volume: ...
-    def do_drive_changed(self, drive: Drive) -> None: ...
-    def do_drive_connected(self, drive: Drive) -> None: ...
-    def do_drive_disconnected(self, drive: Drive) -> None: ...
-    def do_drive_eject_button(self, drive: Drive) -> None: ...
-    def do_drive_stop_button(self, drive: Drive) -> None: ...
+    def do_drive_changed(self, drive: Drive, /) -> None: ...
+    def do_drive_connected(self, drive: Drive, /) -> None: ...
+    def do_drive_disconnected(self, drive: Drive, /) -> None: ...
+    def do_drive_eject_button(self, drive: Drive, /) -> None: ...
+    def do_drive_stop_button(self, drive: Drive, /) -> None: ...
     def do_get_connected_drives(self) -> list[Drive]: ...
-    def do_get_mount_for_uuid(self, uuid: str) -> typing.Optional[Mount]: ...
+    def do_get_mount_for_uuid(self, uuid: str, /) -> Mount | None: ...
     def do_get_mounts(self) -> list[Mount]: ...
-    def do_get_volume_for_uuid(self, uuid: str) -> typing.Optional[Volume]: ...
+    def do_get_volume_for_uuid(self, uuid: str, /) -> Volume | None: ...
     def do_get_volumes(self) -> list[Volume]: ...
-    def do_mount_added(self, mount: Mount) -> None: ...
-    def do_mount_changed(self, mount: Mount) -> None: ...
-    def do_mount_pre_unmount(self, mount: Mount) -> None: ...
-    def do_mount_removed(self, mount: Mount) -> None: ...
-    def do_volume_added(self, volume: Volume) -> None: ...
-    def do_volume_changed(self, volume: Volume) -> None: ...
-    def do_volume_removed(self, volume: Volume) -> None: ...
+    def do_mount_added(self, mount: Mount, /) -> None: ...
+    def do_mount_changed(self, mount: Mount, /) -> None: ...
+    def do_mount_pre_unmount(self, mount: Mount, /) -> None: ...
+    def do_mount_removed(self, mount: Mount, /) -> None: ...
+    def do_volume_added(self, volume: Volume, /) -> None: ...
+    def do_volume_changed(self, volume: Volume, /) -> None: ...
+    def do_volume_removed(self, volume: Volume, /) -> None: ...
     @staticmethod
     def get() -> VolumeMonitor: ...
     def get_connected_drives(self) -> list[Drive]: ...
-    def get_mount_for_uuid(self, uuid: str) -> typing.Optional[Mount]: ...
+    def get_mount_for_uuid(self, uuid: str) -> Mount | None: ...
     def get_mounts(self) -> list[Mount]: ...
-    def get_volume_for_uuid(self, uuid: str) -> typing.Optional[Volume]: ...
+    def get_volume_for_uuid(self, uuid: str) -> Volume | None: ...
     def get_volumes(self) -> list[Volume]: ...
 
-class VolumeMonitorClass(GObject.GPointer):
+class VolumeMonitorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11758,37 +15142,46 @@ class VolumeMonitorClass(GObject.GPointer):
 
         VolumeMonitorClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    volume_added: typing.Callable[[VolumeMonitor, Volume], None] = ...
-    volume_removed: typing.Callable[[VolumeMonitor, Volume], None] = ...
-    volume_changed: typing.Callable[[VolumeMonitor, Volume], None] = ...
-    mount_added: typing.Callable[[VolumeMonitor, Mount], None] = ...
-    mount_removed: typing.Callable[[VolumeMonitor, Mount], None] = ...
-    mount_pre_unmount: typing.Callable[[VolumeMonitor, Mount], None] = ...
-    mount_changed: typing.Callable[[VolumeMonitor, Mount], None] = ...
-    drive_connected: typing.Callable[[VolumeMonitor, Drive], None] = ...
-    drive_disconnected: typing.Callable[[VolumeMonitor, Drive], None] = ...
-    drive_changed: typing.Callable[[VolumeMonitor, Drive], None] = ...
-    is_supported: typing.Callable[[], bool] = ...
-    get_connected_drives: typing.Callable[[VolumeMonitor], list[Drive]] = ...
-    get_volumes: typing.Callable[[VolumeMonitor], list[Volume]] = ...
-    get_mounts: typing.Callable[[VolumeMonitor], list[Mount]] = ...
-    get_volume_for_uuid: typing.Callable[
-        [VolumeMonitor, str], typing.Optional[Volume]
-    ] = ...
-    get_mount_for_uuid: typing.Callable[
-        [VolumeMonitor, str], typing.Optional[Mount]
-    ] = ...
-    adopt_orphan_mount: None = ...
-    drive_eject_button: typing.Callable[[VolumeMonitor, Drive], None] = ...
-    drive_stop_button: typing.Callable[[VolumeMonitor, Drive], None] = ...
-    _g_reserved1: None = ...
-    _g_reserved2: None = ...
-    _g_reserved3: None = ...
-    _g_reserved4: None = ...
-    _g_reserved5: None = ...
-    _g_reserved6: None = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def volume_added(self) -> Callable[[VolumeMonitor, Volume], None]: ...
+    @property
+    def volume_removed(self) -> Callable[[VolumeMonitor, Volume], None]: ...
+    @property
+    def volume_changed(self) -> Callable[[VolumeMonitor, Volume], None]: ...
+    @property
+    def mount_added(self) -> Callable[[VolumeMonitor, Mount], None]: ...
+    @property
+    def mount_removed(self) -> Callable[[VolumeMonitor, Mount], None]: ...
+    @property
+    def mount_pre_unmount(self) -> Callable[[VolumeMonitor, Mount], None]: ...
+    @property
+    def mount_changed(self) -> Callable[[VolumeMonitor, Mount], None]: ...
+    @property
+    def drive_connected(self) -> Callable[[VolumeMonitor, Drive], None]: ...
+    @property
+    def drive_disconnected(self) -> Callable[[VolumeMonitor, Drive], None]: ...
+    @property
+    def drive_changed(self) -> Callable[[VolumeMonitor, Drive], None]: ...
+    @property
+    def is_supported(self) -> Callable[[], bool]: ...
+    @property
+    def get_connected_drives(self) -> Callable[[VolumeMonitor], list[Drive]]: ...
+    @property
+    def get_volumes(self) -> Callable[[VolumeMonitor], list[Volume]]: ...
+    @property
+    def get_mounts(self) -> Callable[[VolumeMonitor], list[Mount]]: ...
+    @property
+    def get_volume_for_uuid(self) -> Callable[[VolumeMonitor, str], Volume | None]: ...
+    @property
+    def get_mount_for_uuid(self) -> Callable[[VolumeMonitor, str], Mount | None]: ...
+    @property
+    def adopt_orphan_mount(self) -> int: ...
+    @property
+    def drive_eject_button(self) -> Callable[[VolumeMonitor, Drive], None]: ...
+    @property
+    def drive_stop_button(self) -> Callable[[VolumeMonitor, Drive], None]: ...
 
 class ZlibCompressor(GObject.Object, Converter):
     """
@@ -11805,29 +15198,40 @@ class ZlibCompressor(GObject.Object, Converter):
       format -> GZlibCompressorFormat: format
       level -> gint: level
       file-info -> GFileInfo: file-info
+      os -> gint: os
 
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        file_info: FileInfo | None
+        @property
+        def format(self) -> ZlibCompressorFormat: ...
+        @property
+        def level(self) -> int: ...
+        os: int
 
-    class Props:
-        file_info: typing.Optional[FileInfo]
-        format: ZlibCompressorFormat
-        level: int
-
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        file_info: typing.Optional[FileInfo] = ...,
-        format: ZlibCompressorFormat = ...,
+        *,
+        file_info: FileInfo | None = ...,
+        format: _ZlibCompressorFormatValueType = ...,
         level: int = ...,
+        os: int = ...,
     ) -> None: ...
-    def get_file_info(self) -> typing.Optional[FileInfo]: ...
+    def get_file_info(self) -> FileInfo | None: ...
+    def get_os(self) -> int: ...
     @classmethod
-    def new(cls, format: ZlibCompressorFormat, level: int) -> ZlibCompressor: ...
-    def set_file_info(self, file_info: typing.Optional[FileInfo] = None) -> None: ...
+    def new(
+        cls, format: _ZlibCompressorFormatValueType, level: int
+    ) -> ZlibCompressor: ...
+    def set_file_info(self, file_info: FileInfo | None = None) -> None: ...
+    def set_os(self, os: int) -> None: ...
 
-class ZlibCompressorClass(GObject.GPointer):
+class ZlibCompressorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11835,8 +15239,8 @@ class ZlibCompressorClass(GObject.GPointer):
 
         ZlibCompressorClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class ZlibDecompressor(GObject.Object, Converter):
     """
@@ -11856,18 +15260,21 @@ class ZlibDecompressor(GObject.Object, Converter):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def file_info(self) -> FileInfo | None: ...
+        @property
+        def format(self) -> ZlibCompressorFormat: ...
 
-    class Props:
-        file_info: typing.Optional[FileInfo]
-        format: ZlibCompressorFormat
-
-    props: Props = ...
-    def __init__(self, format: ZlibCompressorFormat = ...) -> None: ...
-    def get_file_info(self) -> typing.Optional[FileInfo]: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, format: _ZlibCompressorFormatValueType = ...) -> None: ...
+    def get_file_info(self) -> FileInfo | None: ...
     @classmethod
-    def new(cls, format: ZlibCompressorFormat) -> ZlibDecompressor: ...
+    def new(cls, format: _ZlibCompressorFormatValueType) -> ZlibDecompressor: ...
 
-class ZlibDecompressorClass(GObject.GPointer):
+class ZlibDecompressorClass(_gi.Struct):
     """
     :Constructors:
 
@@ -11875,14 +15282,30 @@ class ZlibDecompressorClass(GObject.GPointer):
 
         ZlibDecompressorClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class AppInfoCreateFlags(GObject.GFlags):
     NEEDS_TERMINAL = 1
     NONE = 0
     SUPPORTS_STARTUP_NOTIFICATION = 4
     SUPPORTS_URIS = 2
+
+_AppInfoCreateFlagsLiteralType: TypeAlias = Literal[
+    "G_APP_INFO_CREATE_NEEDS_TERMINAL",
+    "G_APP_INFO_CREATE_NONE",
+    "G_APP_INFO_CREATE_SUPPORTS_STARTUP_NOTIFICATION",
+    "G_APP_INFO_CREATE_SUPPORTS_URIS",
+    "needs-terminal",
+    "none",
+    "supports-startup-notification",
+    "supports-uris",
+]
+_AppInfoCreateFlagsValueType: TypeAlias = (
+    AppInfoCreateFlags
+    | _AppInfoCreateFlagsLiteralType
+    | tuple[_AppInfoCreateFlagsLiteralType, ...]
+)
 
 class ApplicationFlags(GObject.GFlags):
     ALLOW_REPLACEMENT = 128
@@ -11897,6 +15320,36 @@ class ApplicationFlags(GObject.GFlags):
     REPLACE = 256
     SEND_ENVIRONMENT = 16
 
+_ApplicationFlagsLiteralType: TypeAlias = Literal[
+    "G_APPLICATION_ALLOW_REPLACEMENT",
+    "G_APPLICATION_CAN_OVERRIDE_APP_ID",
+    "G_APPLICATION_DEFAULT_FLAGS",
+    "G_APPLICATION_FLAGS_NONE",
+    "G_APPLICATION_HANDLES_COMMAND_LINE",
+    "G_APPLICATION_HANDLES_OPEN",
+    "G_APPLICATION_IS_LAUNCHER",
+    "G_APPLICATION_IS_SERVICE",
+    "G_APPLICATION_NON_UNIQUE",
+    "G_APPLICATION_REPLACE",
+    "G_APPLICATION_SEND_ENVIRONMENT",
+    "allow-replacement",
+    "can-override-app-id",
+    "default-flags",
+    "flags-none",
+    "handles-command-line",
+    "handles-open",
+    "is-launcher",
+    "is-service",
+    "non-unique",
+    "replace",
+    "send-environment",
+]
+_ApplicationFlagsValueType: TypeAlias = (
+    ApplicationFlags
+    | _ApplicationFlagsLiteralType
+    | tuple[_ApplicationFlagsLiteralType, ...]
+)
+
 class AskPasswordFlags(GObject.GFlags):
     ANONYMOUS_SUPPORTED = 16
     NEED_DOMAIN = 4
@@ -11905,29 +15358,113 @@ class AskPasswordFlags(GObject.GFlags):
     SAVING_SUPPORTED = 8
     TCRYPT = 32
 
+_AskPasswordFlagsLiteralType: TypeAlias = Literal[
+    "G_ASK_PASSWORD_ANONYMOUS_SUPPORTED",
+    "G_ASK_PASSWORD_NEED_DOMAIN",
+    "G_ASK_PASSWORD_NEED_PASSWORD",
+    "G_ASK_PASSWORD_NEED_USERNAME",
+    "G_ASK_PASSWORD_SAVING_SUPPORTED",
+    "G_ASK_PASSWORD_TCRYPT",
+    "anonymous-supported",
+    "need-domain",
+    "need-password",
+    "need-username",
+    "saving-supported",
+    "tcrypt",
+]
+_AskPasswordFlagsValueType: TypeAlias = (
+    AskPasswordFlags
+    | _AskPasswordFlagsLiteralType
+    | tuple[_AskPasswordFlagsLiteralType, ...]
+)
+
 class BusNameOwnerFlags(GObject.GFlags):
     ALLOW_REPLACEMENT = 1
     DO_NOT_QUEUE = 4
     NONE = 0
     REPLACE = 2
 
+_BusNameOwnerFlagsLiteralType: TypeAlias = Literal[
+    "G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT",
+    "G_BUS_NAME_OWNER_FLAGS_DO_NOT_QUEUE",
+    "G_BUS_NAME_OWNER_FLAGS_NONE",
+    "G_BUS_NAME_OWNER_FLAGS_REPLACE",
+    "allow-replacement",
+    "do-not-queue",
+    "none",
+    "replace",
+]
+_BusNameOwnerFlagsValueType: TypeAlias = (
+    BusNameOwnerFlags
+    | _BusNameOwnerFlagsLiteralType
+    | tuple[_BusNameOwnerFlagsLiteralType, ...]
+)
+
 class BusNameWatcherFlags(GObject.GFlags):
     AUTO_START = 1
     NONE = 0
+
+_BusNameWatcherFlagsLiteralType: TypeAlias = Literal[
+    "G_BUS_NAME_WATCHER_FLAGS_AUTO_START",
+    "G_BUS_NAME_WATCHER_FLAGS_NONE",
+    "auto-start",
+    "none",
+]
+_BusNameWatcherFlagsValueType: TypeAlias = (
+    BusNameWatcherFlags
+    | _BusNameWatcherFlagsLiteralType
+    | tuple[_BusNameWatcherFlagsLiteralType, ...]
+)
 
 class ConverterFlags(GObject.GFlags):
     FLUSH = 2
     INPUT_AT_END = 1
     NONE = 0
 
+_ConverterFlagsLiteralType: TypeAlias = Literal[
+    "G_CONVERTER_FLUSH",
+    "G_CONVERTER_INPUT_AT_END",
+    "G_CONVERTER_NO_FLAGS",
+    "flush",
+    "input-at-end",
+    "none",
+]
+_ConverterFlagsValueType: TypeAlias = (
+    ConverterFlags | _ConverterFlagsLiteralType | tuple[_ConverterFlagsLiteralType, ...]
+)
+
 class DBusCallFlags(GObject.GFlags):
     ALLOW_INTERACTIVE_AUTHORIZATION = 2
     NONE = 0
     NO_AUTO_START = 1
 
+_DBusCallFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_CALL_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION",
+    "G_DBUS_CALL_FLAGS_NONE",
+    "G_DBUS_CALL_FLAGS_NO_AUTO_START",
+    "allow-interactive-authorization",
+    "no-auto-start",
+    "none",
+]
+_DBusCallFlagsValueType: TypeAlias = (
+    DBusCallFlags | _DBusCallFlagsLiteralType | tuple[_DBusCallFlagsLiteralType, ...]
+)
+
 class DBusCapabilityFlags(GObject.GFlags):
     NONE = 0
     UNIX_FD_PASSING = 1
+
+_DBusCapabilityFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_CAPABILITY_FLAGS_NONE",
+    "G_DBUS_CAPABILITY_FLAGS_UNIX_FD_PASSING",
+    "none",
+    "unix-fd-passing",
+]
+_DBusCapabilityFlagsValueType: TypeAlias = (
+    DBusCapabilityFlags
+    | _DBusCapabilityFlagsLiteralType
+    | tuple[_DBusCapabilityFlagsLiteralType, ...]
+)
 
 class DBusConnectionFlags(GObject.GFlags):
     AUTHENTICATION_ALLOW_ANONYMOUS = 4
@@ -11939,9 +15476,45 @@ class DBusConnectionFlags(GObject.GFlags):
     MESSAGE_BUS_CONNECTION = 8
     NONE = 0
 
+_DBusConnectionFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS",
+    "G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT",
+    "G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_REQUIRE_SAME_USER",
+    "G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_SERVER",
+    "G_DBUS_CONNECTION_FLAGS_CROSS_NAMESPACE",
+    "G_DBUS_CONNECTION_FLAGS_DELAY_MESSAGE_PROCESSING",
+    "G_DBUS_CONNECTION_FLAGS_MESSAGE_BUS_CONNECTION",
+    "G_DBUS_CONNECTION_FLAGS_NONE",
+    "authentication-allow-anonymous",
+    "authentication-client",
+    "authentication-require-same-user",
+    "authentication-server",
+    "cross-namespace",
+    "delay-message-processing",
+    "message-bus-connection",
+    "none",
+]
+_DBusConnectionFlagsValueType: TypeAlias = (
+    DBusConnectionFlags
+    | _DBusConnectionFlagsLiteralType
+    | tuple[_DBusConnectionFlagsLiteralType, ...]
+)
+
 class DBusInterfaceSkeletonFlags(GObject.GFlags):
     HANDLE_METHOD_INVOCATIONS_IN_THREAD = 1
     NONE = 0
+
+_DBusInterfaceSkeletonFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_INTERFACE_SKELETON_FLAGS_HANDLE_METHOD_INVOCATIONS_IN_THREAD",
+    "G_DBUS_INTERFACE_SKELETON_FLAGS_NONE",
+    "handle-method-invocations-in-thread",
+    "none",
+]
+_DBusInterfaceSkeletonFlagsValueType: TypeAlias = (
+    DBusInterfaceSkeletonFlags
+    | _DBusInterfaceSkeletonFlagsLiteralType
+    | tuple[_DBusInterfaceSkeletonFlagsLiteralType, ...]
+)
 
 class DBusMessageFlags(GObject.GFlags):
     ALLOW_INTERACTIVE_AUTHORIZATION = 4
@@ -11949,14 +15522,56 @@ class DBusMessageFlags(GObject.GFlags):
     NO_AUTO_START = 2
     NO_REPLY_EXPECTED = 1
 
+_DBusMessageFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_MESSAGE_FLAGS_ALLOW_INTERACTIVE_AUTHORIZATION",
+    "G_DBUS_MESSAGE_FLAGS_NONE",
+    "G_DBUS_MESSAGE_FLAGS_NO_AUTO_START",
+    "G_DBUS_MESSAGE_FLAGS_NO_REPLY_EXPECTED",
+    "allow-interactive-authorization",
+    "no-auto-start",
+    "no-reply-expected",
+    "none",
+]
+_DBusMessageFlagsValueType: TypeAlias = (
+    DBusMessageFlags
+    | _DBusMessageFlagsLiteralType
+    | tuple[_DBusMessageFlagsLiteralType, ...]
+)
+
 class DBusObjectManagerClientFlags(GObject.GFlags):
     DO_NOT_AUTO_START = 1
     NONE = 0
+
+_DBusObjectManagerClientFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_DO_NOT_AUTO_START",
+    "G_DBUS_OBJECT_MANAGER_CLIENT_FLAGS_NONE",
+    "do-not-auto-start",
+    "none",
+]
+_DBusObjectManagerClientFlagsValueType: TypeAlias = (
+    DBusObjectManagerClientFlags
+    | _DBusObjectManagerClientFlagsLiteralType
+    | tuple[_DBusObjectManagerClientFlagsLiteralType, ...]
+)
 
 class DBusPropertyInfoFlags(GObject.GFlags):
     NONE = 0
     READABLE = 1
     WRITABLE = 2
+
+_DBusPropertyInfoFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_PROPERTY_INFO_FLAGS_NONE",
+    "G_DBUS_PROPERTY_INFO_FLAGS_READABLE",
+    "G_DBUS_PROPERTY_INFO_FLAGS_WRITABLE",
+    "none",
+    "readable",
+    "writable",
+]
+_DBusPropertyInfoFlagsValueType: TypeAlias = (
+    DBusPropertyInfoFlags
+    | _DBusPropertyInfoFlagsLiteralType
+    | tuple[_DBusPropertyInfoFlagsLiteralType, ...]
+)
 
 class DBusProxyFlags(GObject.GFlags):
     DO_NOT_AUTO_START = 4
@@ -11967,9 +15582,41 @@ class DBusProxyFlags(GObject.GFlags):
     NONE = 0
     NO_MATCH_RULE = 32
 
+_DBusProxyFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START",
+    "G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START_AT_CONSTRUCTION",
+    "G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS",
+    "G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES",
+    "G_DBUS_PROXY_FLAGS_GET_INVALIDATED_PROPERTIES",
+    "G_DBUS_PROXY_FLAGS_NONE",
+    "G_DBUS_PROXY_FLAGS_NO_MATCH_RULE",
+    "do-not-auto-start",
+    "do-not-auto-start-at-construction",
+    "do-not-connect-signals",
+    "do-not-load-properties",
+    "get-invalidated-properties",
+    "no-match-rule",
+    "none",
+]
+_DBusProxyFlagsValueType: TypeAlias = (
+    DBusProxyFlags | _DBusProxyFlagsLiteralType | tuple[_DBusProxyFlagsLiteralType, ...]
+)
+
 class DBusSendMessageFlags(GObject.GFlags):
     NONE = 0
     PRESERVE_SERIAL = 1
+
+_DBusSendMessageFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_SEND_MESSAGE_FLAGS_NONE",
+    "G_DBUS_SEND_MESSAGE_FLAGS_PRESERVE_SERIAL",
+    "none",
+    "preserve-serial",
+]
+_DBusSendMessageFlagsValueType: TypeAlias = (
+    DBusSendMessageFlags
+    | _DBusSendMessageFlagsLiteralType
+    | tuple[_DBusSendMessageFlagsLiteralType, ...]
+)
 
 class DBusServerFlags(GObject.GFlags):
     AUTHENTICATION_ALLOW_ANONYMOUS = 2
@@ -11977,23 +15624,88 @@ class DBusServerFlags(GObject.GFlags):
     NONE = 0
     RUN_IN_THREAD = 1
 
+_DBusServerFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_SERVER_FLAGS_AUTHENTICATION_ALLOW_ANONYMOUS",
+    "G_DBUS_SERVER_FLAGS_AUTHENTICATION_REQUIRE_SAME_USER",
+    "G_DBUS_SERVER_FLAGS_NONE",
+    "G_DBUS_SERVER_FLAGS_RUN_IN_THREAD",
+    "authentication-allow-anonymous",
+    "authentication-require-same-user",
+    "none",
+    "run-in-thread",
+]
+_DBusServerFlagsValueType: TypeAlias = (
+    DBusServerFlags
+    | _DBusServerFlagsLiteralType
+    | tuple[_DBusServerFlagsLiteralType, ...]
+)
+
 class DBusSignalFlags(GObject.GFlags):
     MATCH_ARG0_NAMESPACE = 2
     MATCH_ARG0_PATH = 4
     NONE = 0
     NO_MATCH_RULE = 1
 
+_DBusSignalFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_SIGNAL_FLAGS_MATCH_ARG0_NAMESPACE",
+    "G_DBUS_SIGNAL_FLAGS_MATCH_ARG0_PATH",
+    "G_DBUS_SIGNAL_FLAGS_NONE",
+    "G_DBUS_SIGNAL_FLAGS_NO_MATCH_RULE",
+    "match-arg0-namespace",
+    "match-arg0-path",
+    "no-match-rule",
+    "none",
+]
+_DBusSignalFlagsValueType: TypeAlias = (
+    DBusSignalFlags
+    | _DBusSignalFlagsLiteralType
+    | tuple[_DBusSignalFlagsLiteralType, ...]
+)
+
 class DBusSubtreeFlags(GObject.GFlags):
     DISPATCH_TO_UNENUMERATED_NODES = 1
     NONE = 0
 
+_DBusSubtreeFlagsLiteralType: TypeAlias = Literal[
+    "G_DBUS_SUBTREE_FLAGS_DISPATCH_TO_UNENUMERATED_NODES",
+    "G_DBUS_SUBTREE_FLAGS_NONE",
+    "dispatch-to-unenumerated-nodes",
+    "none",
+]
+_DBusSubtreeFlagsValueType: TypeAlias = (
+    DBusSubtreeFlags
+    | _DBusSubtreeFlagsLiteralType
+    | tuple[_DBusSubtreeFlagsLiteralType, ...]
+)
+
 class DriveStartFlags(GObject.GFlags):
     NONE = 0
+
+_DriveStartFlagsLiteralType: TypeAlias = Literal["G_DRIVE_START_NONE", "none"]
+_DriveStartFlagsValueType: TypeAlias = (
+    DriveStartFlags
+    | _DriveStartFlagsLiteralType
+    | tuple[_DriveStartFlagsLiteralType, ...]
+)
 
 class FileAttributeInfoFlags(GObject.GFlags):
     COPY_WHEN_MOVED = 2
     COPY_WITH_FILE = 1
     NONE = 0
+
+_FileAttributeInfoFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_ATTRIBUTE_INFO_COPY_WHEN_MOVED",
+    "G_FILE_ATTRIBUTE_INFO_COPY_WITH_FILE",
+    "G_FILE_ATTRIBUTE_INFO_NONE",
+    "copy-when-moved",
+    "copy-with-file",
+    "none",
+]
+_FileAttributeInfoFlagsValueType: TypeAlias = (
+    FileAttributeInfoFlags
+    | _FileAttributeInfoFlagsLiteralType
+    | tuple[_FileAttributeInfoFlagsLiteralType, ...]
+)
 
 class FileCopyFlags(GObject.GFlags):
     ALL_METADATA = 8
@@ -12005,16 +15717,68 @@ class FileCopyFlags(GObject.GFlags):
     TARGET_DEFAULT_MODIFIED_TIME = 64
     TARGET_DEFAULT_PERMS = 32
 
+_FileCopyFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_COPY_ALL_METADATA",
+    "G_FILE_COPY_BACKUP",
+    "G_FILE_COPY_NOFOLLOW_SYMLINKS",
+    "G_FILE_COPY_NONE",
+    "G_FILE_COPY_NO_FALLBACK_FOR_MOVE",
+    "G_FILE_COPY_OVERWRITE",
+    "G_FILE_COPY_TARGET_DEFAULT_MODIFIED_TIME",
+    "G_FILE_COPY_TARGET_DEFAULT_PERMS",
+    "all-metadata",
+    "backup",
+    "no-fallback-for-move",
+    "nofollow-symlinks",
+    "none",
+    "overwrite",
+    "target-default-modified-time",
+    "target-default-perms",
+]
+_FileCopyFlagsValueType: TypeAlias = (
+    FileCopyFlags | _FileCopyFlagsLiteralType | tuple[_FileCopyFlagsLiteralType, ...]
+)
+
 class FileCreateFlags(GObject.GFlags):
     NONE = 0
     PRIVATE = 1
     REPLACE_DESTINATION = 2
+
+_FileCreateFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_CREATE_NONE",
+    "G_FILE_CREATE_PRIVATE",
+    "G_FILE_CREATE_REPLACE_DESTINATION",
+    "none",
+    "private",
+    "replace-destination",
+]
+_FileCreateFlagsValueType: TypeAlias = (
+    FileCreateFlags
+    | _FileCreateFlagsLiteralType
+    | tuple[_FileCreateFlagsLiteralType, ...]
+)
 
 class FileMeasureFlags(GObject.GFlags):
     APPARENT_SIZE = 4
     NONE = 0
     NO_XDEV = 8
     REPORT_ANY_ERROR = 2
+
+_FileMeasureFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_MEASURE_APPARENT_SIZE",
+    "G_FILE_MEASURE_NONE",
+    "G_FILE_MEASURE_NO_XDEV",
+    "G_FILE_MEASURE_REPORT_ANY_ERROR",
+    "apparent-size",
+    "no-xdev",
+    "none",
+    "report-any-error",
+]
+_FileMeasureFlagsValueType: TypeAlias = (
+    FileMeasureFlags
+    | _FileMeasureFlagsLiteralType
+    | tuple[_FileMeasureFlagsLiteralType, ...]
+)
 
 class FileMonitorFlags(GObject.GFlags):
     NONE = 0
@@ -12023,9 +15787,39 @@ class FileMonitorFlags(GObject.GFlags):
     WATCH_MOUNTS = 1
     WATCH_MOVES = 8
 
+_FileMonitorFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_MONITOR_NONE",
+    "G_FILE_MONITOR_SEND_MOVED",
+    "G_FILE_MONITOR_WATCH_HARD_LINKS",
+    "G_FILE_MONITOR_WATCH_MOUNTS",
+    "G_FILE_MONITOR_WATCH_MOVES",
+    "none",
+    "send-moved",
+    "watch-hard-links",
+    "watch-mounts",
+    "watch-moves",
+]
+_FileMonitorFlagsValueType: TypeAlias = (
+    FileMonitorFlags
+    | _FileMonitorFlagsLiteralType
+    | tuple[_FileMonitorFlagsLiteralType, ...]
+)
+
 class FileQueryInfoFlags(GObject.GFlags):
     NOFOLLOW_SYMLINKS = 1
     NONE = 0
+
+_FileQueryInfoFlagsLiteralType: TypeAlias = Literal[
+    "G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS",
+    "G_FILE_QUERY_INFO_NONE",
+    "nofollow-symlinks",
+    "none",
+]
+_FileQueryInfoFlagsValueType: TypeAlias = (
+    FileQueryInfoFlags
+    | _FileQueryInfoFlagsLiteralType
+    | tuple[_FileQueryInfoFlagsLiteralType, ...]
+)
 
 class IOStreamSpliceFlags(GObject.GFlags):
     CLOSE_STREAM1 = 1
@@ -12033,29 +15827,105 @@ class IOStreamSpliceFlags(GObject.GFlags):
     NONE = 0
     WAIT_FOR_BOTH = 4
 
+_IOStreamSpliceFlagsLiteralType: TypeAlias = Literal[
+    "G_IO_STREAM_SPLICE_CLOSE_STREAM1",
+    "G_IO_STREAM_SPLICE_CLOSE_STREAM2",
+    "G_IO_STREAM_SPLICE_NONE",
+    "G_IO_STREAM_SPLICE_WAIT_FOR_BOTH",
+    "close-stream1",
+    "close-stream2",
+    "none",
+    "wait-for-both",
+]
+_IOStreamSpliceFlagsValueType: TypeAlias = (
+    IOStreamSpliceFlags
+    | _IOStreamSpliceFlagsLiteralType
+    | tuple[_IOStreamSpliceFlagsLiteralType, ...]
+)
+
 class MountMountFlags(GObject.GFlags):
     NONE = 0
+
+_MountMountFlagsLiteralType: TypeAlias = Literal["G_MOUNT_MOUNT_NONE", "none"]
+_MountMountFlagsValueType: TypeAlias = (
+    MountMountFlags
+    | _MountMountFlagsLiteralType
+    | tuple[_MountMountFlagsLiteralType, ...]
+)
 
 class MountUnmountFlags(GObject.GFlags):
     FORCE = 1
     NONE = 0
+
+_MountUnmountFlagsLiteralType: TypeAlias = Literal[
+    "G_MOUNT_UNMOUNT_FORCE", "G_MOUNT_UNMOUNT_NONE", "force", "none"
+]
+_MountUnmountFlagsValueType: TypeAlias = (
+    MountUnmountFlags
+    | _MountUnmountFlagsLiteralType
+    | tuple[_MountUnmountFlagsLiteralType, ...]
+)
 
 class OutputStreamSpliceFlags(GObject.GFlags):
     CLOSE_SOURCE = 1
     CLOSE_TARGET = 2
     NONE = 0
 
+_OutputStreamSpliceFlagsLiteralType: TypeAlias = Literal[
+    "G_OUTPUT_STREAM_SPLICE_CLOSE_SOURCE",
+    "G_OUTPUT_STREAM_SPLICE_CLOSE_TARGET",
+    "G_OUTPUT_STREAM_SPLICE_NONE",
+    "close-source",
+    "close-target",
+    "none",
+]
+_OutputStreamSpliceFlagsValueType: TypeAlias = (
+    OutputStreamSpliceFlags
+    | _OutputStreamSpliceFlagsLiteralType
+    | tuple[_OutputStreamSpliceFlagsLiteralType, ...]
+)
+
 class ResolverNameLookupFlags(GObject.GFlags):
     DEFAULT = 0
     IPV4_ONLY = 1
     IPV6_ONLY = 2
 
+_ResolverNameLookupFlagsLiteralType: TypeAlias = Literal[
+    "G_RESOLVER_NAME_LOOKUP_FLAGS_DEFAULT",
+    "G_RESOLVER_NAME_LOOKUP_FLAGS_IPV4_ONLY",
+    "G_RESOLVER_NAME_LOOKUP_FLAGS_IPV6_ONLY",
+    "default",
+    "ipv4-only",
+    "ipv6-only",
+]
+_ResolverNameLookupFlagsValueType: TypeAlias = (
+    ResolverNameLookupFlags
+    | _ResolverNameLookupFlagsLiteralType
+    | tuple[_ResolverNameLookupFlagsLiteralType, ...]
+)
+
 class ResourceFlags(GObject.GFlags):
     COMPRESSED = 1
     NONE = 0
 
+_ResourceFlagsLiteralType: TypeAlias = Literal[
+    "G_RESOURCE_FLAGS_COMPRESSED", "G_RESOURCE_FLAGS_NONE", "compressed", "none"
+]
+_ResourceFlagsValueType: TypeAlias = (
+    ResourceFlags | _ResourceFlagsLiteralType | tuple[_ResourceFlagsLiteralType, ...]
+)
+
 class ResourceLookupFlags(GObject.GFlags):
     NONE = 0
+
+_ResourceLookupFlagsLiteralType: TypeAlias = Literal[
+    "G_RESOURCE_LOOKUP_FLAGS_NONE", "none"
+]
+_ResourceLookupFlagsValueType: TypeAlias = (
+    ResourceLookupFlags
+    | _ResourceLookupFlagsLiteralType
+    | tuple[_ResourceLookupFlagsLiteralType, ...]
+)
 
 class SettingsBindFlags(GObject.GFlags):
     DEFAULT = 0
@@ -12065,11 +15935,45 @@ class SettingsBindFlags(GObject.GFlags):
     NO_SENSITIVITY = 4
     SET = 2
 
+_SettingsBindFlagsLiteralType: TypeAlias = Literal[
+    "G_SETTINGS_BIND_DEFAULT",
+    "G_SETTINGS_BIND_GET",
+    "G_SETTINGS_BIND_GET_NO_CHANGES",
+    "G_SETTINGS_BIND_INVERT_BOOLEAN",
+    "G_SETTINGS_BIND_NO_SENSITIVITY",
+    "G_SETTINGS_BIND_SET",
+    "default",
+    "get",
+    "get-no-changes",
+    "invert-boolean",
+    "no-sensitivity",
+    "set",
+]
+_SettingsBindFlagsValueType: TypeAlias = (
+    SettingsBindFlags
+    | _SettingsBindFlagsLiteralType
+    | tuple[_SettingsBindFlagsLiteralType, ...]
+)
+
 class SocketMsgFlags(GObject.GFlags):
     DONTROUTE = 4
     NONE = 0
     OOB = 1
     PEEK = 2
+
+_SocketMsgFlagsLiteralType: TypeAlias = Literal[
+    "G_SOCKET_MSG_DONTROUTE",
+    "G_SOCKET_MSG_NONE",
+    "G_SOCKET_MSG_OOB",
+    "G_SOCKET_MSG_PEEK",
+    "dontroute",
+    "none",
+    "oob",
+    "peek",
+]
+_SocketMsgFlagsValueType: TypeAlias = (
+    SocketMsgFlags | _SocketMsgFlagsLiteralType | tuple[_SocketMsgFlagsLiteralType, ...]
+)
 
 class SubprocessFlags(GObject.GFlags):
     INHERIT_FDS = 128
@@ -12083,8 +15987,41 @@ class SubprocessFlags(GObject.GFlags):
     STDOUT_PIPE = 4
     STDOUT_SILENCE = 8
 
+_SubprocessFlagsLiteralType: TypeAlias = Literal[
+    "G_SUBPROCESS_FLAGS_INHERIT_FDS",
+    "G_SUBPROCESS_FLAGS_NONE",
+    "G_SUBPROCESS_FLAGS_SEARCH_PATH_FROM_ENVP",
+    "G_SUBPROCESS_FLAGS_STDERR_MERGE",
+    "G_SUBPROCESS_FLAGS_STDERR_PIPE",
+    "G_SUBPROCESS_FLAGS_STDERR_SILENCE",
+    "G_SUBPROCESS_FLAGS_STDIN_INHERIT",
+    "G_SUBPROCESS_FLAGS_STDIN_PIPE",
+    "G_SUBPROCESS_FLAGS_STDOUT_PIPE",
+    "G_SUBPROCESS_FLAGS_STDOUT_SILENCE",
+    "inherit-fds",
+    "none",
+    "search-path-from-envp",
+    "stderr-merge",
+    "stderr-pipe",
+    "stderr-silence",
+    "stdin-inherit",
+    "stdin-pipe",
+    "stdout-pipe",
+    "stdout-silence",
+]
+_SubprocessFlagsValueType: TypeAlias = (
+    SubprocessFlags
+    | _SubprocessFlagsLiteralType
+    | tuple[_SubprocessFlagsLiteralType, ...]
+)
+
 class TestDBusFlags(GObject.GFlags):
     NONE = 0
+
+_TestDBusFlagsLiteralType: TypeAlias = Literal["G_TEST_DBUS_NONE", "none"]
+_TestDBusFlagsValueType: TypeAlias = (
+    TestDBusFlags | _TestDBusFlagsLiteralType | tuple[_TestDBusFlagsLiteralType, ...]
+)
 
 class TlsCertificateFlags(GObject.GFlags):
     BAD_IDENTITY = 2
@@ -12097,8 +16034,43 @@ class TlsCertificateFlags(GObject.GFlags):
     UNKNOWN_CA = 1
     VALIDATE_ALL = 127
 
+_TlsCertificateFlagsLiteralType: TypeAlias = Literal[
+    "G_TLS_CERTIFICATE_BAD_IDENTITY",
+    "G_TLS_CERTIFICATE_EXPIRED",
+    "G_TLS_CERTIFICATE_GENERIC_ERROR",
+    "G_TLS_CERTIFICATE_INSECURE",
+    "G_TLS_CERTIFICATE_NOT_ACTIVATED",
+    "G_TLS_CERTIFICATE_NO_FLAGS",
+    "G_TLS_CERTIFICATE_REVOKED",
+    "G_TLS_CERTIFICATE_UNKNOWN_CA",
+    "G_TLS_CERTIFICATE_VALIDATE_ALL",
+    "bad-identity",
+    "expired",
+    "generic-error",
+    "insecure",
+    "no-flags",
+    "not-activated",
+    "revoked",
+    "unknown-ca",
+    "validate-all",
+]
+_TlsCertificateFlagsValueType: TypeAlias = (
+    TlsCertificateFlags
+    | _TlsCertificateFlagsLiteralType
+    | tuple[_TlsCertificateFlagsLiteralType, ...]
+)
+
 class TlsDatabaseVerifyFlags(GObject.GFlags):
     NONE = 0
+
+_TlsDatabaseVerifyFlagsLiteralType: TypeAlias = Literal[
+    "G_TLS_DATABASE_VERIFY_NONE", "none"
+]
+_TlsDatabaseVerifyFlagsValueType: TypeAlias = (
+    TlsDatabaseVerifyFlags
+    | _TlsDatabaseVerifyFlagsLiteralType
+    | tuple[_TlsDatabaseVerifyFlagsLiteralType, ...]
+)
 
 class TlsPasswordFlags(GObject.GFlags):
     FINAL_TRY = 8
@@ -12109,17 +16081,63 @@ class TlsPasswordFlags(GObject.GFlags):
     PKCS11_USER = 16
     RETRY = 2
 
+_TlsPasswordFlagsLiteralType: TypeAlias = Literal[
+    "G_TLS_PASSWORD_FINAL_TRY",
+    "G_TLS_PASSWORD_MANY_TRIES",
+    "G_TLS_PASSWORD_NONE",
+    "G_TLS_PASSWORD_PKCS11_CONTEXT_SPECIFIC",
+    "G_TLS_PASSWORD_PKCS11_SECURITY_OFFICER",
+    "G_TLS_PASSWORD_PKCS11_USER",
+    "G_TLS_PASSWORD_RETRY",
+    "final-try",
+    "many-tries",
+    "none",
+    "pkcs11-context-specific",
+    "pkcs11-security-officer",
+    "pkcs11-user",
+    "retry",
+]
+_TlsPasswordFlagsValueType: TypeAlias = (
+    TlsPasswordFlags
+    | _TlsPasswordFlagsLiteralType
+    | tuple[_TlsPasswordFlagsLiteralType, ...]
+)
+
 class BusType(GObject.GEnum):
     NONE = 0
     SESSION = 2
     STARTER = -1
     SYSTEM = 1
 
+_BusTypeLiteralType: TypeAlias = Literal[
+    "G_BUS_TYPE_NONE",
+    "G_BUS_TYPE_SESSION",
+    "G_BUS_TYPE_STARTER",
+    "G_BUS_TYPE_SYSTEM",
+    "none",
+    "session",
+    "starter",
+    "system",
+]
+_BusTypeValueType: TypeAlias = BusType | _BusTypeLiteralType
+
 class ConverterResult(GObject.GEnum):
     CONVERTED = 1
     ERROR = 0
     FINISHED = 2
     FLUSHED = 3
+
+_ConverterResultLiteralType: TypeAlias = Literal[
+    "G_CONVERTER_CONVERTED",
+    "G_CONVERTER_ERROR",
+    "G_CONVERTER_FINISHED",
+    "G_CONVERTER_FLUSHED",
+    "converted",
+    "error",
+    "finished",
+    "flushed",
+]
+_ConverterResultValueType: TypeAlias = ConverterResult | _ConverterResultLiteralType
 
 class CredentialsType(GObject.GEnum):
     APPLE_XUCRED = 6
@@ -12130,6 +16148,26 @@ class CredentialsType(GObject.GEnum):
     OPENBSD_SOCKPEERCRED = 3
     SOLARIS_UCRED = 4
     WIN32_PID = 7
+
+_CredentialsTypeLiteralType: TypeAlias = Literal[
+    "G_CREDENTIALS_TYPE_APPLE_XUCRED",
+    "G_CREDENTIALS_TYPE_FREEBSD_CMSGCRED",
+    "G_CREDENTIALS_TYPE_INVALID",
+    "G_CREDENTIALS_TYPE_LINUX_UCRED",
+    "G_CREDENTIALS_TYPE_NETBSD_UNPCBID",
+    "G_CREDENTIALS_TYPE_OPENBSD_SOCKPEERCRED",
+    "G_CREDENTIALS_TYPE_SOLARIS_UCRED",
+    "G_CREDENTIALS_TYPE_WIN32_PID",
+    "apple-xucred",
+    "freebsd-cmsgcred",
+    "invalid",
+    "linux-ucred",
+    "netbsd-unpcbid",
+    "openbsd-sockpeercred",
+    "solaris-ucred",
+    "win32-pid",
+]
+_CredentialsTypeValueType: TypeAlias = CredentialsType | _CredentialsTypeLiteralType
 
 class DBusError(GObject.GEnum):
     ACCESS_DENIED = 9
@@ -12180,7 +16218,7 @@ class DBusError(GObject.GEnum):
     @staticmethod
     def encode_gerror(error: GLib.Error) -> str: ...
     @staticmethod
-    def get_remote_error(error: GLib.Error) -> typing.Optional[str]: ...
+    def get_remote_error(error: GLib.Error) -> str | None: ...
     @staticmethod
     def is_remote_error(error: GLib.Error) -> bool: ...
     @staticmethod
@@ -12197,7 +16235,7 @@ class DBusError(GObject.GEnum):
     def register_error_domain(
         error_domain_quark_name: str,
         quark_volatile: int,
-        entries: typing.Sequence[DBusErrorEntry],
+        entries: Sequence[DBusErrorEntry],
     ) -> None: ...
     @staticmethod
     def strip_remote_error(error: GLib.Error) -> bool: ...
@@ -12206,9 +16244,113 @@ class DBusError(GObject.GEnum):
         error_domain: int, error_code: int, dbus_error_name: str
     ) -> bool: ...
 
+_DBusErrorLiteralType: TypeAlias = Literal[
+    "G_DBUS_ERROR_ACCESS_DENIED",
+    "G_DBUS_ERROR_ADDRESS_IN_USE",
+    "G_DBUS_ERROR_ADT_AUDIT_DATA_UNKNOWN",
+    "G_DBUS_ERROR_AUTH_FAILED",
+    "G_DBUS_ERROR_BAD_ADDRESS",
+    "G_DBUS_ERROR_DISCONNECTED",
+    "G_DBUS_ERROR_FAILED",
+    "G_DBUS_ERROR_FILE_EXISTS",
+    "G_DBUS_ERROR_FILE_NOT_FOUND",
+    "G_DBUS_ERROR_INVALID_ARGS",
+    "G_DBUS_ERROR_INVALID_FILE_CONTENT",
+    "G_DBUS_ERROR_INVALID_SIGNATURE",
+    "G_DBUS_ERROR_IO_ERROR",
+    "G_DBUS_ERROR_LIMITS_EXCEEDED",
+    "G_DBUS_ERROR_MATCH_RULE_INVALID",
+    "G_DBUS_ERROR_MATCH_RULE_NOT_FOUND",
+    "G_DBUS_ERROR_NAME_HAS_NO_OWNER",
+    "G_DBUS_ERROR_NOT_SUPPORTED",
+    "G_DBUS_ERROR_NO_MEMORY",
+    "G_DBUS_ERROR_NO_NETWORK",
+    "G_DBUS_ERROR_NO_REPLY",
+    "G_DBUS_ERROR_NO_SERVER",
+    "G_DBUS_ERROR_OBJECT_PATH_IN_USE",
+    "G_DBUS_ERROR_PROPERTY_READ_ONLY",
+    "G_DBUS_ERROR_SELINUX_SECURITY_CONTEXT_UNKNOWN",
+    "G_DBUS_ERROR_SERVICE_UNKNOWN",
+    "G_DBUS_ERROR_SPAWN_CHILD_EXITED",
+    "G_DBUS_ERROR_SPAWN_CHILD_SIGNALED",
+    "G_DBUS_ERROR_SPAWN_CONFIG_INVALID",
+    "G_DBUS_ERROR_SPAWN_EXEC_FAILED",
+    "G_DBUS_ERROR_SPAWN_FAILED",
+    "G_DBUS_ERROR_SPAWN_FILE_INVALID",
+    "G_DBUS_ERROR_SPAWN_FORK_FAILED",
+    "G_DBUS_ERROR_SPAWN_NO_MEMORY",
+    "G_DBUS_ERROR_SPAWN_PERMISSIONS_INVALID",
+    "G_DBUS_ERROR_SPAWN_SERVICE_INVALID",
+    "G_DBUS_ERROR_SPAWN_SERVICE_NOT_FOUND",
+    "G_DBUS_ERROR_SPAWN_SETUP_FAILED",
+    "G_DBUS_ERROR_TIMED_OUT",
+    "G_DBUS_ERROR_TIMEOUT",
+    "G_DBUS_ERROR_UNIX_PROCESS_ID_UNKNOWN",
+    "G_DBUS_ERROR_UNKNOWN_INTERFACE",
+    "G_DBUS_ERROR_UNKNOWN_METHOD",
+    "G_DBUS_ERROR_UNKNOWN_OBJECT",
+    "G_DBUS_ERROR_UNKNOWN_PROPERTY",
+    "access-denied",
+    "address-in-use",
+    "adt-audit-data-unknown",
+    "auth-failed",
+    "bad-address",
+    "disconnected",
+    "failed",
+    "file-exists",
+    "file-not-found",
+    "invalid-args",
+    "invalid-file-content",
+    "invalid-signature",
+    "io-error",
+    "limits-exceeded",
+    "match-rule-invalid",
+    "match-rule-not-found",
+    "name-has-no-owner",
+    "no-memory",
+    "no-network",
+    "no-reply",
+    "no-server",
+    "not-supported",
+    "object-path-in-use",
+    "property-read-only",
+    "selinux-security-context-unknown",
+    "service-unknown",
+    "spawn-child-exited",
+    "spawn-child-signaled",
+    "spawn-config-invalid",
+    "spawn-exec-failed",
+    "spawn-failed",
+    "spawn-file-invalid",
+    "spawn-fork-failed",
+    "spawn-no-memory",
+    "spawn-permissions-invalid",
+    "spawn-service-invalid",
+    "spawn-service-not-found",
+    "spawn-setup-failed",
+    "timed-out",
+    "timeout",
+    "unix-process-id-unknown",
+    "unknown-interface",
+    "unknown-method",
+    "unknown-object",
+    "unknown-property",
+]
+_DBusErrorValueType: TypeAlias = DBusError | _DBusErrorLiteralType
+
 class DBusMessageByteOrder(GObject.GEnum):
     BIG_ENDIAN = 66
     LITTLE_ENDIAN = 108
+
+_DBusMessageByteOrderLiteralType: TypeAlias = Literal[
+    "G_DBUS_MESSAGE_BYTE_ORDER_BIG_ENDIAN",
+    "G_DBUS_MESSAGE_BYTE_ORDER_LITTLE_ENDIAN",
+    "big-endian",
+    "little-endian",
+]
+_DBusMessageByteOrderValueType: TypeAlias = (
+    DBusMessageByteOrder | _DBusMessageByteOrderLiteralType
+)
 
 class DBusMessageHeaderField(GObject.GEnum):
     DESTINATION = 6
@@ -12222,6 +16364,32 @@ class DBusMessageHeaderField(GObject.GEnum):
     SENDER = 7
     SIGNATURE = 8
 
+_DBusMessageHeaderFieldLiteralType: TypeAlias = Literal[
+    "G_DBUS_MESSAGE_HEADER_FIELD_DESTINATION",
+    "G_DBUS_MESSAGE_HEADER_FIELD_ERROR_NAME",
+    "G_DBUS_MESSAGE_HEADER_FIELD_INTERFACE",
+    "G_DBUS_MESSAGE_HEADER_FIELD_INVALID",
+    "G_DBUS_MESSAGE_HEADER_FIELD_MEMBER",
+    "G_DBUS_MESSAGE_HEADER_FIELD_NUM_UNIX_FDS",
+    "G_DBUS_MESSAGE_HEADER_FIELD_PATH",
+    "G_DBUS_MESSAGE_HEADER_FIELD_REPLY_SERIAL",
+    "G_DBUS_MESSAGE_HEADER_FIELD_SENDER",
+    "G_DBUS_MESSAGE_HEADER_FIELD_SIGNATURE",
+    "destination",
+    "error-name",
+    "interface",
+    "invalid",
+    "member",
+    "num-unix-fds",
+    "path",
+    "reply-serial",
+    "sender",
+    "signature",
+]
+_DBusMessageHeaderFieldValueType: TypeAlias = (
+    DBusMessageHeaderField | _DBusMessageHeaderFieldLiteralType
+)
+
 class DBusMessageType(GObject.GEnum):
     ERROR = 3
     INVALID = 0
@@ -12229,16 +16397,56 @@ class DBusMessageType(GObject.GEnum):
     METHOD_RETURN = 2
     SIGNAL = 4
 
+_DBusMessageTypeLiteralType: TypeAlias = Literal[
+    "G_DBUS_MESSAGE_TYPE_ERROR",
+    "G_DBUS_MESSAGE_TYPE_INVALID",
+    "G_DBUS_MESSAGE_TYPE_METHOD_CALL",
+    "G_DBUS_MESSAGE_TYPE_METHOD_RETURN",
+    "G_DBUS_MESSAGE_TYPE_SIGNAL",
+    "error",
+    "invalid",
+    "method-call",
+    "method-return",
+    "signal",
+]
+_DBusMessageTypeValueType: TypeAlias = DBusMessageType | _DBusMessageTypeLiteralType
+
 class DataStreamByteOrder(GObject.GEnum):
     BIG_ENDIAN = 0
     HOST_ENDIAN = 2
     LITTLE_ENDIAN = 1
+
+_DataStreamByteOrderLiteralType: TypeAlias = Literal[
+    "G_DATA_STREAM_BYTE_ORDER_BIG_ENDIAN",
+    "G_DATA_STREAM_BYTE_ORDER_HOST_ENDIAN",
+    "G_DATA_STREAM_BYTE_ORDER_LITTLE_ENDIAN",
+    "big-endian",
+    "host-endian",
+    "little-endian",
+]
+_DataStreamByteOrderValueType: TypeAlias = (
+    DataStreamByteOrder | _DataStreamByteOrderLiteralType
+)
 
 class DataStreamNewlineType(GObject.GEnum):
     ANY = 3
     CR = 1
     CR_LF = 2
     LF = 0
+
+_DataStreamNewlineTypeLiteralType: TypeAlias = Literal[
+    "G_DATA_STREAM_NEWLINE_TYPE_ANY",
+    "G_DATA_STREAM_NEWLINE_TYPE_CR",
+    "G_DATA_STREAM_NEWLINE_TYPE_CR_LF",
+    "G_DATA_STREAM_NEWLINE_TYPE_LF",
+    "any",
+    "cr",
+    "cr-lf",
+    "lf",
+]
+_DataStreamNewlineTypeValueType: TypeAlias = (
+    DataStreamNewlineType | _DataStreamNewlineTypeLiteralType
+)
 
 class DriveStartStopType(GObject.GEnum):
     MULTIDISK = 3
@@ -12247,16 +16455,56 @@ class DriveStartStopType(GObject.GEnum):
     SHUTDOWN = 1
     UNKNOWN = 0
 
+_DriveStartStopTypeLiteralType: TypeAlias = Literal[
+    "G_DRIVE_START_STOP_TYPE_MULTIDISK",
+    "G_DRIVE_START_STOP_TYPE_NETWORK",
+    "G_DRIVE_START_STOP_TYPE_PASSWORD",
+    "G_DRIVE_START_STOP_TYPE_SHUTDOWN",
+    "G_DRIVE_START_STOP_TYPE_UNKNOWN",
+    "multidisk",
+    "network",
+    "password",
+    "shutdown",
+    "unknown",
+]
+_DriveStartStopTypeValueType: TypeAlias = (
+    DriveStartStopType | _DriveStartStopTypeLiteralType
+)
+
 class EmblemOrigin(GObject.GEnum):
     DEVICE = 1
     LIVEMETADATA = 2
     TAG = 3
     UNKNOWN = 0
 
+_EmblemOriginLiteralType: TypeAlias = Literal[
+    "G_EMBLEM_ORIGIN_DEVICE",
+    "G_EMBLEM_ORIGIN_LIVEMETADATA",
+    "G_EMBLEM_ORIGIN_TAG",
+    "G_EMBLEM_ORIGIN_UNKNOWN",
+    "device",
+    "livemetadata",
+    "tag",
+    "unknown",
+]
+_EmblemOriginValueType: TypeAlias = EmblemOrigin | _EmblemOriginLiteralType
+
 class FileAttributeStatus(GObject.GEnum):
     ERROR_SETTING = 2
     SET = 1
     UNSET = 0
+
+_FileAttributeStatusLiteralType: TypeAlias = Literal[
+    "G_FILE_ATTRIBUTE_STATUS_ERROR_SETTING",
+    "G_FILE_ATTRIBUTE_STATUS_SET",
+    "G_FILE_ATTRIBUTE_STATUS_UNSET",
+    "error-setting",
+    "set",
+    "unset",
+]
+_FileAttributeStatusValueType: TypeAlias = (
+    FileAttributeStatus | _FileAttributeStatusLiteralType
+)
 
 class FileAttributeType(GObject.GEnum):
     BOOLEAN = 3
@@ -12269,6 +16517,32 @@ class FileAttributeType(GObject.GEnum):
     STRINGV = 9
     UINT32 = 4
     UINT64 = 6
+
+_FileAttributeTypeLiteralType: TypeAlias = Literal[
+    "G_FILE_ATTRIBUTE_TYPE_BOOLEAN",
+    "G_FILE_ATTRIBUTE_TYPE_BYTE_STRING",
+    "G_FILE_ATTRIBUTE_TYPE_INT32",
+    "G_FILE_ATTRIBUTE_TYPE_INT64",
+    "G_FILE_ATTRIBUTE_TYPE_INVALID",
+    "G_FILE_ATTRIBUTE_TYPE_OBJECT",
+    "G_FILE_ATTRIBUTE_TYPE_STRING",
+    "G_FILE_ATTRIBUTE_TYPE_STRINGV",
+    "G_FILE_ATTRIBUTE_TYPE_UINT32",
+    "G_FILE_ATTRIBUTE_TYPE_UINT64",
+    "boolean",
+    "byte-string",
+    "int32",
+    "int64",
+    "invalid",
+    "object",
+    "string",
+    "stringv",
+    "uint32",
+    "uint64",
+]
+_FileAttributeTypeValueType: TypeAlias = (
+    FileAttributeType | _FileAttributeTypeLiteralType
+)
 
 class FileMonitorEvent(GObject.GEnum):
     ATTRIBUTE_CHANGED = 4
@@ -12283,6 +16557,32 @@ class FileMonitorEvent(GObject.GEnum):
     RENAMED = 8
     UNMOUNTED = 6
 
+_FileMonitorEventLiteralType: TypeAlias = Literal[
+    "G_FILE_MONITOR_EVENT_ATTRIBUTE_CHANGED",
+    "G_FILE_MONITOR_EVENT_CHANGED",
+    "G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT",
+    "G_FILE_MONITOR_EVENT_CREATED",
+    "G_FILE_MONITOR_EVENT_DELETED",
+    "G_FILE_MONITOR_EVENT_MOVED",
+    "G_FILE_MONITOR_EVENT_MOVED_IN",
+    "G_FILE_MONITOR_EVENT_MOVED_OUT",
+    "G_FILE_MONITOR_EVENT_PRE_UNMOUNT",
+    "G_FILE_MONITOR_EVENT_RENAMED",
+    "G_FILE_MONITOR_EVENT_UNMOUNTED",
+    "attribute-changed",
+    "changed",
+    "changes-done-hint",
+    "created",
+    "deleted",
+    "moved",
+    "moved-in",
+    "moved-out",
+    "pre-unmount",
+    "renamed",
+    "unmounted",
+]
+_FileMonitorEventValueType: TypeAlias = FileMonitorEvent | _FileMonitorEventLiteralType
+
 class FileType(GObject.GEnum):
     DIRECTORY = 2
     MOUNTABLE = 6
@@ -12292,10 +16592,40 @@ class FileType(GObject.GEnum):
     SYMBOLIC_LINK = 3
     UNKNOWN = 0
 
+_FileTypeLiteralType: TypeAlias = Literal[
+    "G_FILE_TYPE_DIRECTORY",
+    "G_FILE_TYPE_MOUNTABLE",
+    "G_FILE_TYPE_REGULAR",
+    "G_FILE_TYPE_SHORTCUT",
+    "G_FILE_TYPE_SPECIAL",
+    "G_FILE_TYPE_SYMBOLIC_LINK",
+    "G_FILE_TYPE_UNKNOWN",
+    "directory",
+    "mountable",
+    "regular",
+    "shortcut",
+    "special",
+    "symbolic-link",
+    "unknown",
+]
+_FileTypeValueType: TypeAlias = FileType | _FileTypeLiteralType
+
 class FilesystemPreviewType(GObject.GEnum):
     IF_ALWAYS = 0
     IF_LOCAL = 1
     NEVER = 2
+
+_FilesystemPreviewTypeLiteralType: TypeAlias = Literal[
+    "G_FILESYSTEM_PREVIEW_TYPE_IF_ALWAYS",
+    "G_FILESYSTEM_PREVIEW_TYPE_IF_LOCAL",
+    "G_FILESYSTEM_PREVIEW_TYPE_NEVER",
+    "if-always",
+    "if-local",
+    "never",
+]
+_FilesystemPreviewTypeValueType: TypeAlias = (
+    FilesystemPreviewType | _FilesystemPreviewTypeLiteralType
+)
 
 class IOErrorEnum(GObject.GEnum):
     ADDRESS_IN_USE = 33
@@ -12349,19 +16679,155 @@ class IOErrorEnum(GObject.GEnum):
     WOULD_RECURSE = 25
     WRONG_ETAG = 23
 
+_IOErrorEnumLiteralType: TypeAlias = Literal[
+    "G_IO_ERROR_ADDRESS_IN_USE",
+    "G_IO_ERROR_ALREADY_MOUNTED",
+    "G_IO_ERROR_BROKEN_PIPE",
+    "G_IO_ERROR_BUSY",
+    "G_IO_ERROR_CANCELLED",
+    "G_IO_ERROR_CANT_CREATE_BACKUP",
+    "G_IO_ERROR_CLOSED",
+    "G_IO_ERROR_CONNECTION_REFUSED",
+    "G_IO_ERROR_DBUS_ERROR",
+    "G_IO_ERROR_DESTINATION_UNSET",
+    "G_IO_ERROR_EXISTS",
+    "G_IO_ERROR_FAILED",
+    "G_IO_ERROR_FAILED_HANDLED",
+    "G_IO_ERROR_FILENAME_TOO_LONG",
+    "G_IO_ERROR_HOST_NOT_FOUND",
+    "G_IO_ERROR_HOST_UNREACHABLE",
+    "G_IO_ERROR_INVALID_ARGUMENT",
+    "G_IO_ERROR_INVALID_DATA",
+    "G_IO_ERROR_INVALID_FILENAME",
+    "G_IO_ERROR_IS_DIRECTORY",
+    "G_IO_ERROR_MESSAGE_TOO_LARGE",
+    "G_IO_ERROR_NETWORK_UNREACHABLE",
+    "G_IO_ERROR_NOT_CONNECTED",
+    "G_IO_ERROR_NOT_DIRECTORY",
+    "G_IO_ERROR_NOT_EMPTY",
+    "G_IO_ERROR_NOT_FOUND",
+    "G_IO_ERROR_NOT_INITIALIZED",
+    "G_IO_ERROR_NOT_MOUNTABLE_FILE",
+    "G_IO_ERROR_NOT_MOUNTED",
+    "G_IO_ERROR_NOT_REGULAR_FILE",
+    "G_IO_ERROR_NOT_SUPPORTED",
+    "G_IO_ERROR_NOT_SYMBOLIC_LINK",
+    "G_IO_ERROR_NO_SPACE",
+    "G_IO_ERROR_NO_SUCH_DEVICE",
+    "G_IO_ERROR_PARTIAL_INPUT",
+    "G_IO_ERROR_PENDING",
+    "G_IO_ERROR_PERMISSION_DENIED",
+    "G_IO_ERROR_PROXY_AUTH_FAILED",
+    "G_IO_ERROR_PROXY_FAILED",
+    "G_IO_ERROR_PROXY_NEED_AUTH",
+    "G_IO_ERROR_PROXY_NOT_ALLOWED",
+    "G_IO_ERROR_READ_ONLY",
+    "G_IO_ERROR_TIMED_OUT",
+    "G_IO_ERROR_TOO_MANY_LINKS",
+    "G_IO_ERROR_TOO_MANY_OPEN_FILES",
+    "G_IO_ERROR_WOULD_BLOCK",
+    "G_IO_ERROR_WOULD_MERGE",
+    "G_IO_ERROR_WOULD_RECURSE",
+    "G_IO_ERROR_WRONG_ETAG",
+    "address-in-use",
+    "already-mounted",
+    "broken-pipe",
+    "busy",
+    "cancelled",
+    "cant-create-backup",
+    "closed",
+    "connection-refused",
+    "dbus-error",
+    "destination-unset",
+    "exists",
+    "failed",
+    "failed-handled",
+    "filename-too-long",
+    "host-not-found",
+    "host-unreachable",
+    "invalid-argument",
+    "invalid-data",
+    "invalid-filename",
+    "is-directory",
+    "message-too-large",
+    "network-unreachable",
+    "no-space",
+    "no-such-device",
+    "not-connected",
+    "not-directory",
+    "not-empty",
+    "not-found",
+    "not-initialized",
+    "not-mountable-file",
+    "not-mounted",
+    "not-regular-file",
+    "not-supported",
+    "not-symbolic-link",
+    "partial-input",
+    "pending",
+    "permission-denied",
+    "proxy-auth-failed",
+    "proxy-failed",
+    "proxy-need-auth",
+    "proxy-not-allowed",
+    "read-only",
+    "timed-out",
+    "too-many-links",
+    "too-many-open-files",
+    "would-block",
+    "would-merge",
+    "would-recurse",
+    "wrong-etag",
+]
+_IOErrorEnumValueType: TypeAlias = IOErrorEnum | _IOErrorEnumLiteralType
+
 class IOModuleScopeFlags(GObject.GEnum):
     BLOCK_DUPLICATES = 1
     NONE = 0
+
+_IOModuleScopeFlagsLiteralType: TypeAlias = Literal[
+    "G_IO_MODULE_SCOPE_BLOCK_DUPLICATES",
+    "G_IO_MODULE_SCOPE_NONE",
+    "block-duplicates",
+    "none",
+]
+_IOModuleScopeFlagsValueType: TypeAlias = (
+    IOModuleScopeFlags | _IOModuleScopeFlagsLiteralType
+)
 
 class MemoryMonitorWarningLevel(GObject.GEnum):
     CRITICAL = 255
     LOW = 50
     MEDIUM = 100
 
+_MemoryMonitorWarningLevelLiteralType: TypeAlias = Literal[
+    "G_MEMORY_MONITOR_WARNING_LEVEL_CRITICAL",
+    "G_MEMORY_MONITOR_WARNING_LEVEL_LOW",
+    "G_MEMORY_MONITOR_WARNING_LEVEL_MEDIUM",
+    "critical",
+    "low",
+    "medium",
+]
+_MemoryMonitorWarningLevelValueType: TypeAlias = (
+    MemoryMonitorWarningLevel | _MemoryMonitorWarningLevelLiteralType
+)
+
 class MountOperationResult(GObject.GEnum):
     ABORTED = 1
     HANDLED = 0
     UNHANDLED = 2
+
+_MountOperationResultLiteralType: TypeAlias = Literal[
+    "G_MOUNT_OPERATION_ABORTED",
+    "G_MOUNT_OPERATION_HANDLED",
+    "G_MOUNT_OPERATION_UNHANDLED",
+    "aborted",
+    "handled",
+    "unhandled",
+]
+_MountOperationResultValueType: TypeAlias = (
+    MountOperationResult | _MountOperationResultLiteralType
+)
 
 class NetworkConnectivity(GObject.GEnum):
     FULL = 4
@@ -12369,21 +16835,69 @@ class NetworkConnectivity(GObject.GEnum):
     LOCAL = 1
     PORTAL = 3
 
+_NetworkConnectivityLiteralType: TypeAlias = Literal[
+    "G_NETWORK_CONNECTIVITY_FULL",
+    "G_NETWORK_CONNECTIVITY_LIMITED",
+    "G_NETWORK_CONNECTIVITY_LOCAL",
+    "G_NETWORK_CONNECTIVITY_PORTAL",
+    "full",
+    "limited",
+    "local",
+    "portal",
+]
+_NetworkConnectivityValueType: TypeAlias = (
+    NetworkConnectivity | _NetworkConnectivityLiteralType
+)
+
 class NotificationPriority(GObject.GEnum):
     HIGH = 2
     LOW = 1
     NORMAL = 0
     URGENT = 3
 
+_NotificationPriorityLiteralType: TypeAlias = Literal[
+    "G_NOTIFICATION_PRIORITY_HIGH",
+    "G_NOTIFICATION_PRIORITY_LOW",
+    "G_NOTIFICATION_PRIORITY_NORMAL",
+    "G_NOTIFICATION_PRIORITY_URGENT",
+    "high",
+    "low",
+    "normal",
+    "urgent",
+]
+_NotificationPriorityValueType: TypeAlias = (
+    NotificationPriority | _NotificationPriorityLiteralType
+)
+
 class PasswordSave(GObject.GEnum):
     FOR_SESSION = 1
     NEVER = 0
     PERMANENTLY = 2
 
+_PasswordSaveLiteralType: TypeAlias = Literal[
+    "G_PASSWORD_SAVE_FOR_SESSION",
+    "G_PASSWORD_SAVE_NEVER",
+    "G_PASSWORD_SAVE_PERMANENTLY",
+    "for-session",
+    "never",
+    "permanently",
+]
+_PasswordSaveValueType: TypeAlias = PasswordSave | _PasswordSaveLiteralType
+
 class PollableReturn(GObject.GEnum):
     FAILED = 0
     OK = 1
     WOULD_BLOCK = -27
+
+_PollableReturnLiteralType: TypeAlias = Literal[
+    "G_POLLABLE_RETURN_FAILED",
+    "G_POLLABLE_RETURN_OK",
+    "G_POLLABLE_RETURN_WOULD_BLOCK",
+    "failed",
+    "ok",
+    "would-block",
+]
+_PollableReturnValueType: TypeAlias = PollableReturn | _PollableReturnLiteralType
 
 class ResolverError(GObject.GEnum):
     INTERNAL = 2
@@ -12392,6 +16906,16 @@ class ResolverError(GObject.GEnum):
     @staticmethod
     def quark() -> int: ...
 
+_ResolverErrorLiteralType: TypeAlias = Literal[
+    "G_RESOLVER_ERROR_INTERNAL",
+    "G_RESOLVER_ERROR_NOT_FOUND",
+    "G_RESOLVER_ERROR_TEMPORARY_FAILURE",
+    "internal",
+    "not-found",
+    "temporary-failure",
+]
+_ResolverErrorValueType: TypeAlias = ResolverError | _ResolverErrorLiteralType
+
 class ResolverRecordType(GObject.GEnum):
     MX = 2
     NS = 5
@@ -12399,11 +16923,32 @@ class ResolverRecordType(GObject.GEnum):
     SRV = 1
     TXT = 3
 
+_ResolverRecordTypeLiteralType: TypeAlias = Literal[
+    "G_RESOLVER_RECORD_MX",
+    "G_RESOLVER_RECORD_NS",
+    "G_RESOLVER_RECORD_SOA",
+    "G_RESOLVER_RECORD_SRV",
+    "G_RESOLVER_RECORD_TXT",
+    "mx",
+    "ns",
+    "soa",
+    "srv",
+    "txt",
+]
+_ResolverRecordTypeValueType: TypeAlias = (
+    ResolverRecordType | _ResolverRecordTypeLiteralType
+)
+
 class ResourceError(GObject.GEnum):
     INTERNAL = 1
     NOT_FOUND = 0
     @staticmethod
     def quark() -> int: ...
+
+_ResourceErrorLiteralType: TypeAlias = Literal[
+    "G_RESOURCE_ERROR_INTERNAL", "G_RESOURCE_ERROR_NOT_FOUND", "internal", "not-found"
+]
+_ResourceErrorValueType: TypeAlias = ResourceError | _ResourceErrorLiteralType
 
 class SocketClientEvent(GObject.GEnum):
     COMPLETE = 8
@@ -12416,17 +16961,67 @@ class SocketClientEvent(GObject.GEnum):
     TLS_HANDSHAKED = 7
     TLS_HANDSHAKING = 6
 
+_SocketClientEventLiteralType: TypeAlias = Literal[
+    "G_SOCKET_CLIENT_COMPLETE",
+    "G_SOCKET_CLIENT_CONNECTED",
+    "G_SOCKET_CLIENT_CONNECTING",
+    "G_SOCKET_CLIENT_PROXY_NEGOTIATED",
+    "G_SOCKET_CLIENT_PROXY_NEGOTIATING",
+    "G_SOCKET_CLIENT_RESOLVED",
+    "G_SOCKET_CLIENT_RESOLVING",
+    "G_SOCKET_CLIENT_TLS_HANDSHAKED",
+    "G_SOCKET_CLIENT_TLS_HANDSHAKING",
+    "complete",
+    "connected",
+    "connecting",
+    "proxy-negotiated",
+    "proxy-negotiating",
+    "resolved",
+    "resolving",
+    "tls-handshaked",
+    "tls-handshaking",
+]
+_SocketClientEventValueType: TypeAlias = (
+    SocketClientEvent | _SocketClientEventLiteralType
+)
+
 class SocketFamily(GObject.GEnum):
     INVALID = 0
     IPV4 = 2
     IPV6 = 10
     UNIX = 1
 
+_SocketFamilyLiteralType: TypeAlias = Literal[
+    "G_SOCKET_FAMILY_INVALID",
+    "G_SOCKET_FAMILY_IPV4",
+    "G_SOCKET_FAMILY_IPV6",
+    "G_SOCKET_FAMILY_UNIX",
+    "invalid",
+    "ipv4",
+    "ipv6",
+    "unix",
+]
+_SocketFamilyValueType: TypeAlias = SocketFamily | _SocketFamilyLiteralType
+
 class SocketListenerEvent(GObject.GEnum):
     BINDING = 0
     BOUND = 1
     LISTENED = 3
     LISTENING = 2
+
+_SocketListenerEventLiteralType: TypeAlias = Literal[
+    "G_SOCKET_LISTENER_BINDING",
+    "G_SOCKET_LISTENER_BOUND",
+    "G_SOCKET_LISTENER_LISTENED",
+    "G_SOCKET_LISTENER_LISTENING",
+    "binding",
+    "bound",
+    "listened",
+    "listening",
+]
+_SocketListenerEventValueType: TypeAlias = (
+    SocketListenerEvent | _SocketListenerEventLiteralType
+)
 
 class SocketProtocol(GObject.GEnum):
     DEFAULT = 0
@@ -12435,19 +17030,64 @@ class SocketProtocol(GObject.GEnum):
     UDP = 17
     UNKNOWN = -1
 
+_SocketProtocolLiteralType: TypeAlias = Literal[
+    "G_SOCKET_PROTOCOL_DEFAULT",
+    "G_SOCKET_PROTOCOL_SCTP",
+    "G_SOCKET_PROTOCOL_TCP",
+    "G_SOCKET_PROTOCOL_UDP",
+    "G_SOCKET_PROTOCOL_UNKNOWN",
+    "default",
+    "sctp",
+    "tcp",
+    "udp",
+    "unknown",
+]
+_SocketProtocolValueType: TypeAlias = SocketProtocol | _SocketProtocolLiteralType
+
 class SocketType(GObject.GEnum):
     DATAGRAM = 2
     INVALID = 0
     SEQPACKET = 3
     STREAM = 1
 
+_SocketTypeLiteralType: TypeAlias = Literal[
+    "G_SOCKET_TYPE_DATAGRAM",
+    "G_SOCKET_TYPE_INVALID",
+    "G_SOCKET_TYPE_SEQPACKET",
+    "G_SOCKET_TYPE_STREAM",
+    "datagram",
+    "invalid",
+    "seqpacket",
+    "stream",
+]
+_SocketTypeValueType: TypeAlias = SocketType | _SocketTypeLiteralType
+
 class TlsAuthenticationMode(GObject.GEnum):
     NONE = 0
     REQUESTED = 1
     REQUIRED = 2
 
+_TlsAuthenticationModeLiteralType: TypeAlias = Literal[
+    "G_TLS_AUTHENTICATION_NONE",
+    "G_TLS_AUTHENTICATION_REQUESTED",
+    "G_TLS_AUTHENTICATION_REQUIRED",
+    "none",
+    "requested",
+    "required",
+]
+_TlsAuthenticationModeValueType: TypeAlias = (
+    TlsAuthenticationMode | _TlsAuthenticationModeLiteralType
+)
+
 class TlsCertificateRequestFlags(GObject.GEnum):
     NONE = 0
+
+_TlsCertificateRequestFlagsLiteralType: TypeAlias = Literal[
+    "G_TLS_CERTIFICATE_REQUEST_NONE", "none"
+]
+_TlsCertificateRequestFlagsValueType: TypeAlias = (
+    TlsCertificateRequestFlags | _TlsCertificateRequestFlagsLiteralType
+)
 
 class TlsChannelBindingError(GObject.GEnum):
     GENERAL_ERROR = 4
@@ -12458,14 +17098,49 @@ class TlsChannelBindingError(GObject.GEnum):
     @staticmethod
     def quark() -> int: ...
 
+_TlsChannelBindingErrorLiteralType: TypeAlias = Literal[
+    "G_TLS_CHANNEL_BINDING_ERROR_GENERAL_ERROR",
+    "G_TLS_CHANNEL_BINDING_ERROR_INVALID_STATE",
+    "G_TLS_CHANNEL_BINDING_ERROR_NOT_AVAILABLE",
+    "G_TLS_CHANNEL_BINDING_ERROR_NOT_IMPLEMENTED",
+    "G_TLS_CHANNEL_BINDING_ERROR_NOT_SUPPORTED",
+    "general-error",
+    "invalid-state",
+    "not-available",
+    "not-implemented",
+    "not-supported",
+]
+_TlsChannelBindingErrorValueType: TypeAlias = (
+    TlsChannelBindingError | _TlsChannelBindingErrorLiteralType
+)
+
 class TlsChannelBindingType(GObject.GEnum):
     EXPORTER = 2
     SERVER_END_POINT = 1
     UNIQUE = 0
 
+_TlsChannelBindingTypeLiteralType: TypeAlias = Literal[
+    "G_TLS_CHANNEL_BINDING_TLS_EXPORTER",
+    "G_TLS_CHANNEL_BINDING_TLS_SERVER_END_POINT",
+    "G_TLS_CHANNEL_BINDING_TLS_UNIQUE",
+    "exporter",
+    "server-end-point",
+    "unique",
+]
+_TlsChannelBindingTypeValueType: TypeAlias = (
+    TlsChannelBindingType | _TlsChannelBindingTypeLiteralType
+)
+
 class TlsDatabaseLookupFlags(GObject.GEnum):
     KEYPAIR = 1
     NONE = 0
+
+_TlsDatabaseLookupFlagsLiteralType: TypeAlias = Literal[
+    "G_TLS_DATABASE_LOOKUP_KEYPAIR", "G_TLS_DATABASE_LOOKUP_NONE", "keypair", "none"
+]
+_TlsDatabaseLookupFlagsValueType: TypeAlias = (
+    TlsDatabaseLookupFlags | _TlsDatabaseLookupFlagsLiteralType
+)
 
 class TlsError(GObject.GEnum):
     BAD_CERTIFICATE = 2
@@ -12480,10 +17155,44 @@ class TlsError(GObject.GEnum):
     @staticmethod
     def quark() -> int: ...
 
+_TlsErrorLiteralType: TypeAlias = Literal[
+    "G_TLS_ERROR_BAD_CERTIFICATE",
+    "G_TLS_ERROR_BAD_CERTIFICATE_PASSWORD",
+    "G_TLS_ERROR_CERTIFICATE_REQUIRED",
+    "G_TLS_ERROR_EOF",
+    "G_TLS_ERROR_HANDSHAKE",
+    "G_TLS_ERROR_INAPPROPRIATE_FALLBACK",
+    "G_TLS_ERROR_MISC",
+    "G_TLS_ERROR_NOT_TLS",
+    "G_TLS_ERROR_UNAVAILABLE",
+    "bad-certificate",
+    "bad-certificate-password",
+    "certificate-required",
+    "eof",
+    "handshake",
+    "inappropriate-fallback",
+    "misc",
+    "not-tls",
+    "unavailable",
+]
+_TlsErrorValueType: TypeAlias = TlsError | _TlsErrorLiteralType
+
 class TlsInteractionResult(GObject.GEnum):
     FAILED = 2
     HANDLED = 1
     UNHANDLED = 0
+
+_TlsInteractionResultLiteralType: TypeAlias = Literal[
+    "G_TLS_INTERACTION_FAILED",
+    "G_TLS_INTERACTION_HANDLED",
+    "G_TLS_INTERACTION_UNHANDLED",
+    "failed",
+    "handled",
+    "unhandled",
+]
+_TlsInteractionResultValueType: TypeAlias = (
+    TlsInteractionResult | _TlsInteractionResultLiteralType
+)
 
 class TlsProtocolVersion(GObject.GEnum):
     DTLS_1_0 = 201
@@ -12495,10 +17204,44 @@ class TlsProtocolVersion(GObject.GEnum):
     TLS_1_3 = 5
     UNKNOWN = 0
 
+_TlsProtocolVersionLiteralType: TypeAlias = Literal[
+    "G_TLS_PROTOCOL_VERSION_DTLS_1_0",
+    "G_TLS_PROTOCOL_VERSION_DTLS_1_2",
+    "G_TLS_PROTOCOL_VERSION_SSL_3_0",
+    "G_TLS_PROTOCOL_VERSION_TLS_1_0",
+    "G_TLS_PROTOCOL_VERSION_TLS_1_1",
+    "G_TLS_PROTOCOL_VERSION_TLS_1_2",
+    "G_TLS_PROTOCOL_VERSION_TLS_1_3",
+    "G_TLS_PROTOCOL_VERSION_UNKNOWN",
+    "dtls-1-0",
+    "dtls-1-2",
+    "ssl-3-0",
+    "tls-1-0",
+    "tls-1-1",
+    "tls-1-2",
+    "tls-1-3",
+    "unknown",
+]
+_TlsProtocolVersionValueType: TypeAlias = (
+    TlsProtocolVersion | _TlsProtocolVersionLiteralType
+)
+
 class TlsRehandshakeMode(GObject.GEnum):
     NEVER = 0
     SAFELY = 1
     UNSAFELY = 2
+
+_TlsRehandshakeModeLiteralType: TypeAlias = Literal[
+    "G_TLS_REHANDSHAKE_NEVER",
+    "G_TLS_REHANDSHAKE_SAFELY",
+    "G_TLS_REHANDSHAKE_UNSAFELY",
+    "never",
+    "safely",
+    "unsafely",
+]
+_TlsRehandshakeModeValueType: TypeAlias = (
+    TlsRehandshakeMode | _TlsRehandshakeModeLiteralType
+)
 
 class UnixSocketAddressType(GObject.GEnum):
     ABSTRACT = 3
@@ -12507,7 +17250,35 @@ class UnixSocketAddressType(GObject.GEnum):
     INVALID = 0
     PATH = 2
 
+_UnixSocketAddressTypeLiteralType: TypeAlias = Literal[
+    "G_UNIX_SOCKET_ADDRESS_ABSTRACT",
+    "G_UNIX_SOCKET_ADDRESS_ABSTRACT_PADDED",
+    "G_UNIX_SOCKET_ADDRESS_ANONYMOUS",
+    "G_UNIX_SOCKET_ADDRESS_INVALID",
+    "G_UNIX_SOCKET_ADDRESS_PATH",
+    "abstract",
+    "abstract-padded",
+    "anonymous",
+    "invalid",
+    "path",
+]
+_UnixSocketAddressTypeValueType: TypeAlias = (
+    UnixSocketAddressType | _UnixSocketAddressTypeLiteralType
+)
+
 class ZlibCompressorFormat(GObject.GEnum):
     GZIP = 1
     RAW = 2
     ZLIB = 0
+
+_ZlibCompressorFormatLiteralType: TypeAlias = Literal[
+    "G_ZLIB_COMPRESSOR_FORMAT_GZIP",
+    "G_ZLIB_COMPRESSOR_FORMAT_RAW",
+    "G_ZLIB_COMPRESSOR_FORMAT_ZLIB",
+    "gzip",
+    "raw",
+    "zlib",
+]
+_ZlibCompressorFormatValueType: TypeAlias = (
+    ZlibCompressorFormat | _ZlibCompressorFormatLiteralType
+)

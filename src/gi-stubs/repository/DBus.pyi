@@ -1,0 +1,16 @@
+from typing import TypeVar
+
+from gi.repository import GObject
+
+T = TypeVar("T")
+
+class Connection(GObject.GPointer): ...
+class Error(GObject.GPointer): ...
+class Message(GObject.GPointer): ...
+class MessageIter(GObject.GPointer): ...
+class PendingCall(GObject.GPointer): ...
+
+class BusType(GObject.GEnum):
+    SESSION = 0
+    STARTER = 2
+    SYSTEM = 1

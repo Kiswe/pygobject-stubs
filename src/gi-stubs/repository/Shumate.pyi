@@ -1,41 +1,44 @@
-import typing
+from typing import Any
+from typing import Final
+from typing import Protocol
+from typing import TypeVar
 
-from gi.repository import Gdk
+from collections.abc import Callable
+from collections.abc import Sequence
+
+from gi.repository import _Gdk4
+from gi.repository import _Gtk4
 from gi.repository import GdkPixbuf
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
-from gi.repository import Gtk
 
-T = typing.TypeVar("T")
+T = TypeVar("T")
 
-MAJOR_VERSION: int = 1
-MAP_SOURCE_MFF_RELIEF: str = "mff-relief"
-MAP_SOURCE_OSM_CYCLE_MAP: str = "osm-cyclemap"
-MAP_SOURCE_OSM_MAPNIK: str = "osm-mapnik"
-MAP_SOURCE_OSM_TRANSPORT_MAP: str = "osm-transportmap"
-MAP_SOURCE_OWM_CLOUDS: str = "owm-clouds"
-MAP_SOURCE_OWM_PRECIPITATION: str = "owm-precipitation"
-MAP_SOURCE_OWM_PRESSURE: str = "owm-pressure"
-MAP_SOURCE_OWM_TEMPERATURE: str = "owm-temperature"
-MAP_SOURCE_OWM_WIND: str = "owm-wind"
-MAX_LATITUDE: float = 85.0511287798
-MAX_LONGITUDE: float = 180.0
-MICRO_VERSION: int = 2
-MINOR_VERSION: int = 2
-MIN_LATITUDE: float = -85.0511287798
-MIN_LONGITUDE: float = -180.0
-_lock = ...  # FIXME Constant
-_namespace: str = "Shumate"
-_version: str = "1.0"
+MAJOR_VERSION: Final[int]
+MAP_SOURCE_MFF_RELIEF: Final = "mff-relief"
+MAP_SOURCE_OSM_CYCLE_MAP: Final = "osm-cyclemap"
+MAP_SOURCE_OSM_MAPNIK: Final = "osm-mapnik"
+MAP_SOURCE_OSM_TRANSPORT_MAP: Final = "osm-transportmap"
+MAP_SOURCE_OWM_CLOUDS: Final = "owm-clouds"
+MAP_SOURCE_OWM_PRECIPITATION: Final = "owm-precipitation"
+MAP_SOURCE_OWM_PRESSURE: Final = "owm-pressure"
+MAP_SOURCE_OWM_TEMPERATURE: Final = "owm-temperature"
+MAP_SOURCE_OWM_WIND: Final = "owm-wind"
+MAX_LATITUDE: Final[float]
+MAX_LONGITUDE: Final[float]
+MICRO_VERSION: Final[int]
+MINOR_VERSION: Final[int]
+MIN_LATITUDE: Final[float]
+MIN_LONGITUDE: Final[float]
 
 def file_cache_error_quark() -> int: ...
 def get_user_agent() -> str: ...
-def set_user_agent(new_user_agent: typing.Optional[str] = None) -> None: ...
+def set_user_agent(new_user_agent: str | None = None) -> None: ...
 def style_error_quark() -> int: ...
 def tile_downloader_error_quark() -> int: ...
 
-class Compass(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class Compass(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -105,83 +108,84 @@ class Compass(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
-        viewport: typing.Optional[Viewport]
+    class Props(_Gtk4.Widget.Props):
+        viewport: Viewport | None
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        viewport: typing.Optional[Viewport] = ...,
+        viewport: Viewport | None = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
-    def get_viewport(self) -> typing.Optional[Viewport]: ...
+    def get_viewport(self) -> Viewport | None: ...
     @classmethod
-    def new(cls, viewport: typing.Optional[Viewport] = None) -> Compass: ...
-    def set_viewport(self, viewport: typing.Optional[Viewport] = None) -> None: ...
+    def new(cls, viewport: Viewport | None = None) -> Compass: ...
+    def set_viewport(self, viewport: Viewport | None = None) -> None: ...
 
 class CompassClass(GObject.GPointer):
     """
@@ -191,8 +195,8 @@ class CompassClass(GObject.GPointer):
 
         CompassClass()
     """
-
-    parent_class: Gtk.WidgetClass = ...
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
 class Coordinate(GObject.InitiallyUnowned, Location):
     """
@@ -210,12 +214,14 @@ class Coordinate(GObject.InitiallyUnowned, Location):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.InitiallyUnowned.Props):
         latitude: float
         longitude: float
 
-    props: Props = ...
-    parent_instance: GObject.InitiallyUnowned = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.InitiallyUnowned: ...
     def __init__(self, latitude: float = ..., longitude: float = ...) -> None: ...
     @classmethod
     def new(cls) -> Coordinate: ...
@@ -230,9 +236,10 @@ class CoordinateClass(GObject.GPointer):
 
         CoordinateClass()
     """
-
-    parent_class: GObject.InitiallyUnownedClass = ...
-    padding: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.InitiallyUnownedClass: ...
+    @property
+    def padding(self) -> list[None]: ...
 
 class DataSource(GObject.Object):
     """
@@ -257,12 +264,14 @@ class DataSource(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         max_zoom_level: int
         min_zoom_level: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
         self, max_zoom_level: int = ..., min_zoom_level: int = ...
     ) -> None: ...
@@ -271,9 +280,9 @@ class DataSource(GObject.Object):
         x: int,
         y: int,
         zoom_level: int,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def do_get_tile_data_finish(self, result: Gio.AsyncResult) -> GLib.Bytes: ...
     def do_start_request(
@@ -281,7 +290,7 @@ class DataSource(GObject.Object):
         x: int,
         y: int,
         zoom_level: int,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
+        cancellable: Gio.Cancellable | None = None,
     ) -> DataSourceRequest: ...
     def get_max_zoom_level(self) -> int: ...
     def get_min_zoom_level(self) -> int: ...
@@ -290,9 +299,9 @@ class DataSource(GObject.Object):
         x: int,
         y: int,
         zoom_level: int,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def get_tile_data_finish(self, result: Gio.AsyncResult) -> GLib.Bytes: ...
     def set_max_zoom_level(self, zoom_level: int) -> None: ...
@@ -302,7 +311,7 @@ class DataSource(GObject.Object):
         x: int,
         y: int,
         zoom_level: int,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
+        cancellable: Gio.Cancellable | None = None,
     ) -> DataSourceRequest: ...
 
 class DataSourceClass(GObject.GPointer):
@@ -313,16 +322,22 @@ class DataSourceClass(GObject.GPointer):
 
         DataSourceClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    get_tile_data_async: typing.Callable[..., None] = ...
-    get_tile_data_finish: typing.Callable[
-        [DataSource, Gio.AsyncResult], GLib.Bytes
-    ] = ...
-    start_request: typing.Callable[
-        [DataSource, int, int, int, typing.Optional[Gio.Cancellable]], DataSourceRequest
-    ] = ...
-    padding: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_tile_data_async(self) -> Callable[..., None]: ...
+    @property
+    def get_tile_data_finish(
+        self,
+    ) -> Callable[[DataSource, Gio.AsyncResult], GLib.Bytes]: ...
+    @property
+    def start_request(
+        self,
+    ) -> Callable[
+        [DataSource, int, int, int, Gio.Cancellable | None], DataSourceRequest
+    ]: ...
+    @property
+    def padding(self) -> list[None]: ...
 
 class DataSourceRequest(GObject.Object):
     """
@@ -353,22 +368,24 @@ class DataSourceRequest(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         completed: bool
-        data: typing.Optional[GLib.Bytes]
-        error: typing.Optional[GLib.Error]
+        data: GLib.Bytes | None
+        error: GLib.Error | None
         x: int
         y: int
         zoom_level: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(self, x: int = ..., y: int = ..., zoom_level: int = ...) -> None: ...
     def complete(self) -> None: ...
     def emit_data(self, data: GLib.Bytes, complete: bool) -> None: ...
     def emit_error(self, error: GLib.Error) -> None: ...
-    def get_data(self) -> typing.Optional[GLib.Bytes]: ...
-    def get_error(self) -> typing.Optional[GLib.Error]: ...
+    def get_data(self) -> GLib.Bytes | None: ...
+    def get_error(self) -> GLib.Error | None: ...
     def get_x(self) -> int: ...
     def get_y(self) -> int: ...
     def get_zoom_level(self) -> int: ...
@@ -384,9 +401,10 @@ class DataSourceRequestClass(GObject.GPointer):
 
         DataSourceRequestClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    padding: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def padding(self) -> list[None]: ...
 
 class FileCache(GObject.Object):
     """
@@ -411,12 +429,13 @@ class FileCache(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         cache_dir: str
         cache_key: str
         size_limit: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self, cache_dir: str = ..., cache_key: str = ..., size_limit: int = ...
     ) -> None: ...
@@ -428,23 +447,23 @@ class FileCache(GObject.Object):
         x: int,
         y: int,
         zoom_level: int,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def get_tile_finish(
         self, result: Gio.AsyncResult
-    ) -> typing.Tuple[GLib.Bytes, str, GLib.DateTime]: ...
+    ) -> tuple[GLib.Bytes, str, GLib.DateTime]: ...
     def mark_up_to_date(self, x: int, y: int, zoom_level: int) -> None: ...
     @classmethod
     def new_full(
-        cls, size_limit: int, cache_key: str, cache_dir: typing.Optional[str] = None
+        cls, size_limit: int, cache_key: str, cache_dir: str | None = None
     ) -> FileCache: ...
     def purge_cache_async(
         self,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def purge_cache_finish(self, result: Gio.AsyncResult) -> bool: ...
     def set_size_limit(self, size_limit: int) -> None: ...
@@ -454,10 +473,10 @@ class FileCache(GObject.Object):
         y: int,
         zoom_level: int,
         bytes: GLib.Bytes,
-        etag: typing.Optional[str] = None,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        etag: str | None = None,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def store_tile_finish(self, result: Gio.AsyncResult) -> bool: ...
 
@@ -469,10 +488,10 @@ class FileCacheClass(GObject.GPointer):
 
         FileCacheClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class Layer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class Layer(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -541,81 +560,83 @@ class Layer(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         viewport: Viewport
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
-    parent_instance: Gtk.Widget = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.Widget: ...
     def __init__(
         self,
         viewport: Viewport = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
-    def do_get_debug_text(self) -> typing.Optional[str]: ...
+    def do_get_debug_text(self) -> str | None: ...
     def get_viewport(self) -> Viewport: ...
 
 class LayerClass(GObject.GPointer):
@@ -626,12 +647,14 @@ class LayerClass(GObject.GPointer):
 
         LayerClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
+    @property
+    def get_debug_text(self) -> Callable[[Layer], str | None]: ...
+    @property
+    def padding(self) -> list[None]: ...
 
-    parent_class: Gtk.WidgetClass = ...
-    get_debug_text: typing.Callable[[Layer], typing.Optional[str]] = ...
-    padding: list[None] = ...
-
-class License(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class License(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -703,80 +726,81 @@ class License(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         extra_text: str
         xalign: float
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         extra_text: str = ...,
         xalign: float = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def append_map_source(self, map_source: MapSource) -> None: ...
     def get_extra_text(self) -> str: ...
@@ -796,10 +820,10 @@ class LicenseClass(GObject.GPointer):
 
         LicenseClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
-    parent_class: Gtk.WidgetClass = ...
-
-class Location(GObject.GInterface):
+class Location(GObject.GInterface, Protocol):
     """
     Interface ShumateLocation
 
@@ -820,13 +844,16 @@ class LocationInterface(GObject.GPointer):
 
         LocationInterface()
     """
+    @property
+    def g_iface(self) -> GObject.TypeInterface: ...
+    @property
+    def get_latitude(self) -> Callable[[Location], float]: ...
+    @property
+    def get_longitude(self) -> Callable[[Location], float]: ...
+    @property
+    def set_location(self) -> Callable[[Location, float, float], None]: ...
 
-    g_iface: GObject.TypeInterface = ...
-    get_latitude: typing.Callable[[Location], float] = ...
-    get_longitude: typing.Callable[[Location], float] = ...
-    set_location: typing.Callable[[Location, float, float], None] = ...
-
-class Map(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class Map(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -908,7 +935,7 @@ class Map(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         animate_zoom: bool
         go_to_duration: int
         state: State
@@ -918,39 +945,40 @@ class Map(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         animate_zoom: bool = ...,
@@ -958,34 +986,34 @@ class Map(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
         zoom_on_double_click: bool = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def add_layer(self, layer: Layer) -> None: ...
     def center_on(self, latitude: float, longitude: float) -> None: ...
@@ -1002,10 +1030,10 @@ class Map(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
         self, latitude: float, longitude: float, zoom_level: float, duration_ms: int
     ) -> None: ...
     def insert_layer_above(
-        self, layer: Layer, next_sibling: typing.Optional[Layer] = None
+        self, layer: Layer, next_sibling: Layer | None = None
     ) -> None: ...
     def insert_layer_behind(
-        self, layer: Layer, next_sibling: typing.Optional[Layer] = None
+        self, layer: Layer, next_sibling: Layer | None = None
     ) -> None: ...
     @classmethod
     def new(cls) -> Map: ...
@@ -1028,10 +1056,10 @@ class MapClass(GObject.GPointer):
 
         MapClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
-    parent_class: Gtk.WidgetClass = ...
-
-class MapLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class MapLayer(Layer, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -1108,80 +1136,81 @@ class MapLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(Layer.Props):
         map_source: MapSource
         viewport: Viewport
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         map_source: MapSource = ...,
         viewport: Viewport = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     @classmethod
     def new(cls, map_source: MapSource, viewport: Viewport) -> MapLayer: ...
@@ -1194,8 +1223,8 @@ class MapLayerClass(GObject.GPointer):
 
         MapLayerClass()
     """
-
-    parent_class: LayerClass = ...
+    @property
+    def parent_class(self) -> LayerClass: ...
 
 class MapSource(GObject.Object):
     """
@@ -1229,7 +1258,7 @@ class MapSource(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         id: str
         license: str
         license_uri: str
@@ -1239,8 +1268,10 @@ class MapSource(GObject.Object):
         projection: MapProjection
         tile_size: int
 
-    props: Props = ...
-    parent_instance: GObject.Object = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
     def __init__(
         self,
         id: str = ...,
@@ -1255,17 +1286,17 @@ class MapSource(GObject.Object):
     def do_fill_tile_async(
         self,
         tile: Tile,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def do_fill_tile_finish(self, result: Gio.AsyncResult) -> bool: ...
     def fill_tile_async(
         self,
         tile: Tile,
-        cancellable: typing.Optional[Gio.Cancellable] = None,
-        callback: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
+        cancellable: Gio.Cancellable | None = None,
+        callback: Callable[..., None] | None = None,
+        *user_data: Any,
     ) -> None: ...
     def fill_tile_finish(self, result: Gio.AsyncResult) -> bool: ...
     def get_column_count(self, zoom_level: int) -> int: ...
@@ -1303,11 +1334,14 @@ class MapSourceClass(GObject.GPointer):
 
         MapSourceClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
-    fill_tile_async: typing.Callable[..., None] = ...
-    fill_tile_finish: typing.Callable[[MapSource, Gio.AsyncResult], bool] = ...
-    padding: list[None] = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def fill_tile_async(self) -> Callable[..., None]: ...
+    @property
+    def fill_tile_finish(self) -> Callable[[MapSource, Gio.AsyncResult], bool]: ...
+    @property
+    def padding(self) -> list[None]: ...
 
 class MapSourceRegistry(GObject.Object, Gio.ListModel):
     """
@@ -1329,7 +1363,7 @@ class MapSourceRegistry(GObject.Object, Gio.ListModel):
     """
 
     def add(self, map_source: MapSource) -> None: ...
-    def get_by_id(self, id: str) -> typing.Optional[MapSource]: ...
+    def get_by_id(self, id: str) -> MapSource | None: ...
     @classmethod
     def new(cls) -> MapSourceRegistry: ...
     @classmethod
@@ -1345,10 +1379,12 @@ class MapSourceRegistryClass(GObject.GPointer):
 
         MapSourceRegistryClass()
     """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
-    parent_class: GObject.ObjectClass = ...
-
-class Marker(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, Location):
+class Marker(
+    _Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget, Location
+):
     """
     :Constructors:
 
@@ -1420,83 +1456,85 @@ class Marker(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, Lo
       notify (GParam)
     """
 
-    class Props:
-        child: typing.Optional[Gtk.Widget]
+    class Props(_Gtk4.Widget.Props):
+        child: _Gtk4.Widget | None
         selectable: bool
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
         latitude: float
         longitude: float
 
-    props: Props = ...
-    parent_instance: Gtk.Widget = ...
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> _Gtk4.Widget: ...
     def __init__(
         self,
-        child: typing.Optional[Gtk.Widget] = ...,
+        child: _Gtk4.Widget | None = ...,
         selectable: bool = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
         latitude: float = ...,
         longitude: float = ...,
     ) -> None: ...
@@ -1504,13 +1542,13 @@ class Marker(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, Lo
     def animate_in_with_delay(self, delay: int) -> None: ...
     def animate_out(self) -> None: ...
     def animate_out_with_delay(self, delay: int) -> None: ...
-    def get_child(self) -> typing.Optional[Gtk.Widget]: ...
+    def get_child(self) -> _Gtk4.Widget | None: ...
     def get_draggable(self) -> bool: ...
     def get_selectable(self) -> bool: ...
     def is_selected(self) -> bool: ...
     @classmethod
     def new(cls) -> Marker: ...
-    def set_child(self, child: typing.Optional[Gtk.Widget] = None) -> None: ...
+    def set_child(self, child: _Gtk4.Widget | None = None) -> None: ...
     def set_draggable(self, value: bool) -> None: ...
     def set_selectable(self, value: bool) -> None: ...
 
@@ -1522,11 +1560,12 @@ class MarkerClass(GObject.GPointer):
 
         MarkerClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
+    @property
+    def padding(self) -> list[None]: ...
 
-    parent_class: Gtk.WidgetClass = ...
-    padding: list[None] = ...
-
-class MarkerLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class MarkerLayer(Layer, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -1605,94 +1644,95 @@ class MarkerLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
-        selection_mode: Gtk.SelectionMode
+    class Props(Layer.Props):
+        selection_mode: _Gtk4.SelectionMode
         viewport: Viewport
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        selection_mode: Gtk.SelectionMode = ...,
+        selection_mode: _Gtk4.SelectionMode = ...,
         viewport: Viewport = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def add_marker(self, marker: Marker) -> None: ...
     def get_markers(self) -> list[Marker]: ...
     def get_selected(self) -> list[Marker]: ...
-    def get_selection_mode(self) -> Gtk.SelectionMode: ...
+    def get_selection_mode(self) -> _Gtk4.SelectionMode: ...
     @classmethod
     def new(cls, viewport: Viewport) -> MarkerLayer: ...
     @classmethod
-    def new_full(cls, viewport: Viewport, mode: Gtk.SelectionMode) -> MarkerLayer: ...
+    def new_full(cls, viewport: Viewport, mode: _Gtk4.SelectionMode) -> MarkerLayer: ...
     def remove_all(self) -> None: ...
     def remove_marker(self, marker: Marker) -> None: ...
     def select_all_markers(self) -> None: ...
     def select_marker(self, marker: Marker) -> bool: ...
-    def set_selection_mode(self, mode: Gtk.SelectionMode) -> None: ...
+    def set_selection_mode(self, mode: _Gtk4.SelectionMode) -> None: ...
     def unselect_all_markers(self) -> None: ...
     def unselect_marker(self, marker: Marker) -> None: ...
 
@@ -1704,10 +1744,10 @@ class MarkerLayerClass(GObject.GPointer):
 
         MarkerLayerClass()
     """
+    @property
+    def parent_class(self) -> LayerClass: ...
 
-    parent_class: LayerClass = ...
-
-class PathLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class PathLayer(Layer, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -1795,105 +1835,106 @@ class PathLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(Layer.Props):
         closed: bool
         fill: bool
-        fill_color: Gdk.RGBA
-        outline_color: Gdk.RGBA
+        fill_color: _Gdk4.RGBA
+        outline_color: _Gdk4.RGBA
         outline_width: float
         stroke: bool
-        stroke_color: Gdk.RGBA
+        stroke_color: _Gdk4.RGBA
         stroke_width: float
         viewport: Viewport
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         closed: bool = ...,
         fill: bool = ...,
-        fill_color: typing.Optional[Gdk.RGBA] = ...,
-        outline_color: typing.Optional[Gdk.RGBA] = ...,
+        fill_color: _Gdk4.RGBA | None = ...,
+        outline_color: _Gdk4.RGBA | None = ...,
         outline_width: float = ...,
         stroke: bool = ...,
-        stroke_color: typing.Optional[Gdk.RGBA] = ...,
+        stroke_color: _Gdk4.RGBA | None = ...,
         stroke_width: float = ...,
         viewport: Viewport = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def add_node(self, location: Location) -> None: ...
     def get_closed(self) -> bool: ...
     def get_dash(self) -> list[int]: ...
     def get_fill(self) -> bool: ...
-    def get_fill_color(self) -> Gdk.RGBA: ...
+    def get_fill_color(self) -> _Gdk4.RGBA: ...
     def get_nodes(self) -> list[Location]: ...
-    def get_outline_color(self) -> Gdk.RGBA: ...
+    def get_outline_color(self) -> _Gdk4.RGBA: ...
     def get_outline_width(self) -> float: ...
     def get_stroke(self) -> bool: ...
-    def get_stroke_color(self) -> Gdk.RGBA: ...
+    def get_stroke_color(self) -> _Gdk4.RGBA: ...
     def get_stroke_width(self) -> float: ...
     def insert_node(self, location: Location, position: int) -> None: ...
     @classmethod
@@ -1903,11 +1944,11 @@ class PathLayer(Layer, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
     def set_closed(self, value: bool) -> None: ...
     def set_dash(self, dash_pattern: list[int]) -> None: ...
     def set_fill(self, value: bool) -> None: ...
-    def set_fill_color(self, color: typing.Optional[Gdk.RGBA] = None) -> None: ...
-    def set_outline_color(self, color: typing.Optional[Gdk.RGBA] = None) -> None: ...
+    def set_fill_color(self, color: _Gdk4.RGBA | None = None) -> None: ...
+    def set_outline_color(self, color: _Gdk4.RGBA | None = None) -> None: ...
     def set_outline_width(self, value: float) -> None: ...
     def set_stroke(self, value: bool) -> None: ...
-    def set_stroke_color(self, color: typing.Optional[Gdk.RGBA] = None) -> None: ...
+    def set_stroke_color(self, color: _Gdk4.RGBA | None = None) -> None: ...
     def set_stroke_width(self, value: float) -> None: ...
 
 class PathLayerClass(GObject.GPointer):
@@ -1918,10 +1959,12 @@ class PathLayerClass(GObject.GPointer):
 
         PathLayerClass()
     """
+    @property
+    def parent_class(self) -> LayerClass: ...
 
-    parent_class: LayerClass = ...
-
-class Point(Marker, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, Location):
+class Point(
+    Marker, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget, Location
+):
     """
     :Constructors:
 
@@ -1993,82 +2036,83 @@ class Point(Marker, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget, Locatio
       notify (GParam)
     """
 
-    class Props:
-        child: typing.Optional[Gtk.Widget]
+    class Props(Marker.Props):
+        child: _Gtk4.Widget | None
         selectable: bool
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
         latitude: float
         longitude: float
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        child: typing.Optional[Gtk.Widget] = ...,
+        child: _Gtk4.Widget | None = ...,
         selectable: bool = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
         latitude: float = ...,
         longitude: float = ...,
     ) -> None: ...
@@ -2083,8 +2127,8 @@ class PointClass(GObject.GPointer):
 
         PointClass()
     """
-
-    parent_class: MarkerClass = ...
+    @property
+    def parent_class(self) -> MarkerClass: ...
 
 class RasterRenderer(MapSource):
     """
@@ -2126,7 +2170,7 @@ class RasterRenderer(MapSource):
       notify (GParam)
     """
 
-    class Props:
+    class Props(MapSource.Props):
         data_source: DataSource
         id: str
         license: str
@@ -2137,7 +2181,8 @@ class RasterRenderer(MapSource):
         projection: MapProjection
         tile_size: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         data_source: DataSource = ...,
@@ -2189,10 +2234,10 @@ class RasterRendererClass(GObject.GPointer):
 
         RasterRendererClass()
     """
+    @property
+    def parent_class(self) -> MapSourceClass: ...
 
-    parent_class: MapSourceClass = ...
-
-class Scale(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class Scale(_Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget):
     """
     :Constructors:
 
@@ -2266,91 +2311,92 @@ class Scale(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         max_width: int
         unit: Unit
-        viewport: typing.Optional[Viewport]
+        viewport: Viewport | None
         can_focus: bool
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         max_width: int = ...,
         unit: Unit = ...,
-        viewport: typing.Optional[Viewport] = ...,
+        viewport: Viewport | None = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def get_max_width(self) -> int: ...
     def get_unit(self) -> Unit: ...
-    def get_viewport(self) -> typing.Optional[Viewport]: ...
+    def get_viewport(self) -> Viewport | None: ...
     @classmethod
-    def new(cls, viewport: typing.Optional[Viewport] = None) -> Scale: ...
+    def new(cls, viewport: Viewport | None = None) -> Scale: ...
     def set_max_width(self, value: int) -> None: ...
     def set_unit(self, unit: Unit) -> None: ...
-    def set_viewport(self, viewport: typing.Optional[Viewport] = None) -> None: ...
+    def set_viewport(self, viewport: Viewport | None = None) -> None: ...
 
 class ScaleClass(GObject.GPointer):
     """
@@ -2360,10 +2406,12 @@ class ScaleClass(GObject.GPointer):
 
         ScaleClass()
     """
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
-    parent_class: Gtk.WidgetClass = ...
-
-class SimpleMap(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget):
+class SimpleMap(
+    _Gtk4.Widget, _Gtk4.Accessible, _Gtk4.Buildable, _Gtk4.ConstraintTarget
+):
     """
     :Constructors:
 
@@ -2448,7 +2496,7 @@ class SimpleMap(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget)
       notify (GParam)
     """
 
-    class Props:
+    class Props(_Gtk4.Widget.Props):
         compass: Compass
         license: License
         map: Map
@@ -2460,73 +2508,74 @@ class SimpleMap(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget)
         can_target: bool
         css_classes: list[str]
         css_name: str
-        cursor: typing.Optional[Gdk.Cursor]
+        cursor: _Gdk4.Cursor | None
         focus_on_click: bool
         focusable: bool
-        halign: Gtk.Align
+        halign: _Gtk4.Align
         has_default: bool
         has_focus: bool
         has_tooltip: bool
         height_request: int
         hexpand: bool
         hexpand_set: bool
-        layout_manager: typing.Optional[Gtk.LayoutManager]
+        layout_manager: _Gtk4.LayoutManager | None
         margin_bottom: int
         margin_end: int
         margin_start: int
         margin_top: int
         name: str
         opacity: float
-        overflow: Gtk.Overflow
-        parent: typing.Optional[Gtk.Widget]
+        overflow: _Gtk4.Overflow
+        parent: _Gtk4.Widget | None
         receives_default: bool
-        root: typing.Optional[Gtk.Root]
+        root: _Gtk4.Root | None
         scale_factor: int
         sensitive: bool
-        tooltip_markup: typing.Optional[str]
-        tooltip_text: typing.Optional[str]
-        valign: Gtk.Align
+        tooltip_markup: str | None
+        tooltip_text: str | None
+        valign: _Gtk4.Align
         vexpand: bool
         vexpand_set: bool
         visible: bool
         width_request: int
-        accessible_role: Gtk.AccessibleRole
+        accessible_role: _Gtk4.AccessibleRole
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
-        map_source: typing.Optional[MapSource] = ...,
+        map_source: MapSource | None = ...,
         show_zoom_buttons: bool = ...,
         can_focus: bool = ...,
         can_target: bool = ...,
-        css_classes: typing.Sequence[str] = ...,
+        css_classes: Sequence[str] = ...,
         css_name: str = ...,
-        cursor: typing.Optional[Gdk.Cursor] = ...,
+        cursor: _Gdk4.Cursor | None = ...,
         focus_on_click: bool = ...,
         focusable: bool = ...,
-        halign: Gtk.Align = ...,
+        halign: _Gtk4.Align = ...,
         has_tooltip: bool = ...,
         height_request: int = ...,
         hexpand: bool = ...,
         hexpand_set: bool = ...,
-        layout_manager: typing.Optional[Gtk.LayoutManager] = ...,
+        layout_manager: _Gtk4.LayoutManager | None = ...,
         margin_bottom: int = ...,
         margin_end: int = ...,
         margin_start: int = ...,
         margin_top: int = ...,
         name: str = ...,
         opacity: float = ...,
-        overflow: Gtk.Overflow = ...,
+        overflow: _Gtk4.Overflow = ...,
         receives_default: bool = ...,
         sensitive: bool = ...,
-        tooltip_markup: typing.Optional[str] = ...,
-        tooltip_text: typing.Optional[str] = ...,
-        valign: Gtk.Align = ...,
+        tooltip_markup: str | None = ...,
+        tooltip_text: str | None = ...,
+        valign: _Gtk4.Align = ...,
         vexpand: bool = ...,
         vexpand_set: bool = ...,
         visible: bool = ...,
         width_request: int = ...,
-        accessible_role: Gtk.AccessibleRole = ...,
+        accessible_role: _Gtk4.AccessibleRole = ...,
     ) -> None: ...
     def add_overlay_layer(self, layer: Layer) -> None: ...
     def get_compass(self) -> Compass: ...
@@ -2540,7 +2589,7 @@ class SimpleMap(Gtk.Widget, Gtk.Accessible, Gtk.Buildable, Gtk.ConstraintTarget)
     @classmethod
     def new(cls) -> SimpleMap: ...
     def remove_overlay_layer(self, layer: Layer) -> None: ...
-    def set_map_source(self, map_source: typing.Optional[MapSource] = None) -> None: ...
+    def set_map_source(self, map_source: MapSource | None = None) -> None: ...
     def set_show_zoom_buttons(self, show_zoom_buttons: bool) -> None: ...
 
 class SimpleMapClass(GObject.GPointer):
@@ -2551,8 +2600,8 @@ class SimpleMapClass(GObject.GPointer):
 
         SimpleMapClass()
     """
-
-    parent_class: Gtk.WidgetClass = ...
+    @property
+    def parent_class(self) -> _Gtk4.WidgetClass: ...
 
 class SymbolEvent(GObject.Object, Location):
     """
@@ -2576,14 +2625,15 @@ class SymbolEvent(GObject.Object, Location):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         feature_id: str
         layer: str
         source_layer: str
         latitude: float
         longitude: float
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(self, latitude: float = ..., longitude: float = ...) -> None: ...
     def get_feature_id(self) -> str: ...
     def get_keys(self) -> list[str]: ...
@@ -2599,8 +2649,8 @@ class SymbolEventClass(GObject.GPointer):
 
         SymbolEventClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Tile(GObject.Object):
     """
@@ -2636,9 +2686,9 @@ class Tile(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         fade_in: bool
-        paintable: typing.Optional[Gdk.Paintable]
+        paintable: _Gdk4.Paintable | None
         scale_factor: float
         size: int
         state: State
@@ -2646,11 +2696,12 @@ class Tile(GObject.Object):
         y: int
         zoom_level: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         fade_in: bool = ...,
-        paintable: Gdk.Paintable = ...,
+        paintable: _Gdk4.Paintable = ...,
         scale_factor: float = ...,
         size: int = ...,
         state: State = ...,
@@ -2659,7 +2710,7 @@ class Tile(GObject.Object):
         zoom_level: int = ...,
     ) -> None: ...
     def get_fade_in(self) -> bool: ...
-    def get_paintable(self) -> typing.Optional[Gdk.Paintable]: ...
+    def get_paintable(self) -> _Gdk4.Paintable | None: ...
     def get_scale_factor(self) -> float: ...
     def get_size(self) -> int: ...
     def get_state(self) -> State: ...
@@ -2671,7 +2722,7 @@ class Tile(GObject.Object):
     @classmethod
     def new_full(cls, x: int, y: int, size: int, zoom_level: int) -> Tile: ...
     def set_fade_in(self, fade_in: bool) -> None: ...
-    def set_paintable(self, paintable: Gdk.Paintable) -> None: ...
+    def set_paintable(self, paintable: _Gdk4.Paintable) -> None: ...
     def set_scale_factor(self, scale_factor: float) -> None: ...
     def set_size(self, size: int) -> None: ...
     def set_state(self, state: State) -> None: ...
@@ -2687,8 +2738,8 @@ class TileClass(GObject.GPointer):
 
         TileClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class TileDownloader(DataSource):
     """
@@ -2718,12 +2769,13 @@ class TileDownloader(DataSource):
       notify (GParam)
     """
 
-    class Props:
+    class Props(DataSource.Props):
         url_template: str
         max_zoom_level: int
         min_zoom_level: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         url_template: str = ...,
@@ -2741,8 +2793,8 @@ class TileDownloaderClass(GObject.GPointer):
 
         TileDownloaderClass()
     """
-
-    parent_class: DataSourceClass = ...
+    @property
+    def parent_class(self) -> DataSourceClass: ...
 
 class VectorReader(GObject.Object):
     """
@@ -2771,8 +2823,8 @@ class VectorReaderClass(GObject.GPointer):
 
         VectorReaderClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class VectorReaderIter(GObject.Object):
     """
@@ -2792,17 +2844,18 @@ class VectorReaderIter(GObject.Object):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         reader: VectorReader
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(self, reader: VectorReader = ...) -> None: ...
     def feature_contains_point(self, x: float, y: float) -> bool: ...
     def get_feature_geometry_type(self) -> GeometryType: ...
     def get_feature_id(self) -> int: ...
     def get_feature_keys(self) -> list[str]: ...
-    def get_feature_point(self) -> typing.Tuple[bool, float, float]: ...
-    def get_feature_tag(self, key: str) -> typing.Tuple[bool, typing.Any]: ...
+    def get_feature_point(self) -> tuple[bool, float, float]: ...
+    def get_feature_tag(self, key: str) -> tuple[bool, Any]: ...
     def get_layer_count(self) -> int: ...
     def get_layer_extent(self) -> int: ...
     def get_layer_feature_count(self) -> int: ...
@@ -2821,8 +2874,8 @@ class VectorReaderIterClass(GObject.GPointer):
 
         VectorReaderIterClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class VectorRenderer(MapSource, Gio.Initable):
     """
@@ -2863,7 +2916,7 @@ class VectorRenderer(MapSource, Gio.Initable):
       notify (GParam)
     """
 
-    class Props:
+    class Props(MapSource.Props):
         sprite_sheet: VectorSpriteSheet
         style_json: str
         id: str
@@ -2875,7 +2928,8 @@ class VectorRenderer(MapSource, Gio.Initable):
         projection: MapProjection
         tile_size: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         sprite_sheet: VectorSpriteSheet = ...,
@@ -2908,10 +2962,10 @@ class VectorRendererClass(GObject.GPointer):
 
         VectorRendererClass()
     """
+    @property
+    def parent_class(self) -> MapSourceClass: ...
 
-    parent_class: MapSourceClass = ...
-
-class VectorSprite(GObject.Object, Gdk.Paintable, Gtk.SymbolicPaintable):
+class VectorSprite(GObject.Object, _Gdk4.Paintable, _Gtk4.SymbolicPaintable):
     """
     :Constructors:
 
@@ -2943,37 +2997,38 @@ class VectorSprite(GObject.Object, Gdk.Paintable, Gtk.SymbolicPaintable):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         height: int
         scale_factor: float
-        source_paintable: Gdk.Paintable
-        source_rect: typing.Optional[Gdk.Rectangle]
+        source_paintable: _Gdk4.Paintable
+        source_rect: _Gdk4.Rectangle | None
         width: int
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         height: int = ...,
         scale_factor: float = ...,
-        source_paintable: Gdk.Paintable = ...,
-        source_rect: Gdk.Rectangle = ...,
+        source_paintable: _Gdk4.Paintable = ...,
+        source_rect: _Gdk4.Rectangle = ...,
         width: int = ...,
     ) -> None: ...
     def get_height(self) -> int: ...
     def get_scale_factor(self) -> float: ...
-    def get_source_paintable(self) -> Gdk.Paintable: ...
-    def get_source_rect(self) -> typing.Optional[Gdk.Rectangle]: ...
+    def get_source_paintable(self) -> _Gdk4.Paintable: ...
+    def get_source_rect(self) -> _Gdk4.Rectangle | None: ...
     def get_width(self) -> int: ...
     @classmethod
-    def new(cls, source_paintable: Gdk.Paintable) -> VectorSprite: ...
+    def new(cls, source_paintable: _Gdk4.Paintable) -> VectorSprite: ...
     @classmethod
     def new_full(
         cls,
-        source_paintable: Gdk.Paintable,
+        source_paintable: _Gdk4.Paintable,
         width: int,
         height: int,
         scale_factor: float,
-        source_rect: typing.Optional[Gdk.Rectangle] = None,
+        source_rect: _Gdk4.Rectangle | None = None,
     ) -> VectorSprite: ...
 
 class VectorSpriteClass(GObject.GPointer):
@@ -2984,8 +3039,8 @@ class VectorSpriteClass(GObject.GPointer):
 
         VectorSpriteClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class VectorSpriteSheet(GObject.Object):
     """
@@ -3003,18 +3058,16 @@ class VectorSpriteSheet(GObject.Object):
     """
 
     def add_page(
-        self, texture: Gdk.Texture, json: str, default_scale: float
+        self, texture: _Gdk4.Texture, json: str, default_scale: float
     ) -> bool: ...
     def add_sprite(self, name: str, sprite: VectorSprite) -> None: ...
-    def get_sprite(self, name: str, scale: float) -> typing.Optional[VectorSprite]: ...
+    def get_sprite(self, name: str, scale: float) -> VectorSprite | None: ...
     @classmethod
     def new(cls) -> VectorSpriteSheet: ...
     def set_fallback(
         self,
-        fallback: typing.Optional[
-            typing.Callable[..., typing.Optional[VectorSprite]]
-        ] = None,
-        *user_data: typing.Any,
+        fallback: Callable[..., VectorSprite | None] | None = None,
+        *user_data: Any,
     ) -> None: ...
 
 class VectorSpriteSheetClass(GObject.GPointer):
@@ -3025,8 +3078,8 @@ class VectorSpriteSheetClass(GObject.GPointer):
 
         VectorSpriteSheetClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class Viewport(GObject.Object, Location):
     """
@@ -3055,21 +3108,22 @@ class Viewport(GObject.Object, Location):
       notify (GParam)
     """
 
-    class Props:
+    class Props(GObject.Object.Props):
         max_zoom_level: int
         min_zoom_level: int
-        reference_map_source: typing.Optional[MapSource]
+        reference_map_source: MapSource | None
         rotation: float
         zoom_level: float
         latitude: float
         longitude: float
 
-    props: Props = ...
+    @property
+    def props(self) -> Props: ...
     def __init__(
         self,
         max_zoom_level: int = ...,
         min_zoom_level: int = ...,
-        reference_map_source: typing.Optional[MapSource] = ...,
+        reference_map_source: MapSource | None = ...,
         rotation: float = ...,
         zoom_level: float = ...,
         latitude: float = ...,
@@ -3077,24 +3131,22 @@ class Viewport(GObject.Object, Location):
     ) -> None: ...
     def get_max_zoom_level(self) -> int: ...
     def get_min_zoom_level(self) -> int: ...
-    def get_reference_map_source(self) -> typing.Optional[MapSource]: ...
+    def get_reference_map_source(self) -> MapSource | None: ...
     def get_rotation(self) -> float: ...
     def get_zoom_level(self) -> float: ...
     def location_to_widget_coords(
-        self, widget: Gtk.Widget, latitude: float, longitude: float
-    ) -> typing.Tuple[float, float]: ...
+        self, widget: _Gtk4.Widget, latitude: float, longitude: float
+    ) -> tuple[float, float]: ...
     @classmethod
     def new(cls) -> Viewport: ...
     def set_max_zoom_level(self, max_zoom_level: int) -> None: ...
     def set_min_zoom_level(self, min_zoom_level: int) -> None: ...
-    def set_reference_map_source(
-        self, map_source: typing.Optional[MapSource] = None
-    ) -> None: ...
+    def set_reference_map_source(self, map_source: MapSource | None = None) -> None: ...
     def set_rotation(self, rotation: float) -> None: ...
     def set_zoom_level(self, zoom_level: float) -> None: ...
     def widget_coords_to_location(
-        self, widget: Gtk.Widget, x: float, y: float
-    ) -> typing.Tuple[float, float]: ...
+        self, widget: _Gtk4.Widget, x: float, y: float
+    ) -> tuple[float, float]: ...
 
 class ViewportClass(GObject.GPointer):
     """
@@ -3104,8 +3156,8 @@ class ViewportClass(GObject.GPointer):
 
         ViewportClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class FileCacheError(GObject.GEnum):
     FAILED = 0

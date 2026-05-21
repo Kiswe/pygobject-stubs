@@ -1,0 +1,3470 @@
+from typing import Any
+from typing import Final
+from typing import Protocol
+from typing import TypeVar
+
+from collections.abc import Callable
+
+from gi.repository import Gio
+from gi.repository import GObject
+
+T = TypeVar("T")
+
+FAKE_CAMERA_ACQUISITION_FRAME_RATE_DEFAULT: Final[float]
+FAKE_CAMERA_BINNING_HORIZONTAL_DEFAULT: Final[int]
+FAKE_CAMERA_BINNING_VERTICAL_DEFAULT: Final[int]
+FAKE_CAMERA_EXPOSURE_TIME_US_DEFAULT: Final[float]
+FAKE_CAMERA_HEIGHT_DEFAULT: Final[int]
+FAKE_CAMERA_MEMORY_SIZE: Final[int]
+FAKE_CAMERA_REGISTER_ACQUISITION: Final[int]
+FAKE_CAMERA_REGISTER_ACQUISITION_FRAME_PERIOD_US: Final[int]
+FAKE_CAMERA_REGISTER_ACQUISITION_MODE: Final[int]
+FAKE_CAMERA_REGISTER_ACQUISITION_START_OFFSET: Final[int]
+FAKE_CAMERA_REGISTER_BINNING_HORIZONTAL: Final[int]
+FAKE_CAMERA_REGISTER_BINNING_VERTICAL: Final[int]
+FAKE_CAMERA_REGISTER_EXPOSURE_TIME_US: Final[int]
+FAKE_CAMERA_REGISTER_FRAME_START_OFFSET: Final[int]
+FAKE_CAMERA_REGISTER_GAIN_MODE: Final[int]
+FAKE_CAMERA_REGISTER_GAIN_RAW: Final[int]
+FAKE_CAMERA_REGISTER_HEIGHT: Final[int]
+FAKE_CAMERA_REGISTER_PIXEL_FORMAT: Final[int]
+FAKE_CAMERA_REGISTER_SENSOR_HEIGHT: Final[int]
+FAKE_CAMERA_REGISTER_SENSOR_WIDTH: Final[int]
+FAKE_CAMERA_REGISTER_TEST: Final[int]
+FAKE_CAMERA_REGISTER_TRIGGER_ACTIVATION: Final[int]
+FAKE_CAMERA_REGISTER_TRIGGER_MODE: Final[int]
+FAKE_CAMERA_REGISTER_TRIGGER_SOFTWARE: Final[int]
+FAKE_CAMERA_REGISTER_TRIGGER_SOURCE: Final[int]
+FAKE_CAMERA_REGISTER_WIDTH: Final[int]
+FAKE_CAMERA_REGISTER_X_OFFSET: Final[int]
+FAKE_CAMERA_REGISTER_Y_OFFSET: Final[int]
+FAKE_CAMERA_SENSOR_HEIGHT: Final[int]
+FAKE_CAMERA_SENSOR_WIDTH: Final[int]
+FAKE_CAMERA_TEST_REGISTER_DEFAULT: Final[int]
+FAKE_CAMERA_WIDTH_DEFAULT: Final[int]
+GV_FAKE_CAMERA_DEFAULT_INTERFACE: Final = "127.0.0.1"
+GV_FAKE_CAMERA_DEFAULT_SERIAL_NUMBER: Final = "GV01"
+PIXEL_FORMAT_BAYER_BG_10: Final[int]
+PIXEL_FORMAT_BAYER_BG_10P: Final[int]
+PIXEL_FORMAT_BAYER_BG_10_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_BG_12: Final[int]
+PIXEL_FORMAT_BAYER_BG_12P: Final[int]
+PIXEL_FORMAT_BAYER_BG_12_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_BG_16: Final[int]
+PIXEL_FORMAT_BAYER_BG_8: Final[int]
+PIXEL_FORMAT_BAYER_GB_10: Final[int]
+PIXEL_FORMAT_BAYER_GB_10P: Final[int]
+PIXEL_FORMAT_BAYER_GB_10_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_GB_12: Final[int]
+PIXEL_FORMAT_BAYER_GB_12P: Final[int]
+PIXEL_FORMAT_BAYER_GB_12_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_GB_16: Final[int]
+PIXEL_FORMAT_BAYER_GB_8: Final[int]
+PIXEL_FORMAT_BAYER_GR_10: Final[int]
+PIXEL_FORMAT_BAYER_GR_10P: Final[int]
+PIXEL_FORMAT_BAYER_GR_10_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_GR_12: Final[int]
+PIXEL_FORMAT_BAYER_GR_12P: Final[int]
+PIXEL_FORMAT_BAYER_GR_12_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_GR_16: Final[int]
+PIXEL_FORMAT_BAYER_GR_8: Final[int]
+PIXEL_FORMAT_BAYER_RG_10: Final[int]
+PIXEL_FORMAT_BAYER_RG_10P: Final[int]
+PIXEL_FORMAT_BAYER_RG_10_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_RG_12: Final[int]
+PIXEL_FORMAT_BAYER_RG_12P: Final[int]
+PIXEL_FORMAT_BAYER_RG_12_PACKED: Final[int]
+PIXEL_FORMAT_BAYER_RG_16: Final[int]
+PIXEL_FORMAT_BAYER_RG_8: Final[int]
+PIXEL_FORMAT_BGRA_8_PACKED: Final[int]
+PIXEL_FORMAT_BGR_10_PACKED: Final[int]
+PIXEL_FORMAT_BGR_12_PACKED: Final[int]
+PIXEL_FORMAT_BGR_8_PACKED: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_10P: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_10P_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_12P: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_12P_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_16: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_16_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_32F: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_32F_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_8: Final[int]
+PIXEL_FORMAT_COORD3D_ABC_8_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_AC_10P: Final[int]
+PIXEL_FORMAT_COORD3D_AC_10P_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_AC_12P: Final[int]
+PIXEL_FORMAT_COORD3D_AC_12P_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_AC_16: Final[int]
+PIXEL_FORMAT_COORD3D_AC_16_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_AC_32F: Final[int]
+PIXEL_FORMAT_COORD3D_AC_32F_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_AC_8: Final[int]
+PIXEL_FORMAT_COORD3D_AC_8_PLANAR: Final[int]
+PIXEL_FORMAT_COORD3D_A_10P: Final[int]
+PIXEL_FORMAT_COORD3D_A_12P: Final[int]
+PIXEL_FORMAT_COORD3D_A_16: Final[int]
+PIXEL_FORMAT_COORD3D_A_32F: Final[int]
+PIXEL_FORMAT_COORD3D_A_8: Final[int]
+PIXEL_FORMAT_COORD3D_B_10P: Final[int]
+PIXEL_FORMAT_COORD3D_B_12P: Final[int]
+PIXEL_FORMAT_COORD3D_B_16: Final[int]
+PIXEL_FORMAT_COORD3D_B_32F: Final[int]
+PIXEL_FORMAT_COORD3D_B_8: Final[int]
+PIXEL_FORMAT_COORD3D_C_10P: Final[int]
+PIXEL_FORMAT_COORD3D_C_12P: Final[int]
+PIXEL_FORMAT_COORD3D_C_16: Final[int]
+PIXEL_FORMAT_COORD3D_C_32F: Final[int]
+PIXEL_FORMAT_COORD3D_C_8: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_BG_12_PACKED: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_BG_16: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_GB_12_PACKED: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_GB_16: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_GR_12_PACKED: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_GR_16: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_RG_12_PACKED: Final[int]
+PIXEL_FORMAT_CUSTOM_BAYER_RG_16: Final[int]
+PIXEL_FORMAT_CUSTOM_YUV_422_YUYV_PACKED: Final[int]
+PIXEL_FORMAT_DATA_16: Final[int]
+PIXEL_FORMAT_DATA_16S: Final[int]
+PIXEL_FORMAT_DATA_32: Final[int]
+PIXEL_FORMAT_DATA_32F: Final[int]
+PIXEL_FORMAT_DATA_32S: Final[int]
+PIXEL_FORMAT_DATA_64: Final[int]
+PIXEL_FORMAT_DATA_64F: Final[int]
+PIXEL_FORMAT_DATA_64S: Final[int]
+PIXEL_FORMAT_DATA_8: Final[int]
+PIXEL_FORMAT_DATA_8S: Final[int]
+PIXEL_FORMAT_MONO_10: Final[int]
+PIXEL_FORMAT_MONO_10_PACKED: Final[int]
+PIXEL_FORMAT_MONO_12: Final[int]
+PIXEL_FORMAT_MONO_12_PACKED: Final[int]
+PIXEL_FORMAT_MONO_14: Final[int]
+PIXEL_FORMAT_MONO_16: Final[int]
+PIXEL_FORMAT_MONO_8: Final[int]
+PIXEL_FORMAT_MONO_8_SIGNED: Final[int]
+PIXEL_FORMAT_RGBA_8_PACKED: Final[int]
+PIXEL_FORMAT_RGB_10_PACKED: Final[int]
+PIXEL_FORMAT_RGB_10_PLANAR: Final[int]
+PIXEL_FORMAT_RGB_12_PACKED: Final[int]
+PIXEL_FORMAT_RGB_12_PLANAR: Final[int]
+PIXEL_FORMAT_RGB_16_PLANAR: Final[int]
+PIXEL_FORMAT_RGB_8_PACKED: Final[int]
+PIXEL_FORMAT_RGB_8_PLANAR: Final[int]
+PIXEL_FORMAT_YUV_411_PACKED: Final[int]
+PIXEL_FORMAT_YUV_422_PACKED: Final[int]
+PIXEL_FORMAT_YUV_422_YUYV_PACKED: Final[int]
+PIXEL_FORMAT_YUV_444_PACKED: Final[int]
+
+def acquisition_mode_from_string(string: str) -> AcquisitionMode: ...
+def acquisition_mode_to_string(value: AcquisitionMode) -> str: ...
+def auto_from_string(string: str) -> Auto: ...
+def auto_to_string(value: Auto) -> str: ...
+def chunk_parser_error_quark() -> int: ...
+def debug_enable(category_selection: str) -> bool: ...
+def device_error_quark() -> int: ...
+def disable_interface(interface_id: str) -> None: ...
+def dom_implementation_add_document_type(
+    qualified_name: str, document_type: type[Any]
+) -> None: ...
+def dom_implementation_cleanup() -> None: ...
+def dom_implementation_create_document(
+    namespace_uri: str, qualified_name: str
+) -> DomDocument: ...
+def enable_interface(interface_id: str) -> None: ...
+def exposure_mode_from_string(string: str) -> ExposureMode: ...
+def exposure_mode_to_string(value: ExposureMode) -> str: ...
+def gc_access_mode_from_string(string: str) -> GcAccessMode: ...
+def gc_access_mode_to_string(value: GcAccessMode) -> str: ...
+def gc_error_quark() -> int: ...
+def get_device_address(index: int) -> str: ...
+def get_device_id(index: int) -> str: ...
+def get_device_manufacturer_info(index: int) -> str: ...
+def get_device_model(index: int) -> str: ...
+def get_device_physical_id(index: int) -> str: ...
+def get_device_protocol(index: int) -> str: ...
+def get_device_serial_nbr(index: int) -> str: ...
+def get_device_vendor(index: int) -> str: ...
+def get_interface_id(index: int) -> str: ...
+def get_n_devices() -> int: ...
+def get_n_interfaces() -> int: ...
+def make_thread_high_priority(nice_level: int) -> bool: ...
+def make_thread_realtime(priority: int) -> bool: ...
+def open_device(device_id: str | None = None) -> Device: ...
+def select_interface(interface_id: str) -> None: ...
+def set_fake_camera_genicam_filename(filename: str) -> None: ...
+def set_interface_flags(interface_id: str, flags: int) -> None: ...
+def shutdown() -> None: ...
+def update_device_list() -> None: ...
+def xml_schema_error_quark() -> int: ...
+
+class Buffer(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Buffer(**properties)
+        new(size:int, preallocated=None) -> Aravis.Buffer
+        new_allocate(size:int) -> Aravis.Buffer
+        new_full(size:int, preallocated=None, user_data=None, user_data_destroy_func:GLib.DestroyNotify=None) -> Aravis.Buffer
+
+    Object ArvBuffer
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def find_component(self, component_id: int) -> int: ...
+    def get_chunk_data(self, chunk_id: int) -> bytes: ...
+    def get_data(self) -> bytes: ...
+    def get_frame_id(self) -> int: ...
+    def get_gendc_data(self) -> bytes: ...
+    def get_gendc_descriptor(self) -> bytes: ...
+    def get_image_data(self) -> bytes: ...
+    def get_image_height(self) -> int: ...
+    def get_image_padding(self) -> tuple[int, int]: ...
+    def get_image_pixel_format(self) -> int: ...
+    def get_image_region(self) -> tuple[int, int, int, int]: ...
+    def get_image_width(self) -> int: ...
+    def get_image_x(self) -> int: ...
+    def get_image_y(self) -> int: ...
+    def get_n_parts(self) -> int: ...
+    def get_part_component_id(self, part_id: int) -> int: ...
+    def get_part_data(self, part_id: int) -> bytes: ...
+    def get_part_data_type(self, part_id: int) -> BufferPartDataType: ...
+    def get_part_height(self, part_id: int) -> int: ...
+    def get_part_padding(self, part_id: int) -> tuple[int, int]: ...
+    def get_part_pixel_format(self, part_id: int) -> int: ...
+    def get_part_region(self, part_id: int) -> tuple[int, int, int, int]: ...
+    def get_part_width(self, part_id: int) -> int: ...
+    def get_part_x(self, part_id: int) -> int: ...
+    def get_part_y(self, part_id: int) -> int: ...
+    def get_payload_type(self) -> BufferPayloadType: ...
+    def get_status(self) -> BufferStatus: ...
+    def get_system_timestamp(self) -> int: ...
+    def get_timestamp(self) -> int: ...
+    def get_user_data(self) -> None: ...
+    def has_chunks(self) -> bool: ...
+    def has_gendc(self) -> bool: ...
+    @classmethod
+    def new(cls, size: int, preallocated: None) -> Buffer: ...
+    @classmethod
+    def new_allocate(cls, size: int) -> Buffer: ...
+    @classmethod
+    def new_full(
+        cls,
+        size: int,
+        preallocated: None,
+        user_data: None,
+        user_data_destroy_func: Callable[[None], None] | None = None,
+    ) -> Buffer: ...
+    def set_frame_id(self, frame_id: int) -> None: ...
+    def set_system_timestamp(self, timestamp_ns: int) -> None: ...
+    def set_timestamp(self, timestamp_ns: int) -> None: ...
+
+class BufferClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        BufferClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Camera(GObject.Object, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        Camera(**properties)
+        new(name:str=None) -> Aravis.Camera
+        new_with_device(device:Aravis.Device) -> Aravis.Camera
+
+    Object ArvCamera
+
+    Properties from ArvCamera:
+      name -> gchararray: Camera name
+        The camera name
+      device -> ArvDevice: Device
+        The device associated with this camera
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GObject.Object.Props):
+        device: Device
+        name: str
+
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def __init__(self, *, device: Device = ..., name: str = ...) -> None: ...
+    def abort_acquisition(self) -> None: ...
+    def acquisition(self, timeout: int) -> Buffer: ...
+    def are_chunks_available(self) -> bool: ...
+    def clear_triggers(self) -> None: ...
+    def create_chunk_parser(self) -> ChunkParser: ...
+    def create_stream(
+        self, callback: Callable[..., None] | None = None, *user_data: Any
+    ) -> Stream: ...
+    def dup_available_black_levels(self) -> list[str]: ...
+    def dup_available_components(self) -> list[str]: ...
+    def dup_available_enumerations(self, feature: str) -> list[int]: ...
+    def dup_available_enumerations_as_display_names(
+        self, feature: str
+    ) -> list[str]: ...
+    def dup_available_enumerations_as_strings(self, feature: str) -> list[str]: ...
+    def dup_available_gains(self) -> list[str]: ...
+    def dup_available_pixel_formats(self) -> list[int]: ...
+    def dup_available_pixel_formats_as_display_names(self) -> list[str]: ...
+    def dup_available_pixel_formats_as_strings(self) -> list[str]: ...
+    def dup_available_trigger_sources(self) -> list[str]: ...
+    def dup_available_triggers(self) -> list[str]: ...
+    def dup_register(self, feature: str) -> int: ...
+    def execute_command(self, feature: str) -> None: ...
+    def get_acquisition_mode(self) -> AcquisitionMode: ...
+    def get_binning(self) -> tuple[int, int]: ...
+    def get_black_level(self) -> float: ...
+    def get_black_level_auto(self) -> Auto: ...
+    def get_black_level_bounds(self) -> tuple[float, float]: ...
+    def get_boolean(self, feature: str) -> bool: ...
+    def get_chunk_mode(self) -> bool: ...
+    def get_chunk_state(self, chunk: str) -> bool: ...
+    def get_device(self) -> Device: ...
+    def get_device_id(self) -> str: ...
+    def get_device_serial_number(self) -> str: ...
+    def get_exposure_time(self) -> float: ...
+    def get_exposure_time_auto(self) -> Auto: ...
+    def get_exposure_time_bounds(self) -> tuple[float, float]: ...
+    def get_exposure_time_representation(self) -> GcRepresentation: ...
+    def get_feature_representation(self, feature: str) -> GcRepresentation: ...
+    def get_float(self, feature: str) -> float: ...
+    def get_float_bounds(self, feature: str) -> tuple[float, float]: ...
+    def get_float_increment(self, feature: str) -> float: ...
+    def get_frame_count(self) -> int: ...
+    def get_frame_count_bounds(self) -> tuple[int, int]: ...
+    def get_frame_rate(self) -> float: ...
+    def get_frame_rate_bounds(self) -> tuple[float, float]: ...
+    def get_frame_rate_enable(self) -> bool: ...
+    def get_gain(self) -> float: ...
+    def get_gain_auto(self) -> Auto: ...
+    def get_gain_bounds(self) -> tuple[float, float]: ...
+    def get_gain_representation(self) -> GcRepresentation: ...
+    def get_height_bounds(self) -> tuple[int, int]: ...
+    def get_height_increment(self) -> int: ...
+    def get_integer(self, feature: str) -> int: ...
+    def get_integer_bounds(self, feature: str) -> tuple[int, int]: ...
+    def get_integer_increment(self, feature: str) -> int: ...
+    def get_model_name(self) -> str: ...
+    def get_payload(self) -> int: ...
+    def get_pixel_format(self) -> int: ...
+    def get_pixel_format_as_string(self) -> str: ...
+    def get_region(self) -> tuple[int, int, int, int]: ...
+    def get_sensor_size(self) -> tuple[int, int]: ...
+    def get_string(self, feature: str) -> str: ...
+    def get_trigger_source(self) -> str: ...
+    def get_vendor_name(self) -> str: ...
+    def get_width_bounds(self) -> tuple[int, int]: ...
+    def get_width_increment(self) -> int: ...
+    def get_x_binning_bounds(self) -> tuple[int, int]: ...
+    def get_x_binning_increment(self) -> int: ...
+    def get_x_offset_bounds(self) -> tuple[int, int]: ...
+    def get_x_offset_increment(self) -> int: ...
+    def get_y_binning_bounds(self) -> tuple[int, int]: ...
+    def get_y_binning_increment(self) -> int: ...
+    def get_y_offset_bounds(self) -> tuple[int, int]: ...
+    def get_y_offset_increment(self) -> int: ...
+    def gv_auto_packet_size(self) -> int: ...
+    def gv_get_current_stream_channel(self) -> int: ...
+    def gv_get_ip_configuration_mode(self) -> GvIpConfigurationMode: ...
+    def gv_get_multipart(self) -> bool: ...
+    def gv_get_n_network_interfaces(self) -> int: ...
+    def gv_get_n_stream_channels(self) -> int: ...
+    def gv_get_packet_delay(self) -> int: ...
+    def gv_get_packet_size(self) -> int: ...
+    def gv_get_persistent_ip(
+        self,
+    ) -> tuple[Gio.InetAddress, Gio.InetAddressMask, Gio.InetAddress]: ...
+    def gv_is_multipart_supported(self) -> bool: ...
+    def gv_select_stream_channel(self, channel_id: int) -> None: ...
+    def gv_set_ip_configuration_mode(self, mode: GvIpConfigurationMode) -> None: ...
+    def gv_set_multipart(self, enable: bool) -> None: ...
+    def gv_set_packet_delay(self, delay_ns: int) -> None: ...
+    def gv_set_packet_size(self, packet_size: int) -> None: ...
+    def gv_set_packet_size_adjustment(
+        self, adjustment: GvPacketSizeAdjustment
+    ) -> None: ...
+    def gv_set_persistent_ip(
+        self, ip: Gio.InetAddress, mask: Gio.InetAddressMask, gateway: Gio.InetAddress
+    ) -> None: ...
+    def gv_set_persistent_ip_from_string(
+        self, ip: str, mask: str, gateway: str
+    ) -> None: ...
+    def gv_set_stream_options(self, options: GvStreamOption) -> None: ...
+    def is_binning_available(self) -> bool: ...
+    def is_black_level_auto_available(self) -> bool: ...
+    def is_black_level_available(self) -> bool: ...
+    def is_component_available(self) -> bool: ...
+    def is_enumeration_entry_available(self, feature: str, entry: str) -> bool: ...
+    def is_exposure_auto_available(self) -> bool: ...
+    def is_exposure_time_available(self) -> bool: ...
+    def is_feature_available(self, feature: str) -> bool: ...
+    def is_feature_implemented(self, feature: str) -> bool: ...
+    def is_frame_rate_available(self) -> bool: ...
+    def is_gain_auto_available(self) -> bool: ...
+    def is_gain_available(self) -> bool: ...
+    def is_gv_device(self) -> bool: ...
+    def is_region_offset_available(self) -> bool: ...
+    def is_software_trigger_supported(self) -> bool: ...
+    def is_uv_device(self) -> bool: ...
+    @classmethod
+    def new(cls, name: str | None = None) -> Camera: ...
+    @classmethod
+    def new_with_device(cls, device: Device) -> Camera: ...
+    def select_and_enable_component(
+        self, component: str, disable_others: bool
+    ) -> None: ...
+    def select_black_level(self, selector: str) -> None: ...
+    def select_component(
+        self, component: str, flags: ComponentSelectionFlags
+    ) -> tuple[bool, int]: ...
+    def select_gain(self, selector: str) -> None: ...
+    def set_access_check_policy(self, policy: AccessCheckPolicy) -> None: ...
+    def set_acquisition_mode(self, value: AcquisitionMode) -> None: ...
+    def set_binning(self, dx: int, dy: int) -> None: ...
+    def set_black_level(self, blacklevel: float) -> None: ...
+    def set_black_level_auto(self, auto_mode: Auto) -> None: ...
+    def set_boolean(self, feature: str, value: bool) -> None: ...
+    def set_chunk_mode(self, is_active: bool) -> None: ...
+    def set_chunk_state(self, chunk: str, is_enabled: bool) -> None: ...
+    def set_chunks(self, chunk_list: str) -> None: ...
+    def set_exposure_mode(self, mode: ExposureMode) -> None: ...
+    def set_exposure_time(self, exposure_time_us: float) -> None: ...
+    def set_exposure_time_auto(self, auto_mode: Auto) -> None: ...
+    def set_float(self, feature: str, value: float) -> None: ...
+    def set_frame_count(self, frame_count: int) -> None: ...
+    def set_frame_rate(self, frame_rate: float) -> None: ...
+    def set_frame_rate_enable(self, enable: bool) -> None: ...
+    def set_gain(self, gain: float) -> None: ...
+    def set_gain_auto(self, auto_mode: Auto) -> None: ...
+    def set_integer(self, feature: str, value: int) -> None: ...
+    def set_pixel_format(self, format: int) -> None: ...
+    def set_pixel_format_from_string(self, format: str) -> None: ...
+    def set_range_check_policy(self, policy: RangeCheckPolicy) -> None: ...
+    def set_region(self, x: int, y: int, width: int, height: int) -> None: ...
+    def set_register(self, feature: str, length: int, value: None) -> None: ...
+    def set_register_cache_policy(self, policy: RegisterCachePolicy) -> None: ...
+    def set_string(self, feature: str, value: str) -> None: ...
+    def set_trigger(self, source: str) -> None: ...
+    def set_trigger_source(self, source: str) -> None: ...
+    def software_trigger(self) -> None: ...
+    def start_acquisition(self) -> None: ...
+    def stop_acquisition(self) -> None: ...
+    def uv_get_bandwidth(self) -> int: ...
+    def uv_get_bandwidth_bounds(self) -> tuple[int, int]: ...
+    def uv_is_bandwidth_control_available(self) -> bool: ...
+    def uv_set_bandwidth(self, bandwidth: int) -> None: ...
+    def uv_set_usb_mode(self, usb_mode: UvUsbMode) -> None: ...
+
+class CameraClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        CameraClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class ChunkParser(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        ChunkParser(**properties)
+        new(xml:str, size:int) -> Aravis.ChunkParser
+
+    Object ArvChunkParser
+
+    Properties from ArvChunkParser:
+      genicam -> ArvGc: genicam
+        Genicam instance
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GObject.Object.Props):
+        genicam: Gc
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, genicam: Gc = ...) -> None: ...
+    def get_boolean_value(self, buffer: Buffer, chunk: str) -> bool: ...
+    def get_float_value(self, buffer: Buffer, chunk: str) -> float: ...
+    def get_integer_value(self, buffer: Buffer, chunk: str) -> int: ...
+    def get_string_value(self, buffer: Buffer, chunk: str) -> str: ...
+    @classmethod
+    def new(cls, xml: str, size: int) -> ChunkParser: ...
+    def set_integer_feature_value(self, feature: str, value: int) -> None: ...
+    def set_string_feature_value(self, feature: str, value: str) -> None: ...
+
+class ChunkParserClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        ChunkParserClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Device(GObject.Object, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        Device(**properties)
+
+    Object ArvDevice
+
+    Signals from ArvDevice:
+      control-lost ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def create_chunk_parser(self) -> ChunkParser: ...
+    def create_stream(
+        self, callback: Callable[..., None], *user_data: Any
+    ) -> Stream: ...
+    def do_control_lost(self) -> None: ...
+    def do_get_genicam(self) -> Gc: ...
+    def do_get_genicam_xml(self) -> tuple[str, int]: ...
+    def do_read_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def do_read_register(self, address: int) -> tuple[bool, int]: ...
+    def do_write_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def do_write_register(self, address: int, value: int) -> bool: ...
+    def dup_available_enumeration_feature_values(self, feature: str) -> list[int]: ...
+    def dup_available_enumeration_feature_values_as_display_names(
+        self, feature: str
+    ) -> list[str]: ...
+    def dup_available_enumeration_feature_values_as_strings(
+        self, feature: str
+    ) -> list[str]: ...
+    def dup_register_feature_value(self, feature: str) -> int: ...
+    def execute_command(self, feature: str) -> None: ...
+    def get_boolean_feature_value(self, feature: str) -> bool: ...
+    def get_feature(self, feature: str) -> GcNode: ...
+    def get_feature_access_mode(self, feature: str) -> GcAccessMode: ...
+    def get_feature_representation(self, feature: str) -> GcRepresentation: ...
+    def get_feature_value(self, feature: str) -> Any: ...
+    def get_float_feature_bounds(self, feature: str) -> tuple[float, float]: ...
+    def get_float_feature_increment(self, feature: str) -> float: ...
+    def get_float_feature_value(self, feature: str) -> float: ...
+    def get_genicam(self) -> Gc: ...
+    def get_genicam_xml(self) -> tuple[str, int]: ...
+    def get_integer_feature_bounds(self, feature: str) -> tuple[int, int]: ...
+    def get_integer_feature_increment(self, feature: str) -> int: ...
+    def get_integer_feature_value(self, feature: str) -> int: ...
+    def get_string_feature_value(self, feature: str) -> str: ...
+    def is_enumeration_entry_available(self, feature: str, entry: str) -> bool: ...
+    def is_feature_available(self, feature: str) -> bool: ...
+    def is_feature_implemented(self, feature: str) -> bool: ...
+    def read_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def read_register(self, address: int) -> tuple[bool, int]: ...
+    def set_access_check_policy(self, policy: AccessCheckPolicy) -> None: ...
+    def set_boolean_feature_value(self, feature: str, value: bool) -> None: ...
+    def set_feature_value(self, feature: str, value: Any) -> None: ...
+    def set_features_from_string(self, string: str) -> bool: ...
+    def set_float_feature_value(self, feature: str, value: float) -> None: ...
+    def set_integer_feature_value(self, feature: str, value: int) -> None: ...
+    def set_range_check_policy(self, policy: RangeCheckPolicy) -> None: ...
+    def set_register_cache_policy(self, policy: RegisterCachePolicy) -> None: ...
+    def set_register_feature_value(
+        self, feature: str, length: int, value: None
+    ) -> None: ...
+    def set_string_feature_value(self, feature: str, value: str) -> None: ...
+    def write_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def write_register(self, address: int, value: int) -> bool: ...
+
+class DeviceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DeviceClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def create_stream(self) -> None: ...
+    @property
+    def get_genicam_xml(self) -> Callable[[Device], tuple[str, int]]: ...
+    @property
+    def get_genicam(self) -> Callable[[Device], Gc]: ...
+    @property
+    def read_memory(self) -> Callable[[Device, int, int, None], bool]: ...
+    @property
+    def write_memory(self) -> Callable[[Device, int, int, None], bool]: ...
+    @property
+    def read_register(self) -> Callable[[Device, int], tuple[bool, int]]: ...
+    @property
+    def write_register(self) -> Callable[[Device, int, int], bool]: ...
+    @property
+    def control_lost(self) -> Callable[[Device], None]: ...
+
+class DomCharacterData(DomNode):
+    """
+    :Constructors:
+
+    ::
+
+        DomCharacterData(**properties)
+
+    Object ArvDomCharacterData
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomNode: ...
+    def get_data(self) -> str: ...
+    def set_data(self, value: str) -> None: ...
+
+class DomCharacterDataClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomCharacterDataClass()
+    """
+    @property
+    def parent_class(self) -> DomNodeClass: ...
+
+class DomDocument(DomNode):
+    """
+    :Constructors:
+
+    ::
+
+        DomDocument(**properties)
+        new_from_memory(buffer=None, size:int) -> Aravis.DomDocument
+        new_from_path(path:str) -> Aravis.DomDocument
+        new_from_url(url:str) -> Aravis.DomDocument
+
+    Object ArvDomDocument
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomNode: ...
+    def append_from_memory(self, node: DomNode, buffer: None, size: int) -> None: ...
+    def create_element(self, tag_name: str) -> DomElement: ...
+    def create_text_node(self, data: str) -> DomText: ...
+    def do_create_element(self, tag_name: str) -> DomElement: ...
+    def do_create_text_node(self, data: str) -> DomText: ...
+    def do_get_document_element(self) -> DomElement: ...
+    def get_document_element(self) -> DomElement: ...
+    def get_href_data(self, href: str, size: int) -> None: ...
+    def get_url(self) -> str: ...
+    @classmethod
+    def new_from_memory(cls, buffer: None, size: int) -> DomDocument: ...
+    @classmethod
+    def new_from_path(cls, path: str) -> DomDocument: ...
+    @classmethod
+    def new_from_url(cls, url: str) -> DomDocument: ...
+    def set_path(self, path: str) -> None: ...
+    def set_url(self, url: str) -> None: ...
+
+class DomDocumentClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomDocumentClass()
+    """
+    @property
+    def parent_class(self) -> DomNodeClass: ...
+    @property
+    def get_document_element(self) -> Callable[[DomDocument], DomElement]: ...
+    @property
+    def create_element(self) -> Callable[[DomDocument, str], DomElement]: ...
+    @property
+    def create_text_node(self) -> Callable[[DomDocument, str], DomText]: ...
+
+class DomDocumentFragment(DomNode):
+    """
+    :Constructors:
+
+    ::
+
+        DomDocumentFragment(**properties)
+        new() -> Aravis.DomDocumentFragment
+
+    Object ArvDomDocumentFragment
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomNode: ...
+    @classmethod
+    def new(cls) -> DomDocumentFragment: ...
+
+class DomDocumentFragmentClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomDocumentFragmentClass()
+    """
+    @property
+    def parent_class(self) -> DomNodeClass: ...
+
+class DomElement(DomNode):
+    """
+    :Constructors:
+
+    ::
+
+        DomElement(**properties)
+
+    Object ArvDomElement
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomNode: ...
+    def do_get_attribute(self, name: str) -> str: ...
+    def do_set_attribute(self, name: str, attribute_value: str) -> None: ...
+    def get_attribute(self, name: str) -> str: ...
+    def get_tag_name(self) -> str: ...
+    def set_attribute(self, name: str, attribute_value: str) -> None: ...
+
+class DomElementClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomElementClass()
+    """
+    @property
+    def parent_class(self) -> DomNodeClass: ...
+    @property
+    def get_attribute(self) -> Callable[[DomElement, str], str]: ...
+    @property
+    def set_attribute(self) -> Callable[[DomElement, str, str], None]: ...
+
+class DomNamedNodeMap(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        DomNamedNodeMap(**properties)
+
+    Object ArvDomNamedNodeMap
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def do_get_item(self, index: int) -> DomNode: ...
+    def do_get_length(self) -> int: ...
+    def get_item(self, index: int) -> DomNode: ...
+    def get_length(self) -> int: ...
+    def get_named_item(self, name: str) -> DomNode: ...
+    def remove_named_item(self, name: str) -> DomNode: ...
+    def set_named_item(self, item: DomNode) -> DomNode: ...
+
+class DomNamedNodeMapClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomNamedNodeMapClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get(self) -> None: ...
+    @property
+    def set(self) -> None: ...
+    @property
+    def remove(self) -> None: ...
+    @property
+    def get_item(self) -> Callable[[DomNamedNodeMap, int], DomNode]: ...
+    @property
+    def get_length(self) -> Callable[[DomNamedNodeMap], int]: ...
+
+class DomNode(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        DomNode(**properties)
+
+    Object ArvDomNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def append_child(self, new_child: DomNode) -> DomNode: ...
+    def changed(self) -> None: ...
+    def do_can_append_child(self, new_child: DomNode) -> bool: ...
+    def do_changed(self) -> None: ...
+    def do_child_changed(self, child: DomNode) -> bool: ...
+    def do_get_node_name(self) -> str: ...
+    def do_get_node_type(self) -> DomNodeType: ...
+    def do_get_node_value(self) -> str: ...
+    def do_post_new_child(self, child: DomNode) -> None: ...
+    def do_pre_remove_child(self, child: DomNode) -> None: ...
+    def do_set_node_value(self, new_value: str) -> None: ...
+    def get_child_nodes(self) -> DomNodeList: ...
+    def get_first_child(self) -> DomNode: ...
+    def get_last_child(self) -> DomNode: ...
+    def get_next_sibling(self) -> DomNode: ...
+    def get_node_name(self) -> str: ...
+    def get_node_type(self) -> DomNodeType: ...
+    def get_node_value(self) -> str: ...
+    def get_owner_document(self) -> DomDocument: ...
+    def get_parent_node(self) -> DomNode: ...
+    def get_previous_sibling(self) -> DomNode: ...
+    def has_child_nodes(self) -> bool: ...
+    def insert_before(self, new_child: DomNode, ref_child: DomNode) -> DomNode: ...
+    def remove_child(self, old_child: DomNode) -> DomNode: ...
+    def replace_child(self, new_child: DomNode, old_child: DomNode) -> DomNode: ...
+    def set_node_value(self, new_value: str) -> None: ...
+
+class DomNodeChildList(DomNodeList):
+    """
+    :Constructors:
+
+    ::
+
+        DomNodeChildList(**properties)
+        new(parent_node:Aravis.DomNode) -> Aravis.DomNodeList
+
+    Object ArvDomNodeChildList
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls, parent_node: DomNode) -> DomNodeChildList: ...
+
+class DomNodeChildListClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomNodeChildListClass()
+    """
+    @property
+    def parent_class(self) -> DomNodeListClass: ...
+
+class DomNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomNodeClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_node_name(self) -> Callable[[DomNode], str]: ...
+    @property
+    def get_node_value(self) -> Callable[[DomNode], str]: ...
+    @property
+    def set_node_value(self) -> Callable[[DomNode, str], None]: ...
+    @property
+    def get_node_type(self) -> Callable[[DomNode], DomNodeType]: ...
+    @property
+    def can_append_child(self) -> Callable[[DomNode, DomNode], bool]: ...
+    @property
+    def post_new_child(self) -> Callable[[DomNode, DomNode], None]: ...
+    @property
+    def pre_remove_child(self) -> Callable[[DomNode, DomNode], None]: ...
+    @property
+    def changed(self) -> Callable[[DomNode], None]: ...
+    @property
+    def child_changed(self) -> Callable[[DomNode, DomNode], bool]: ...
+
+class DomNodeList(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        DomNodeList(**properties)
+
+    Object ArvDomNodeList
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def do_get_item(self, index: int) -> DomNode: ...
+    def do_get_length(self) -> int: ...
+    def get_item(self, index: int) -> DomNode: ...
+    def get_length(self) -> int: ...
+
+class DomNodeListClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomNodeListClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def get_item(self) -> Callable[[DomNodeList, int], DomNode]: ...
+    @property
+    def get_length(self) -> Callable[[DomNodeList], int]: ...
+
+class DomText(DomCharacterData):
+    """
+    :Constructors:
+
+    ::
+
+        DomText(**properties)
+        new(data:str) -> Aravis.DomNode
+
+    Object ArvDomText
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomCharacterData: ...
+    @classmethod
+    def new(cls, data: str) -> DomText: ...
+
+class DomTextClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        DomTextClass()
+    """
+    @property
+    def parent_class(self) -> DomCharacterDataClass: ...
+
+class Evaluator(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Evaluator(**properties)
+        new(expression:str=None) -> Aravis.Evaluator
+
+    Object ArvEvaluator
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def evaluate_as_double(self) -> float: ...
+    def evaluate_as_int64(self) -> int: ...
+    def get_constant(self, name: str) -> str: ...
+    def get_expression(self) -> str: ...
+    def get_sub_expression(self, name: str) -> str: ...
+    @classmethod
+    def new(cls, expression: str | None = None) -> Evaluator: ...
+    def set_constant(self, name: str, constant: str | None = None) -> None: ...
+    def set_double_variable(self, name: str, v_double: float) -> None: ...
+    def set_expression(self, expression: str) -> None: ...
+    def set_int64_variable(self, name: str, v_int64: int) -> None: ...
+    def set_sub_expression(self, name: str, expression: str | None = None) -> None: ...
+
+class EvaluatorClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        EvaluatorClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class FakeCamera(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        FakeCamera(**properties)
+        new(serial_number:str) -> Aravis.FakeCamera
+        new_full(serial_number:str, genicam_filename:str) -> Aravis.FakeCamera
+
+    Object ArvFakeCamera
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def check_and_acknowledge_software_trigger(self) -> bool: ...
+    def fill_buffer(self, buffer: Buffer) -> int: ...
+    def get_acquisition_status(self) -> int: ...
+    def get_control_channel_privilege(self) -> int: ...
+    def get_genicam_xml(self) -> tuple[str, int]: ...
+    def get_genicam_xml_url(self) -> str: ...
+    def get_heartbeat_timeout(self) -> int: ...
+    def get_payload(self) -> int: ...
+    def get_sleep_time_for_next_frame(self) -> tuple[int, int]: ...
+    def get_stream_address(self) -> Gio.SocketAddress: ...
+    def is_in_free_running_mode(self) -> bool: ...
+    def is_in_software_trigger_mode(self) -> bool: ...
+    @classmethod
+    def new(cls, serial_number: str) -> FakeCamera: ...
+    @classmethod
+    def new_full(cls, serial_number: str, genicam_filename: str) -> FakeCamera: ...
+    def read_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def read_register(self, address: int) -> tuple[bool, int]: ...
+    def set_control_channel_privilege(self, privilege: int) -> None: ...
+    def set_fill_pattern(
+        self, fill_pattern_callback: Callable[..., None], *fill_pattern_data: Any
+    ) -> None: ...
+    def set_inet_address(self, address: Gio.InetAddress) -> None: ...
+    def set_trigger_frequency(self, frequency: float) -> None: ...
+    def wait_for_next_frame(self) -> None: ...
+    def write_memory(self, address: int, size: int, buffer: None) -> bool: ...
+    def write_register(self, address: int, value: int) -> bool: ...
+
+class FakeCameraClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        FakeCameraClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class FakeDevice(Device, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        FakeDevice(**properties)
+        new(serial_number:str) -> Aravis.Device
+
+    Object ArvFakeDevice
+
+    Properties from ArvFakeDevice:
+      serial-number -> gchararray: Serial number
+        Fake device serial number
+
+    Signals from ArvDevice:
+      control-lost ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Device.Props):
+        serial_number: str
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, serial_number: str = ...) -> None: ...
+    def get_fake_camera(self) -> FakeCamera: ...
+    @classmethod
+    def new(cls, serial_number: str) -> FakeDevice: ...
+
+class FakeDeviceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        FakeDeviceClass()
+    """
+    @property
+    def parent_class(self) -> DeviceClass: ...
+
+class FakeInterface(Interface):
+    """
+    :Constructors:
+
+    ::
+
+        FakeInterface(**properties)
+
+    Object ArvFakeInterface
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @staticmethod
+    def get_instance() -> Interface: ...
+
+class FakeInterfaceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        FakeInterfaceClass()
+    """
+    @property
+    def parent_class(self) -> InterfaceClass: ...
+
+class FakeStream(Stream, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        FakeStream(**properties)
+
+    Object ArvFakeStream
+
+    Signals from ArvStream:
+      new-buffer ()
+
+    Properties from ArvStream:
+      emit-signals -> gboolean: Emit signals
+        Emit signals
+      device -> ArvDevice: Paret device
+        A ArvDevice parent object
+      callback -> gpointer: Stream callback
+        Optional user callback
+      callback-data -> gpointer: Stream callback data
+        Optional user callback data
+      destroy-notify -> gpointer: Destroy notify
+        Optional destroy notify
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Stream.Props):
+        callback: None
+        callback_data: None
+        destroy_notify: None
+        device: Device
+        emit_signals: bool
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        callback: None = ...,
+        callback_data: None = ...,
+        destroy_notify: None = ...,
+        device: Device = ...,
+        emit_signals: bool = ...,
+    ) -> None: ...
+
+class FakeStreamClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        FakeStreamClass()
+    """
+    @property
+    def parent_class(self) -> StreamClass: ...
+
+class Gc(DomDocument):
+    """
+    :Constructors:
+
+    ::
+
+        Gc(**properties)
+        new(device:Aravis.Device, xml=None, size:int) -> Aravis.Gc
+        p_value_indexed_node_new() -> Aravis.GcNode
+
+    Object ArvGc
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_access_check_policy(self) -> AccessCheckPolicy: ...
+    def get_buffer(self) -> Buffer: ...
+    def get_device(self) -> Device: ...
+    def get_node(self, name: str) -> GcNode: ...
+    def get_range_check_policy(self) -> RangeCheckPolicy: ...
+    def get_register_cache_policy(self) -> RegisterCachePolicy: ...
+    @staticmethod
+    def invalidator_has_changed(self: GcInvalidatorNode) -> bool: ...
+    @classmethod
+    def new(cls, device: Device, xml: None, size: int) -> Gc: ...
+    @classmethod
+    def p_value_indexed_node_new(cls) -> Gc: ...
+    def register_feature_node(self, node: GcFeatureNode) -> None: ...
+    def set_access_check_policy(self, policy: AccessCheckPolicy) -> None: ...
+    def set_buffer(self, buffer: Buffer) -> None: ...
+    def set_range_check_policy(self, policy: RangeCheckPolicy) -> None: ...
+    def set_register_cache_policy(self, policy: RegisterCachePolicy) -> None: ...
+
+class GcBoolean(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcBoolean(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcBoolean
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_value(self) -> bool: ...
+    @classmethod
+    def new(cls) -> GcBoolean: ...
+    def set_value(self, v_boolean: bool) -> None: ...
+
+class GcBooleanClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcBooleanClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcCategory(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcCategory(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcCategory
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_features(self) -> list[str]: ...
+    @classmethod
+    def new(cls) -> GcCategory: ...
+
+class GcCategoryClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcCategoryClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcClass()
+    """
+    @property
+    def parent_class(self) -> DomDocumentClass: ...
+
+class GcCommand(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcCommand(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcCommand
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def execute(self) -> None: ...
+    @classmethod
+    def new(cls) -> GcCommand: ...
+
+class GcCommandClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcCommandClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcConverter(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcConverter(**properties)
+
+    Object ArvGcConverter
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcFeatureNode: ...
+
+class GcConverterClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcConverterClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcConverterNode(GcConverter, GcFloat):
+    """
+    :Constructors:
+
+    ::
+
+        GcConverterNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcConverterNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcConverterNode: ...
+
+class GcConverterNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcConverterNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcConverterClass: ...
+
+class GcEnumEntry(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcEnumEntry(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcEnumEntry
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_value(self) -> int: ...
+    @classmethod
+    def new(cls) -> GcEnumEntry: ...
+
+class GcEnumEntryClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcEnumEntryClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcEnumeration(GcFeatureNode, GcInteger, GcSelector, GcString):
+    """
+    :Constructors:
+
+    ::
+
+        GcEnumeration(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcEnumeration
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def dup_available_display_names(self) -> list[str]: ...
+    def dup_available_int_values(self) -> list[int]: ...
+    def dup_available_string_values(self) -> list[str]: ...
+    def get_entries(self) -> list[GcFeatureNode]: ...
+    def get_int_value(self) -> int: ...
+    def get_string_value(self) -> str: ...
+    @classmethod
+    def new(cls) -> GcEnumeration: ...
+    def set_int_value(self, value: int) -> bool: ...
+    def set_string_value(self, value: str) -> bool: ...
+
+class GcEnumerationClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcEnumerationClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcFeatureNode(GcNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcFeatureNode(**properties)
+
+    Object ArvGcFeatureNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcNode: ...
+    def do_get_access_mode(self) -> GcAccessMode: ...
+    def get_actual_access_mode(self) -> GcAccessMode: ...
+    def get_description(self) -> str: ...
+    def get_display_name(self) -> str: ...
+    def get_imposed_access_mode(self) -> GcAccessMode: ...
+    def get_name(self) -> str: ...
+    def get_name_space(self) -> GcNameSpace: ...
+    def get_tooltip(self) -> str: ...
+    def get_value_as_string(self) -> str: ...
+    def get_visibility(self) -> GcVisibility: ...
+    def is_available(self) -> bool: ...
+    def is_implemented(self) -> bool: ...
+    def is_locked(self) -> bool: ...
+    def set_value_from_string(self, string: str) -> None: ...
+
+class GcFeatureNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcFeatureNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcNodeClass: ...
+    @property
+    def get_linked_feature(self) -> None: ...
+    @property
+    def get_access_mode(self) -> Callable[[GcFeatureNode], GcAccessMode]: ...
+    @property
+    def default_access_mode(self) -> GcAccessMode: ...
+
+class GcFloat(GObject.GInterface, Protocol):
+    """
+    Interface ArvGcFloat
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_display_notation(self) -> GcDisplayNotation: ...
+    def get_display_precision(self) -> int: ...
+    def get_inc(self) -> float: ...
+    def get_max(self) -> float: ...
+    def get_min(self) -> float: ...
+    def get_representation(self) -> GcRepresentation: ...
+    def get_unit(self) -> str: ...
+    def get_value(self) -> float: ...
+    def impose_max(self, maximum: float) -> None: ...
+    def impose_min(self, minimum: float) -> None: ...
+    def set_value(self, value: float) -> None: ...
+
+class GcFloatInterface(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcFloatInterface()
+    """
+    @property
+    def parent(self) -> GObject.TypeInterface: ...
+    @property
+    def get_value(self) -> Callable[[GcFloat], float]: ...
+    @property
+    def set_value(self) -> Callable[[GcFloat, float], None]: ...
+    @property
+    def get_min(self) -> Callable[[GcFloat], float]: ...
+    @property
+    def get_max(self) -> Callable[[GcFloat], float]: ...
+    @property
+    def get_inc(self) -> Callable[[GcFloat], float]: ...
+    @property
+    def get_representation(self) -> Callable[[GcFloat], GcRepresentation]: ...
+    @property
+    def get_display_notation(self) -> Callable[[GcFloat], GcDisplayNotation]: ...
+    @property
+    def get_display_precision(self) -> Callable[[GcFloat], int]: ...
+    @property
+    def get_unit(self) -> Callable[[GcFloat], str]: ...
+    @property
+    def impose_min(self) -> Callable[[GcFloat, float], None]: ...
+    @property
+    def impose_max(self) -> Callable[[GcFloat, float], None]: ...
+
+class GcFloatNode(GcFeatureNode, GcFloat):
+    """
+    :Constructors:
+
+    ::
+
+        GcFloatNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcFloatNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcFloatNode: ...
+
+class GcFloatNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcFloatNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcFloatRegNode(GcRegisterNode, GcFloat, GcRegister):
+    """
+    :Constructors:
+
+    ::
+
+        GcFloatRegNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcFloatRegNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcRegisterNode: ...
+    @classmethod
+    def new(cls) -> GcFloatRegNode: ...
+
+class GcFloatRegNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcFloatRegNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcRegisterNodeClass: ...
+
+class GcGroupNode(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcGroupNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcGroupNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcGroupNode: ...
+
+class GcGroupNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcGroupNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcIndexNode(GcPropertyNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcIndexNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcIndexNode
+
+    Properties from ArvGcPropertyNode:
+      node-type -> ArvGcPropertyNodeType: Node type
+        Actual node type
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GcPropertyNode.Props):
+        node_type: GcPropertyNodeType
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, node_type: GcPropertyNodeType = ...) -> None: ...
+    def get_index(self, default_offset: int) -> int: ...
+    @classmethod
+    def new(cls) -> GcIndexNode: ...
+
+class GcIndexNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIndexNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcPropertyNodeClass: ...
+
+class GcIntConverterNode(GcConverter, GcInteger):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntConverterNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcIntConverterNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcIntConverterNode: ...
+
+class GcIntConverterNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntConverterNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcConverterClass: ...
+
+class GcIntRegNode(GcRegisterNode, GcInteger, GcRegister, GcSelector):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntRegNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcIntRegNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcRegisterNode: ...
+    @classmethod
+    def new(cls) -> GcIntRegNode: ...
+
+class GcIntRegNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntRegNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcRegisterNodeClass: ...
+
+class GcIntSwissKnifeNode(GcSwissKnife, GcInteger):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntSwissKnifeNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcIntSwissKnifeNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcSwissKnife: ...
+    @classmethod
+    def new(cls) -> GcIntSwissKnifeNode: ...
+
+class GcIntSwissKnifeNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntSwissKnifeNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcSwissKnifeClass: ...
+
+class GcInteger(GObject.GInterface, Protocol):
+    """
+    Interface ArvGcInteger
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_inc(self) -> int: ...
+    def get_max(self) -> int: ...
+    def get_min(self) -> int: ...
+    def get_representation(self) -> GcRepresentation: ...
+    def get_unit(self) -> str: ...
+    def get_value(self) -> int: ...
+    def impose_max(self, maximum: int) -> None: ...
+    def impose_min(self, minimum: int) -> None: ...
+    def set_value(self, value: int) -> None: ...
+
+class GcIntegerInterface(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntegerInterface()
+    """
+    @property
+    def parent(self) -> GObject.TypeInterface: ...
+    @property
+    def get_value(self) -> Callable[[GcInteger], int]: ...
+    @property
+    def set_value(self) -> Callable[[GcInteger, int], None]: ...
+    @property
+    def get_min(self) -> Callable[[GcInteger], int]: ...
+    @property
+    def get_max(self) -> Callable[[GcInteger], int]: ...
+    @property
+    def get_inc(self) -> Callable[[GcInteger], int]: ...
+    @property
+    def get_representation(self) -> Callable[[GcInteger], GcRepresentation]: ...
+    @property
+    def get_unit(self) -> Callable[[GcInteger], str]: ...
+    @property
+    def impose_min(self) -> Callable[[GcInteger, int], None]: ...
+    @property
+    def impose_max(self) -> Callable[[GcInteger, int], None]: ...
+
+class GcIntegerNode(GcFeatureNode, GcInteger, GcSelector):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntegerNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcIntegerNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcIntegerNode: ...
+
+class GcIntegerNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcIntegerNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcInvalidatorNode(GcPropertyNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcInvalidatorNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcInvalidatorNode
+
+    Properties from ArvGcPropertyNode:
+      node-type -> ArvGcPropertyNodeType: Node type
+        Actual node type
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GcPropertyNode.Props):
+        node_type: GcPropertyNodeType
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, node_type: GcPropertyNodeType = ...) -> None: ...
+    @classmethod
+    def new(cls) -> GcInvalidatorNode: ...
+
+class GcInvalidatorNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcInvalidatorNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcPropertyNodeClass: ...
+
+class GcMaskedIntRegNode(GcRegisterNode, GcInteger, GcRegister, GcSelector):
+    """
+    :Constructors:
+
+    ::
+
+        GcMaskedIntRegNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcMaskedIntRegNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcRegisterNode: ...
+    @classmethod
+    def new(cls) -> GcMaskedIntRegNode: ...
+
+class GcMaskedIntRegNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcMaskedIntRegNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcRegisterNodeClass: ...
+
+class GcNode(DomElement):
+    """
+    :Constructors:
+
+    ::
+
+        GcNode(**properties)
+
+    Object ArvGcNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> DomElement: ...
+    def get_genicam(self) -> Gc: ...
+
+class GcNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcNodeClass()
+    """
+    @property
+    def parent_class(self) -> DomElementClass: ...
+
+class GcPort(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcPort(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcPort
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcPort: ...
+    def read(self, buffer: None, address: int, length: int) -> None: ...
+    def write(self, buffer: None, address: int, length: int) -> None: ...
+
+class GcPortClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcPortClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcPropertyNode(GcNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcPropertyNode(**properties)
+        new_access_mode() -> Aravis.GcNode
+        new_address() -> Aravis.GcNode
+        new_bit() -> Aravis.GcNode
+        new_cachable() -> Aravis.GcNode
+        new_chunk_id() -> Aravis.GcNode
+        new_command_value() -> Aravis.GcNode
+        new_constant() -> Aravis.GcNode
+        new_description() -> Aravis.GcNode
+        new_display_name() -> Aravis.GcNode
+        new_display_notation() -> Aravis.GcNode
+        new_display_precision() -> Aravis.GcNode
+        new_endianness() -> Aravis.GcNode
+        new_event_id() -> Aravis.GcNode
+        new_expression() -> Aravis.GcNode
+        new_formula() -> Aravis.GcNode
+        new_formula_from() -> Aravis.GcNode
+        new_formula_to() -> Aravis.GcNode
+        new_imposed_access_mode() -> Aravis.GcNode
+        new_increment() -> Aravis.GcNode
+        new_is_deprecated() -> Aravis.GcNode
+        new_is_linear() -> Aravis.GcNode
+        new_length() -> Aravis.GcNode
+        new_lsb() -> Aravis.GcNode
+        new_maximum() -> Aravis.GcNode
+        new_minimum() -> Aravis.GcNode
+        new_msb() -> Aravis.GcNode
+        new_off_value() -> Aravis.GcNode
+        new_on_value() -> Aravis.GcNode
+        new_p_address() -> Aravis.GcNode
+        new_p_alias() -> Aravis.GcNode
+        new_p_cast_alias() -> Aravis.GcNode
+        new_p_command_value() -> Aravis.GcNode
+        new_p_feature() -> Aravis.GcNode
+        new_p_increment() -> Aravis.GcNode
+        new_p_is_available() -> Aravis.GcNode
+        new_p_is_implemented() -> Aravis.GcNode
+        new_p_is_locked() -> Aravis.GcNode
+        new_p_length() -> Aravis.GcNode
+        new_p_maximum() -> Aravis.GcNode
+        new_p_minimum() -> Aravis.GcNode
+        new_p_port() -> Aravis.GcNode
+        new_p_selected() -> Aravis.GcNode
+        new_p_value() -> Aravis.GcNode
+        new_p_value_default() -> Aravis.GcNode
+        new_p_variable() -> Aravis.GcNode
+        new_polling_time() -> Aravis.GcNode
+        new_representation() -> Aravis.GcNode
+        new_sign() -> Aravis.GcNode
+        new_slope() -> Aravis.GcNode
+        new_streamable() -> Aravis.GcNode
+        new_tooltip() -> Aravis.GcNode
+        new_unit() -> Aravis.GcNode
+        new_value() -> Aravis.GcNode
+        new_value_default() -> Aravis.GcNode
+        new_visibility() -> Aravis.GcNode
+
+    Object ArvGcPropertyNode
+
+    Properties from ArvGcPropertyNode:
+      node-type -> ArvGcPropertyNodeType: Node type
+        Actual node type
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GcNode.Props):
+        node_type: GcPropertyNodeType
+
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GcNode: ...
+    def __init__(self, *, node_type: GcPropertyNodeType = ...) -> None: ...
+    def get_access_mode(self, default_value: GcAccessMode) -> GcAccessMode: ...
+    def get_cachable(self, default_value: GcCachable) -> GcCachable: ...
+    def get_display_notation(
+        self, default_value: GcDisplayNotation
+    ) -> GcDisplayNotation: ...
+    def get_display_precision(self, default_value: int) -> int: ...
+    def get_double(self) -> float: ...
+    def get_endianness(self, default_value: int) -> int: ...
+    def get_int64(self) -> int: ...
+    def get_linked_node(self) -> GcNode: ...
+    def get_lsb(self, default_value: int) -> int: ...
+    def get_msb(self, default_value: int) -> int: ...
+    def get_name(self) -> str: ...
+    def get_node_type(self) -> GcPropertyNodeType: ...
+    def get_representation(
+        self, default_value: GcRepresentation
+    ) -> GcRepresentation: ...
+    def get_sign(self, default_value: GcSignedness) -> GcSignedness: ...
+    def get_streamable(self, default_value: GcStreamable) -> GcStreamable: ...
+    def get_string(self) -> str: ...
+    def get_visibility(self, default_value: GcVisibility) -> GcVisibility: ...
+    @classmethod
+    def new_access_mode(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_address(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_bit(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_cachable(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_chunk_id(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_command_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_constant(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_description(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_display_name(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_display_notation(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_display_precision(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_endianness(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_event_id(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_expression(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_formula(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_formula_from(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_formula_to(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_imposed_access_mode(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_increment(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_is_deprecated(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_is_linear(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_length(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_lsb(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_maximum(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_minimum(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_msb(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_off_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_on_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_address(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_alias(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_cast_alias(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_command_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_feature(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_increment(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_is_available(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_is_implemented(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_is_locked(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_length(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_maximum(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_minimum(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_port(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_selected(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_value_default(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_p_variable(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_polling_time(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_representation(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_sign(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_slope(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_streamable(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_tooltip(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_unit(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_value(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_value_default(cls) -> GcPropertyNode: ...
+    @classmethod
+    def new_visibility(cls) -> GcPropertyNode: ...
+    def set_double(self, v_double: float) -> None: ...
+    def set_int64(self, v_int64: int) -> None: ...
+    def set_string(self, string: str) -> None: ...
+
+class GcPropertyNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcPropertyNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcNodeClass: ...
+
+class GcRegister(GObject.GInterface, Protocol):
+    """
+    Interface ArvGcRegister
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def dup(self) -> int: ...
+    def get(self, buffer: None, length: int) -> None: ...
+    def get_address(self) -> int: ...
+    def get_length(self) -> int: ...
+    def set(self, buffer: None, length: int) -> None: ...
+
+class GcRegisterDescriptionNode(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcRegisterDescriptionNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcRegisterDescriptionNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def check_schema_version(
+        self, required_major: int, required_minor: int, required_subminor: int
+    ) -> bool: ...
+    def compare_schema_version(self, major: int, minor: int, subminor: int) -> int: ...
+    def get_major_version(self) -> int: ...
+    def get_minor_version(self) -> int: ...
+    def get_model_name(self) -> str: ...
+    def get_schema_major_version(self) -> int: ...
+    def get_schema_minor_version(self) -> int: ...
+    def get_schema_subminor_version(self) -> int: ...
+    def get_subminor_version(self) -> int: ...
+    def get_vendor_name(self) -> str: ...
+    @classmethod
+    def new(cls) -> GcRegisterDescriptionNode: ...
+
+class GcRegisterDescriptionNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcRegisterDescriptionNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcRegisterInterface(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcRegisterInterface()
+    """
+    @property
+    def parent(self) -> GObject.TypeInterface: ...
+    @property
+    def get(self) -> Callable[[GcRegister, None, int], None]: ...
+    @property
+    def set(self) -> Callable[[GcRegister, None, int], None]: ...
+    @property
+    def get_address(self) -> Callable[[GcRegister], int]: ...
+    @property
+    def get_length(self) -> Callable[[GcRegister], int]: ...
+
+class GcRegisterNode(GcFeatureNode, GcRegister):
+    """
+    :Constructors:
+
+    ::
+
+        GcRegisterNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcRegisterNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcFeatureNode: ...
+    @classmethod
+    def new(cls) -> GcRegisterNode: ...
+
+class GcRegisterNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcRegisterNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+    @property
+    def default_cachable(self) -> GcCachable: ...
+
+class GcSelector(GObject.GInterface, Protocol):
+    """
+    Interface ArvGcSelector
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_selected_features(self) -> list[GcFeatureNode]: ...
+    def is_selector(self) -> bool: ...
+
+class GcSelectorInterface(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcSelectorInterface()
+    """
+    @property
+    def parent(self) -> GObject.TypeInterface: ...
+    @property
+    def get_selected_features(self) -> Callable[[GcSelector], list[GcFeatureNode]]: ...
+
+class GcString(GObject.GInterface, Protocol):
+    """
+    Interface ArvGcString
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    def get_max_length(self) -> int: ...
+    def get_value(self) -> str: ...
+    def set_value(self, value: str) -> None: ...
+
+class GcStringInterface(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcStringInterface()
+    """
+    @property
+    def parent(self) -> GObject.TypeInterface: ...
+    @property
+    def get_value(self) -> Callable[[GcString], str]: ...
+    @property
+    def set_value(self) -> Callable[[GcString, str], None]: ...
+    @property
+    def get_max_length(self) -> Callable[[GcString], int]: ...
+
+class GcStringNode(GcFeatureNode, GcString):
+    """
+    :Constructors:
+
+    ::
+
+        GcStringNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcStringNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcStringNode: ...
+
+class GcStringNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcStringNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcStringRegNode(GcRegisterNode, GcRegister, GcString):
+    """
+    :Constructors:
+
+    ::
+
+        GcStringRegNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcStringRegNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcRegisterNode: ...
+    @classmethod
+    def new(cls) -> GcStringRegNode: ...
+
+class GcStringRegNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcStringRegNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcRegisterNodeClass: ...
+
+class GcStructEntryNode(GcFeatureNode, GcInteger, GcRegister):
+    """
+    :Constructors:
+
+    ::
+
+        GcStructEntryNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcStructEntryNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new(cls) -> GcStructEntryNode: ...
+
+class GcStructEntryNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcStructEntryNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcStructRegNode(GcRegisterNode, GcRegister):
+    """
+    :Constructors:
+
+    ::
+
+        GcStructRegNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcStructRegNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcRegisterNode: ...
+    @classmethod
+    def new(cls) -> GcStructRegNode: ...
+
+class GcStructRegNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcStructRegNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcRegisterNodeClass: ...
+
+class GcSwissKnife(GcFeatureNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcSwissKnife(**properties)
+
+    Object ArvGcSwissKnife
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcFeatureNode: ...
+
+class GcSwissKnifeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcSwissKnifeClass()
+    """
+    @property
+    def parent_class(self) -> GcFeatureNodeClass: ...
+
+class GcSwissKnifeNode(GcSwissKnife, GcFloat):
+    """
+    :Constructors:
+
+    ::
+
+        GcSwissKnifeNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcSwissKnifeNode
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GcSwissKnife: ...
+    @classmethod
+    def new(cls) -> GcSwissKnifeNode: ...
+
+class GcSwissKnifeNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcSwissKnifeNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcSwissKnifeClass: ...
+
+class GcValueIndexedNode(GcPropertyNode):
+    """
+    :Constructors:
+
+    ::
+
+        GcValueIndexedNode(**properties)
+        new() -> Aravis.GcNode
+
+    Object ArvGcValueIndexedNode
+
+    Properties from ArvGcPropertyNode:
+      node-type -> ArvGcPropertyNodeType: Node type
+        Actual node type
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GcPropertyNode.Props):
+        node_type: GcPropertyNodeType
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(self, *, node_type: GcPropertyNodeType = ...) -> None: ...
+    def get_index(self) -> int: ...
+    @classmethod
+    def new(cls) -> GcValueIndexedNode: ...
+
+class GcValueIndexedNodeClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GcValueIndexedNodeClass()
+    """
+    @property
+    def parent_class(self) -> GcPropertyNodeClass: ...
+
+class GvDevice(Device, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        GvDevice(**properties)
+        new(interface_address:Gio.InetAddress, device_address:Gio.InetAddress) -> Aravis.Device
+
+    Object ArvGvDevice
+
+    Properties from ArvGvDevice:
+      interface-address -> GInetAddress: Interface address
+        The address of the interface connected to the device
+      device-address -> GInetAddress: Device address
+        The device address
+      packet-size-adjustment -> ArvGvPacketSizeAdjustment: Packet size adjustment
+        Packet size adjustment option
+
+    Signals from ArvDevice:
+      control-lost ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Device.Props):
+        packet_size_adjustment: GvPacketSizeAdjustment
+        device_address: Gio.InetAddress
+        interface_address: Gio.InetAddress
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        device_address: Gio.InetAddress = ...,
+        interface_address: Gio.InetAddress = ...,
+        packet_size_adjustment: GvPacketSizeAdjustment = ...,
+    ) -> None: ...
+    def auto_packet_size(self) -> int: ...
+    def get_current_ip(
+        self,
+    ) -> tuple[bool, Gio.InetAddress, Gio.InetAddressMask, Gio.InetAddress]: ...
+    def get_device_address(self) -> Gio.SocketAddress: ...
+    def get_interface_address(self) -> Gio.SocketAddress: ...
+    def get_ip_configuration_mode(self) -> GvIpConfigurationMode: ...
+    def get_packet_size(self) -> int: ...
+    def get_persistent_ip(
+        self,
+    ) -> tuple[bool, Gio.InetAddress, Gio.InetAddressMask, Gio.InetAddress]: ...
+    def get_stream_options(self) -> GvStreamOption: ...
+    def get_timestamp_tick_frequency(self) -> int: ...
+    def is_controller(self) -> bool: ...
+    def leave_control(self) -> bool: ...
+    @classmethod
+    def new(
+        cls, interface_address: Gio.InetAddress, device_address: Gio.InetAddress
+    ) -> GvDevice: ...
+    def set_ip_configuration_mode(self, mode: GvIpConfigurationMode) -> bool: ...
+    def set_packet_size(self, packet_size: int) -> None: ...
+    def set_packet_size_adjustment(
+        self, adjustment: GvPacketSizeAdjustment
+    ) -> None: ...
+    def set_persistent_ip(
+        self,
+        ip: Gio.InetAddress | None = None,
+        mask: Gio.InetAddressMask | None = None,
+        gateway: Gio.InetAddress | None = None,
+    ) -> bool: ...
+    def set_persistent_ip_from_string(
+        self, ip: str | None = None, mask: str | None = None, gateway: str | None = None
+    ) -> bool: ...
+    def set_stream_options(self, options: GvStreamOption) -> None: ...
+    def take_control(self) -> bool: ...
+
+class GvDeviceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GvDeviceClass()
+    """
+    @property
+    def parent_class(self) -> DeviceClass: ...
+
+class GvFakeCamera(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        GvFakeCamera(**properties)
+        new(interface_name:str=None, serial_number:str=None) -> Aravis.GvFakeCamera
+        new_full(interface_name:str=None, serial_number:str=None, genicam_filename:str=None) -> Aravis.GvFakeCamera
+
+    Object ArvGvFakeCamera
+
+    Properties from ArvGvFakeCamera:
+      interface-name -> gchararray: Interface name
+        Interface name
+      serial-number -> gchararray: Serial number
+        Serial number
+      genicam-filename -> gchararray: Genicam filename
+        Genicam filename
+      gvsp-lost-ratio -> gdouble: GVSP lost packet ratio
+        GVSP lost packet ratio
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GObject.Object.Props):
+        genicam_filename: str
+        gvsp_lost_ratio: float
+        interface_name: str
+        serial_number: str
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        genicam_filename: str = ...,
+        gvsp_lost_ratio: float = ...,
+        interface_name: str = ...,
+        serial_number: str = ...,
+    ) -> None: ...
+    def get_fake_camera(self) -> FakeCamera: ...
+    def is_running(self) -> bool: ...
+    @classmethod
+    def new(
+        cls, interface_name: str | None = None, serial_number: str | None = None
+    ) -> GvFakeCamera: ...
+    @classmethod
+    def new_full(
+        cls,
+        interface_name: str | None = None,
+        serial_number: str | None = None,
+        genicam_filename: str | None = None,
+    ) -> GvFakeCamera: ...
+
+class GvFakeCameraClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GvFakeCameraClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class GvInterface(Interface):
+    """
+    :Constructors:
+
+    ::
+
+        GvInterface(**properties)
+
+    Object ArvGvInterface
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @staticmethod
+    def dup_discovery_interface_name() -> str: ...
+    @staticmethod
+    def get_instance() -> Interface: ...
+    @staticmethod
+    def set_discovery_interface_name(discovery_interface: str) -> None: ...
+
+class GvInterfaceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GvInterfaceClass()
+    """
+    @property
+    def parent_class(self) -> InterfaceClass: ...
+
+class GvStream(Stream, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        GvStream(**properties)
+
+    Object ArvGvStream
+
+    Properties from ArvGvStream:
+      socket-buffer -> ArvGvStreamSocketBuffer: Socket buffer
+        Socket buffer behaviour
+      socket-buffer-size -> gint: Socket buffer size
+        Socket buffer size, in bytes
+      packet-resend -> ArvGvStreamPacketResend: Packet resend
+        Packet resend behaviour
+      packet-request-ratio -> gdouble: Packet request ratio
+        Packet resend request limit as a percentage of frame packet number
+      initial-packet-timeout -> guint: Initial packet timeout
+        Initial packet timeout, in µs
+      packet-timeout -> guint: Packet timeout
+        Packet timeout, in µs
+      frame-retention -> guint: Frame retention
+        Packet retention, in µs
+
+    Signals from ArvStream:
+      new-buffer ()
+
+    Properties from ArvStream:
+      emit-signals -> gboolean: Emit signals
+        Emit signals
+      device -> ArvDevice: Paret device
+        A ArvDevice parent object
+      callback -> gpointer: Stream callback
+        Optional user callback
+      callback-data -> gpointer: Stream callback data
+        Optional user callback data
+      destroy-notify -> gpointer: Destroy notify
+        Optional destroy notify
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Stream.Props):
+        frame_retention: int
+        initial_packet_timeout: int
+        packet_request_ratio: float
+        packet_resend: GvStreamPacketResend
+        packet_timeout: int
+        socket_buffer: GvStreamSocketBuffer
+        socket_buffer_size: int
+        callback: None
+        callback_data: None
+        destroy_notify: None
+        device: Device
+        emit_signals: bool
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        frame_retention: int = ...,
+        initial_packet_timeout: int = ...,
+        packet_request_ratio: float = ...,
+        packet_resend: GvStreamPacketResend = ...,
+        packet_timeout: int = ...,
+        socket_buffer: GvStreamSocketBuffer = ...,
+        socket_buffer_size: int = ...,
+        callback: None = ...,
+        callback_data: None = ...,
+        destroy_notify: None = ...,
+        device: Device = ...,
+        emit_signals: bool = ...,
+    ) -> None: ...
+    def get_port(self) -> int: ...
+    def get_statistics(self) -> tuple[int, int]: ...
+
+class GvStreamClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        GvStreamClass()
+    """
+    @property
+    def parent_class(self) -> StreamClass: ...
+
+class Interface(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        Interface(**properties)
+
+    Object ArvInterface
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def do_open_device(self, device_id: str | None = None) -> Device: ...
+    def get_device_address(self, index: int) -> str: ...
+    def get_device_id(self, index: int) -> str: ...
+    def get_device_manufacturer_info(self, index: int) -> str: ...
+    def get_device_model(self, index: int) -> str: ...
+    def get_device_physical_id(self, index: int) -> str: ...
+    def get_device_protocol(self, index: int) -> str: ...
+    def get_device_serial_nbr(self, index: int) -> str: ...
+    def get_device_vendor(self, index: int) -> str: ...
+    def get_n_devices(self) -> int: ...
+    def open_device(self, device_id: str | None = None) -> Device: ...
+    def update_device_list(self) -> None: ...
+
+class InterfaceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        InterfaceClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def update_device_list(self) -> None: ...
+    @property
+    def open_device(self) -> Callable[[Interface, str | None], Device]: ...
+    @property
+    def protocol(self) -> str: ...
+
+class Stream(GObject.Object, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        Stream(**properties)
+
+    Object ArvStream
+
+    Signals from ArvStream:
+      new-buffer ()
+
+    Properties from ArvStream:
+      emit-signals -> gboolean: Emit signals
+        Emit signals
+      device -> ArvDevice: Paret device
+        A ArvDevice parent object
+      callback -> gpointer: Stream callback
+        Optional user callback
+      callback-data -> gpointer: Stream callback data
+        Optional user callback data
+      destroy-notify -> gpointer: Destroy notify
+        Optional destroy notify
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(GObject.Object.Props):
+        callback: None
+        callback_data: None
+        destroy_notify: None
+        device: Device
+        emit_signals: bool
+
+    @property
+    def props(self) -> Props: ...
+    @property
+    def parent_instance(self) -> GObject.Object: ...
+    def __init__(
+        self,
+        *,
+        callback: None = ...,
+        callback_data: None = ...,
+        destroy_notify: None = ...,
+        device: Device = ...,
+        emit_signals: bool = ...,
+    ) -> None: ...
+    def do_new_buffer(self) -> None: ...
+    def do_start_thread(self) -> None: ...
+    def do_stop_thread(self) -> None: ...
+    def get_emit_signals(self) -> bool: ...
+    def get_info_double(self, id: int) -> float: ...
+    def get_info_double_by_name(self, name: str) -> float: ...
+    def get_info_name(self, id: int) -> str: ...
+    def get_info_type(self, id: int) -> type[Any]: ...
+    def get_info_uint64(self, id: int) -> int: ...
+    def get_info_uint64_by_name(self, name: str) -> int: ...
+    def get_n_buffers(self) -> tuple[int, int]: ...
+    def get_n_infos(self) -> int: ...
+    def get_statistics(self) -> tuple[int, int, int]: ...
+    def pop_buffer(self) -> Buffer: ...
+    def push_buffer(self, buffer: Buffer) -> None: ...
+    def set_emit_signals(self, emit_signals: bool) -> None: ...
+    def start_thread(self) -> None: ...
+    def stop_thread(self, delete_buffers: bool) -> int: ...
+    def timeout_pop_buffer(self, timeout: int) -> Buffer: ...
+    def try_pop_buffer(self) -> Buffer: ...
+
+class StreamClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        StreamClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+    @property
+    def start_thread(self) -> Callable[[Stream], None]: ...
+    @property
+    def stop_thread(self) -> Callable[[Stream], None]: ...
+    @property
+    def new_buffer(self) -> Callable[[Stream], None]: ...
+
+class UvDevice(Device, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        UvDevice(**properties)
+        new(vendor:str, product:str, serial_number:str) -> Aravis.Device
+        new_from_guid(guid:str) -> Aravis.Device
+
+    Object ArvUvDevice
+
+    Properties from ArvUvDevice:
+      vendor -> gchararray: Vendor
+        USB3 device vendor string
+      product -> gchararray: Product
+        USB3 device product string
+      serial-number -> gchararray: Serial number
+        USB3 device serial number
+      guid -> gchararray: GUID
+        USB3 device GUID
+
+    Signals from ArvDevice:
+      control-lost ()
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Device.Props):
+        guid: str
+        product: str
+        serial_number: str
+        vendor: str
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        guid: str = ...,
+        product: str = ...,
+        serial_number: str = ...,
+        vendor: str = ...,
+    ) -> None: ...
+    @classmethod
+    def new(cls, vendor: str, product: str, serial_number: str) -> UvDevice: ...
+    @classmethod
+    def new_from_guid(cls, guid: str) -> UvDevice: ...
+    def set_usb_mode(self, usb_mode: UvUsbMode) -> None: ...
+
+class UvDeviceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        UvDeviceClass()
+    """
+    @property
+    def parent_class(self) -> DeviceClass: ...
+
+class UvInterface(Interface):
+    """
+    :Constructors:
+
+    ::
+
+        UvInterface(**properties)
+
+    Object ArvUvInterface
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @staticmethod
+    def get_instance() -> Interface: ...
+
+class UvInterfaceClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        UvInterfaceClass()
+    """
+    @property
+    def parent_class(self) -> InterfaceClass: ...
+
+class UvStream(Stream, Gio.Initable):
+    """
+    :Constructors:
+
+    ::
+
+        UvStream(**properties)
+
+    Object ArvUvStream
+
+    Properties from ArvUvStream:
+      usb-mode -> ArvUvUsbMode: USB mode
+        USB device I/O mode
+
+    Signals from ArvStream:
+      new-buffer ()
+
+    Properties from ArvStream:
+      emit-signals -> gboolean: Emit signals
+        Emit signals
+      device -> ArvDevice: Paret device
+        A ArvDevice parent object
+      callback -> gpointer: Stream callback
+        Optional user callback
+      callback-data -> gpointer: Stream callback data
+        Optional user callback data
+      destroy-notify -> gpointer: Destroy notify
+        Optional destroy notify
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    class Props(Stream.Props):
+        callback: None
+        callback_data: None
+        destroy_notify: None
+        device: Device
+        emit_signals: bool
+        usb_mode: UvUsbMode
+
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self,
+        *,
+        usb_mode: UvUsbMode = ...,
+        callback: None = ...,
+        callback_data: None = ...,
+        destroy_notify: None = ...,
+        device: Device = ...,
+        emit_signals: bool = ...,
+    ) -> None: ...
+
+class UvStreamClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        UvStreamClass()
+    """
+    @property
+    def parent_class(self) -> StreamClass: ...
+
+class XmlSchema(GObject.Object):
+    """
+    :Constructors:
+
+    ::
+
+        XmlSchema(**properties)
+        new_from_file(file:Gio.File) -> Aravis.XmlSchema
+        new_from_memory(buffer:str, size:int) -> Aravis.XmlSchema
+        new_from_path(path:str) -> Aravis.XmlSchema
+
+    Object ArvXmlSchema
+
+    Signals from GObject:
+      notify (GParam)
+    """
+    @classmethod
+    def new_from_file(cls, file: Gio.File) -> XmlSchema: ...
+    @classmethod
+    def new_from_memory(cls, buffer: str, size: int) -> XmlSchema: ...
+    @classmethod
+    def new_from_path(cls, path: str) -> XmlSchema: ...
+    def validate(self, xml: None, size: int, line: int, column: int) -> bool: ...
+
+class XmlSchemaClass(GObject.GPointer):
+    """
+    :Constructors:
+
+    ::
+
+        XmlSchemaClass()
+    """
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
+
+class Zip(GObject.GPointer): ...
+class ZipFile(GObject.GPointer): ...
+
+class GvInterfaceFlags(GObject.GFlags):
+    ACK = 1
+
+class GvStreamOption(GObject.GFlags):
+    NONE = 0
+    PACKET_SOCKET_DISABLED = 1
+
+class AccessCheckPolicy(GObject.GEnum):
+    DEFAULT = 0
+    DISABLE = 0
+    ENABLE = 1
+
+class AcquisitionMode(GObject.GEnum):
+    CONTINUOUS = 0
+    MULTI_FRAME = 2
+    SINGLE_FRAME = 1
+    @staticmethod
+    def from_string(string: str) -> AcquisitionMode: ...
+    @staticmethod
+    def to_string(value: AcquisitionMode) -> str: ...
+
+class Auto(GObject.GEnum):
+    CONTINUOUS = 2
+    OFF = 0
+    ONCE = 1
+    @staticmethod
+    def from_string(string: str) -> Auto: ...
+    @staticmethod
+    def to_string(value: Auto) -> str: ...
+
+class BufferPartDataType(GObject.GEnum):
+    CHUNK_DATA = 10
+    CONFIDENCE_MAP = 9
+    DEVICE_SPECIFIC = 32768
+    JPEG = 11
+    JPEG2000 = 12
+    UNKNOWN = -1
+
+class BufferPayloadType(GObject.GEnum):
+    CHUNK_DATA = 4
+    EXTENDED_CHUNK_DATA = 5
+    FILE = 3
+    GENDC_COMPONENT_DATA = 12
+    GENDC_CONTAINER = 11
+    H264 = 8
+    IMAGE = 1
+    JPEG = 6
+    JPEG2000 = 7
+    MULTIPART = 10
+    MULTIZONE_IMAGE = 9
+    NO_DATA = 0
+    RAWDATA = 2
+    UNKNOWN = -1
+
+class BufferStatus(GObject.GEnum):
+    ABORTED = 7
+    CLEARED = 1
+    FILLING = 6
+    MISSING_PACKETS = 3
+    PAYLOAD_NOT_SUPPORTED = 8
+    SIZE_MISMATCH = 5
+    SUCCESS = 0
+    TIMEOUT = 2
+    UNKNOWN = -1
+    WRONG_PACKET_ID = 4
+
+class ChunkParserError(GObject.GEnum):
+    BUFFER_NOT_FOUND = 1
+    CHUNK_NOT_FOUND = 2
+    FEATURE_NOT_FOUND = 3
+    INVALID_FEATURE_TYPE = 0
+    @staticmethod
+    def quark() -> int: ...
+
+class ComponentSelectionFlags(GObject.GEnum):
+    DISABLE = 2
+    ENABLE = 1
+    ENABLE_ALL = 4
+    EXCLUSIVE_ENABLE = 3
+    NONE = 0
+
+class DeviceError(GObject.GEnum):
+    FEATURE_NOT_FOUND = 1
+    GENICAM_NOT_FOUND = 8
+    INVALID_PARAMETER = 7
+    NOT_CONNECTED = 2
+    NOT_CONTROLLER = 10
+    NOT_FOUND = 6
+    NO_STREAM_CHANNEL = 9
+    PROTOCOL_ERROR = 3
+    PROTOCOL_ERROR_ACCESS_DENIED = 17
+    PROTOCOL_ERROR_BAD_ALIGNMENT = 16
+    PROTOCOL_ERROR_BUSY = 18
+    PROTOCOL_ERROR_INVALID_ADDRESS = 14
+    PROTOCOL_ERROR_INVALID_PARAMETER = 13
+    PROTOCOL_ERROR_NOT_IMPLEMENTED = 12
+    PROTOCOL_ERROR_WRITE_PROTECT = 15
+    TIMEOUT = 5
+    TRANSFER_ERROR = 4
+    UNKNOWN = 11
+    WRONG_FEATURE = 0
+    @staticmethod
+    def quark() -> int: ...
+
+class DomNodeType(GObject.GEnum):
+    ATTRIBUTE_NODE = 2
+    CDATA_SECTION_NODE = 4
+    COMMENT_NODE = 8
+    DOCUMENT_FRAGMENT_NODE = 11
+    DOCUMENT_NODE = 9
+    DOCUMENT_TYPE_NODE = 10
+    ELEMENT_NODE = 1
+    ENTITY_NODE = 6
+    ENTITY_REFERENCE_NODE = 5
+    NOTATION_NODE = 12
+    PROCESSING_INSTRUCTION_NODE = 7
+    TEXT_NODE = 3
+
+class ExposureMode(GObject.GEnum):
+    OFF = 0
+    TIMED = 1
+    TRIGGER_CONTROLLED = 3
+    TRIGGER_WIDTH = 2
+    @staticmethod
+    def from_string(string: str) -> ExposureMode: ...
+    @staticmethod
+    def to_string(value: ExposureMode) -> str: ...
+
+class GcAccessMode(GObject.GEnum):
+    RO = 0
+    RW = 2
+    UNDEFINED = -1
+    WO = 1
+    @staticmethod
+    def from_string(string: str) -> GcAccessMode: ...
+    @staticmethod
+    def to_string(value: GcAccessMode) -> str: ...
+
+class GcCachable(GObject.GEnum):
+    NO_CACHE = 0
+    UNDEFINED = -1
+    WRITE_AROUND = 2
+    WRITE_THROUGH = 1
+
+class GcDisplayNotation(GObject.GEnum):
+    AUTOMATIC = 0
+    FIXED = 1
+    SCIENTIFIC = 2
+    UNDEFINED = -1
+
+class GcError(GObject.GEnum):
+    EMPTY_ENUMERATION = 3
+    ENUM_ENTRY_NOT_FOUND = 8
+    GET_AS_STRING_UNDEFINED = 12
+    INVALID_BIT_RANGE = 13
+    INVALID_LENGTH = 9
+    INVALID_PVALUE = 2
+    INVALID_SYNTAX = 14
+    NODE_NOT_FOUND = 7
+    NO_DEVICE_SET = 5
+    NO_EVENT_IMPLEMENTATION = 6
+    OUT_OF_RANGE = 4
+    PROPERTY_NOT_DEFINED = 0
+    PVALUE_NOT_DEFINED = 1
+    READ_ONLY = 10
+    SET_FROM_STRING_UNDEFINED = 11
+    @staticmethod
+    def quark() -> int: ...
+
+class GcIsLinear(GObject.GEnum):
+    NO = 0
+    UNDEFINED = -1
+    YES = 1
+
+class GcNameSpace(GObject.GEnum):
+    CUSTOM = 1
+    STANDARD = 0
+    UNDEFINED = -1
+
+class GcPropertyNodeType(GObject.GEnum):
+    ACCESS_MODE = 24
+    ADDRESS = 2
+    BIT = 32
+    CACHABLE = 26
+    CHUNK_ID = 34
+    COMMAND_VALUE = 33
+    CONSTANT = 23
+    DESCRIPTION = 3
+    DISPLAY_NAME = 6
+    DISPLAY_NOTATION = 13
+    DISPLAY_PRECISION = 14
+    ENDIANNESS = 28
+    EVENT_ID = 35
+    EXPRESSION = 22
+    FORMULA = 19
+    FORMULA_FROM = 21
+    FORMULA_TO = 20
+    IMPOSED_ACCESS_MODE = 25
+    INCREMENT = 10
+    IS_DEPRECATED = 39
+    IS_LINEAR = 11
+    LENGTH = 18
+    LSB = 30
+    MAXIMUM = 8
+    MINIMUM = 7
+    MSB = 31
+    OFF_VALUE = 17
+    ON_VALUE = 16
+    POLLING_TIME = 27
+    P_ADDRESS = 1003
+    P_ALIAS = 1019
+    P_CAST_ALIAS = 1020
+    P_COMMAND_VALUE = 1016
+    P_FEATURE = 1001
+    P_INCREMENT = 1010
+    P_INDEX = 1011
+    P_INVALIDATOR = 1015
+    P_IS_AVAILABLE = 1006
+    P_IS_IMPLEMENTED = 1004
+    P_IS_LOCKED = 1005
+    P_LENGTH = 1012
+    P_MAXIMUM = 1009
+    P_MINIMUM = 1008
+    P_PORT = 1013
+    P_SELECTED = 1007
+    P_UNKNONW = 1000
+    P_VALUE = 1002
+    P_VALUE_DEFAULT = 1018
+    P_VALUE_INDEXED = 1017
+    P_VARIABLE = 1014
+    REPRESENTATION = 12
+    SIGN = 29
+    SLOPE = 9
+    STREAMABLE = 38
+    TOOLTIP = 5
+    UNIT = 15
+    UNKNOWN = 0
+    VALUE = 1
+    VALUE_DEFAULT = 37
+    VALUE_INDEXED = 36
+    VISIBILITY = 4
+
+class GcRepresentation(GObject.GEnum):
+    BOOLEAN = 2
+    HEX_NUMBER = 4
+    IPV4_ADDRESS = 5
+    LINEAR = 0
+    LOGARITHMIC = 1
+    MAC_ADDRESS = 6
+    PURE_NUMBER = 3
+    UNDEFINED = -1
+
+class GcSignedness(GObject.GEnum):
+    SIGNED = 0
+    UNDEFINED = -1
+    UNSIGNED = 1
+
+class GcStreamable(GObject.GEnum):
+    NO = 0
+    UNDEFINED = -1
+    YES = 1
+
+class GcVisibility(GObject.GEnum):
+    BEGINNER = 3
+    EXPERT = 2
+    GURU = 1
+    INVISIBLE = 0
+    UNDEFINED = -1
+
+class GvIpConfigurationMode(GObject.GEnum):
+    DHCP = 2
+    FORCE_IP = 4
+    LLA = 3
+    NONE = 0
+    PERSISTENT_IP = 1
+
+class GvPacketSizeAdjustment(GObject.GEnum):
+    ALWAYS = 4
+    DEFAULT = 1
+    NEVER = 0
+    ONCE = 3
+    ON_FAILURE = 2
+    ON_FAILURE_ONCE = 1
+
+class GvStreamPacketResend(GObject.GEnum):
+    ALWAYS = 1
+    NEVER = 0
+
+class GvStreamSocketBuffer(GObject.GEnum):
+    AUTO = 1
+    FIXED = 0
+
+class RangeCheckPolicy(GObject.GEnum):
+    DEBUG = 2
+    DEFAULT = 0
+    DISABLE = 0
+    ENABLE = 1
+
+class RegisterCachePolicy(GObject.GEnum):
+    DEBUG = 2
+    DEFAULT = 0
+    DISABLE = 0
+    ENABLE = 1
+
+class StreamCallbackType(GObject.GEnum):
+    BUFFER_DONE = 3
+    EXIT = 1
+    INIT = 0
+    START_BUFFER = 2
+
+class UvUsbMode(GObject.GEnum):
+    ASYNC = 1
+    DEFAULT = 1
+    SYNC = 0
+
+class XmlSchemaError(GObject.GEnum):
+    STRUCTURE = 0
+    @staticmethod
+    def quark() -> int: ...

@@ -6,7 +6,9 @@ build
 dist
 *.egg-info
 *.sublime-*
+*.vscode
 *.venv
+uv.lock
 
 src/gi-stubs/repository/Gdk.pyi
 src/gi-stubs/repository/GdkWin32.pyi

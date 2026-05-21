@@ -1,29 +1,38 @@
-import typing
+from typing import Any
+from typing import Literal
+from typing import type_check_only
+from typing import TypeAlias
+from typing_extensions import TypeVar
+from typing_extensions import TypeVarTuple
+from typing_extensions import Unpack
+
+from collections.abc import Callable
+from collections.abc import Sequence
 
 import cairo
-from gi.repository import Gdk
+from gi import _gi
+from gi.repository import _Gdk4
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Graphene
 from gi.repository import Pango
 
-T = typing.TypeVar("T")
-_SomeSurface = typing.TypeVar("_SomeSurface", bound=cairo.Surface)
+_DataTs = TypeVarTuple("_DataTs", default=Unpack[tuple[()]])
+_SomeSurface = TypeVar("_SomeSurface", bound=cairo.Surface)
 
-_lock = ...  # FIXME Constant
-_namespace: str = "Gsk"
-_version: str = "4.0"
-
-def path_parse(string: str) -> typing.Optional[Path]: ...
+def component_transfer_equal(
+    self: int | Any | None, other: int | Any | None
+) -> bool: ...
+def path_parse(string: str) -> Path | None: ...
 def serialization_error_quark() -> int: ...
-def stroke_equal(stroke1: None, stroke2: None) -> bool: ...
-def transform_parse(string: str) -> typing.Tuple[bool, Transform]: ...
-def value_dup_render_node(value: typing.Any) -> typing.Optional[RenderNode]: ...
-def value_get_render_node(value: typing.Any) -> typing.Optional[RenderNode]: ...
-def value_set_render_node(value: typing.Any, node: RenderNode) -> None: ...
-def value_take_render_node(
-    value: typing.Any, node: typing.Optional[RenderNode] = None
-) -> None: ...
+def stroke_equal(
+    stroke1: int | Any | None = None, stroke2: int | Any | None = None
+) -> bool: ...
+def transform_parse(string: str) -> tuple[bool, Transform]: ...
+def value_dup_render_node(value: Any) -> RenderNode | None: ...
+def value_get_render_node(value: Any) -> RenderNode | None: ...
+def value_set_render_node(value: Any, node: RenderNode) -> None: ...
+def value_take_render_node(value: Any, node: RenderNode | None = None) -> None: ...
 
 class BlendNode(RenderNode):
     """
@@ -34,13 +43,12 @@ class BlendNode(RenderNode):
         BlendNode(**properties)
         new(bottom:Gsk.RenderNode, top:Gsk.RenderNode, blend_mode:Gsk.BlendMode) -> Gsk.BlendNode
     """
-
     def get_blend_mode(self) -> BlendMode: ...
     def get_bottom_child(self) -> RenderNode: ...
     def get_top_child(self) -> RenderNode: ...
     @classmethod
     def new(
-        cls, bottom: RenderNode, top: RenderNode, blend_mode: BlendMode
+        cls, bottom: RenderNode, top: RenderNode, blend_mode: _BlendModeValueType
     ) -> BlendNode: ...
 
 class BlurNode(RenderNode):
@@ -52,7 +60,6 @@ class BlurNode(RenderNode):
         BlurNode(**properties)
         new(child:Gsk.RenderNode, radius:float) -> Gsk.BlurNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_radius(self) -> float: ...
     @classmethod
@@ -67,16 +74,15 @@ class BorderNode(RenderNode):
         BorderNode(**properties)
         new(outline:Gsk.RoundedRect, border_width:list, border_color:list) -> Gsk.BorderNode
     """
-
-    def get_colors(self) -> list[Gdk.RGBA]: ...
+    def get_colors(self) -> list[_Gdk4.RGBA]: ...
     def get_outline(self) -> RoundedRect: ...
     def get_widths(self) -> list[float]: ...
     @classmethod
     def new(
         cls,
         outline: RoundedRect,
-        border_width: typing.Sequence[float],
-        border_color: typing.Sequence[Gdk.RGBA],
+        border_width: Sequence[float],
+        border_color: Sequence[_Gdk4.RGBA],
     ) -> BorderNode: ...
 
 class BroadwayRenderer(Renderer):
@@ -97,16 +103,10 @@ class BroadwayRenderer(Renderer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     @classmethod
     def new(cls) -> BroadwayRenderer: ...
 
-class BroadwayRendererClass(GObject.GPointer): ...
+class BroadwayRendererClass(_gi.Struct): ...
 
 class CairoNode(RenderNode):
     """
@@ -117,7 +117,6 @@ class CairoNode(RenderNode):
         CairoNode(**properties)
         new(bounds:Graphene.Rect) -> Gsk.CairoNode
     """
-
     def get_draw_context(self) -> cairo.Context: ...
     def get_surface(self) -> cairo.Surface: ...
     @classmethod
@@ -141,16 +140,10 @@ class CairoRenderer(Renderer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     @classmethod
     def new(cls) -> CairoRenderer: ...
 
-class CairoRendererClass(GObject.GPointer): ...
+class CairoRendererClass(_gi.Struct): ...
 
 class ClipNode(RenderNode):
     """
@@ -161,7 +154,6 @@ class ClipNode(RenderNode):
         ClipNode(**properties)
         new(child:Gsk.RenderNode, clip:Graphene.Rect) -> Gsk.ClipNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_clip(self) -> Graphene.Rect: ...
     @classmethod
@@ -176,7 +168,6 @@ class ColorMatrixNode(RenderNode):
         ColorMatrixNode(**properties)
         new(child:Gsk.RenderNode, color_matrix:Graphene.Matrix, color_offset:Graphene.Vec4) -> Gsk.ColorMatrixNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_color_matrix(self) -> Graphene.Matrix: ...
     def get_color_offset(self) -> Graphene.Vec4: ...
@@ -197,12 +188,11 @@ class ColorNode(RenderNode):
         ColorNode(**properties)
         new(rgba:Gdk.RGBA, bounds:Graphene.Rect) -> Gsk.ColorNode
     """
-
-    def get_color(self) -> Gdk.RGBA: ...
+    def get_color(self) -> _Gdk4.RGBA: ...
     @classmethod
-    def new(cls, rgba: Gdk.RGBA, bounds: Graphene.Rect) -> ColorNode: ...
+    def new(cls, rgba: _Gdk4.RGBA, bounds: Graphene.Rect) -> ColorNode: ...
 
-class ColorStop(GObject.GPointer):
+class ColorStop(_gi.Struct):
     """
     :Constructors:
 
@@ -211,8 +201,60 @@ class ColorStop(GObject.GPointer):
         ColorStop()
     """
 
-    offset: float = ...
-    color: Gdk.RGBA = ...
+    offset: float
+    color: _Gdk4.RGBA
+
+class ComponentTransfer(GObject.GBoxed):
+    """
+    :Constructors:
+
+    ::
+
+        new_discrete(values:list) -> Gsk.ComponentTransfer
+        new_gamma(amp:float, exp:float, ofs:float) -> Gsk.ComponentTransfer
+        new_identity() -> Gsk.ComponentTransfer
+        new_levels(n:float) -> Gsk.ComponentTransfer
+        new_linear(m:float, b:float) -> Gsk.ComponentTransfer
+        new_table(values:list) -> Gsk.ComponentTransfer
+    """
+    def copy(self) -> ComponentTransfer: ...
+    # override
+    @staticmethod
+    def equal(value1: None, value2: None) -> bool: ...
+    def free(self) -> None: ...
+    @classmethod
+    def new_discrete(cls, values: Sequence[float]) -> ComponentTransfer: ...
+    @classmethod
+    def new_gamma(cls, amp: float, exp: float, ofs: float) -> ComponentTransfer: ...
+    @classmethod
+    def new_identity(cls) -> ComponentTransfer: ...
+    @classmethod
+    def new_levels(cls, n: float) -> ComponentTransfer: ...
+    @classmethod
+    def new_linear(cls, m: float, b: float) -> ComponentTransfer: ...
+    @classmethod
+    def new_table(cls, values: Sequence[float]) -> ComponentTransfer: ...
+
+class ComponentTransferNode(RenderNode):
+    """
+    :Constructors:
+
+    ::
+
+        ComponentTransferNode(**properties)
+        new(child:Gsk.RenderNode, r:Gsk.ComponentTransfer, g:Gsk.ComponentTransfer, b:Gsk.ComponentTransfer, a:Gsk.ComponentTransfer) -> Gsk.ComponentTransferNode
+    """
+    def get_child(self) -> RenderNode: ...
+    def get_transfer(self, component: int) -> ComponentTransfer: ...
+    @classmethod
+    def new(
+        cls,
+        child: RenderNode,
+        r: ComponentTransfer,
+        g: ComponentTransfer,
+        b: ComponentTransfer,
+        a: ComponentTransfer,
+    ) -> ComponentTransferNode: ...
 
 class ConicGradientNode(RenderNode):
     """
@@ -223,7 +265,6 @@ class ConicGradientNode(RenderNode):
         ConicGradientNode(**properties)
         new(bounds:Graphene.Rect, center:Graphene.Point, rotation:float, color_stops:list) -> Gsk.ConicGradientNode
     """
-
     def get_angle(self) -> float: ...
     def get_center(self) -> Graphene.Point: ...
     def get_color_stops(self) -> list[ColorStop]: ...
@@ -235,7 +276,7 @@ class ConicGradientNode(RenderNode):
         bounds: Graphene.Rect,
         center: Graphene.Point,
         rotation: float,
-        color_stops: typing.Sequence[ColorStop],
+        color_stops: Sequence[ColorStop],
     ) -> ConicGradientNode: ...
 
 class ContainerNode(RenderNode):
@@ -247,11 +288,10 @@ class ContainerNode(RenderNode):
         ContainerNode(**properties)
         new(children:list) -> Gsk.ContainerNode
     """
-
     def get_child(self, idx: int) -> RenderNode: ...
     def get_n_children(self) -> int: ...
     @classmethod
-    def new(cls, children: typing.Sequence[RenderNode]) -> ContainerNode: ...
+    def new(cls, children: Sequence[RenderNode]) -> ContainerNode: ...
 
 class CrossFadeNode(RenderNode):
     """
@@ -262,7 +302,6 @@ class CrossFadeNode(RenderNode):
         CrossFadeNode(**properties)
         new(start:Gsk.RenderNode, end:Gsk.RenderNode, progress:float) -> Gsk.CrossFadeNode
     """
-
     def get_end_child(self) -> RenderNode: ...
     def get_progress(self) -> float: ...
     def get_start_child(self) -> RenderNode: ...
@@ -280,7 +319,6 @@ class DebugNode(RenderNode):
         DebugNode(**properties)
         new(child:Gsk.RenderNode, message:str) -> Gsk.DebugNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_message(self) -> str: ...
     @classmethod
@@ -295,12 +333,13 @@ class FillNode(RenderNode):
         FillNode(**properties)
         new(child:Gsk.RenderNode, path:Gsk.Path, fill_rule:Gsk.FillRule) -> Gsk.FillNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_fill_rule(self) -> FillRule: ...
     def get_path(self) -> Path: ...
     @classmethod
-    def new(cls, child: RenderNode, path: Path, fill_rule: FillRule) -> FillNode: ...
+    def new(
+        cls, child: RenderNode, path: Path, fill_rule: _FillRuleValueType
+    ) -> FillNode: ...
 
 class GLRenderer(Renderer):
     """
@@ -320,16 +359,10 @@ class GLRenderer(Renderer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     @classmethod
     def new(cls) -> GLRenderer: ...
 
-class GLRendererClass(GObject.GPointer): ...
+class GLRendererClass(_gi.Struct): ...
 
 class GLShader(GObject.Object):
     """
@@ -350,13 +383,18 @@ class GLShader(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def resource(self) -> str | None: ...
+        @property
+        def source(self) -> GLib.Bytes: ...
 
-    class Props:
-        resource: typing.Optional[str]
-        source: GLib.Bytes
-
-    props: Props = ...
-    def __init__(self, resource: str = ..., source: GLib.Bytes = ...) -> None: ...
+    @property
+    def props(self) -> Props: ...
+    def __init__(
+        self, *, resource: str | None = ..., source: GLib.Bytes | None = ...
+    ) -> None: ...
     def compile(self, renderer: Renderer) -> bool: ...
     def find_uniform_by_name(self, name: str) -> int: ...
     def get_arg_bool(self, args: GLib.Bytes, idx: int) -> bool: ...
@@ -375,7 +413,7 @@ class GLShader(GObject.Object):
     def get_args_size(self) -> int: ...
     def get_n_textures(self) -> int: ...
     def get_n_uniforms(self) -> int: ...
-    def get_resource(self) -> typing.Optional[str]: ...
+    def get_resource(self) -> str | None: ...
     def get_source(self) -> GLib.Bytes: ...
     def get_uniform_name(self, idx: int) -> str: ...
     def get_uniform_offset(self, idx: int) -> int: ...
@@ -385,7 +423,7 @@ class GLShader(GObject.Object):
     @classmethod
     def new_from_resource(cls, resource_path: str) -> GLShader: ...
 
-class GLShaderClass(GObject.GPointer):
+class GLShaderClass(_gi.Struct):
     """
     :Constructors:
 
@@ -393,8 +431,8 @@ class GLShaderClass(GObject.GPointer):
 
         GLShaderClass()
     """
-
-    parent_class: GObject.ObjectClass = ...
+    @property
+    def parent_class(self) -> GObject.ObjectClass: ...
 
 class GLShaderNode(RenderNode):
     """
@@ -405,7 +443,6 @@ class GLShaderNode(RenderNode):
         GLShaderNode(**properties)
         new(shader:Gsk.GLShader, bounds:Graphene.Rect, args:GLib.Bytes, children:list=None) -> Gsk.GLShaderNode
     """
-
     def get_args(self) -> GLib.Bytes: ...
     def get_child(self, idx: int) -> RenderNode: ...
     def get_n_children(self) -> int: ...
@@ -416,7 +453,7 @@ class GLShaderNode(RenderNode):
         shader: GLShader,
         bounds: Graphene.Rect,
         args: GLib.Bytes,
-        children: typing.Optional[typing.Sequence[RenderNode]] = None,
+        children: Sequence[RenderNode] | None = None,
     ) -> GLShaderNode: ...
 
 class InsetShadowNode(RenderNode):
@@ -428,9 +465,8 @@ class InsetShadowNode(RenderNode):
         InsetShadowNode(**properties)
         new(outline:Gsk.RoundedRect, color:Gdk.RGBA, dx:float, dy:float, spread:float, blur_radius:float) -> Gsk.InsetShadowNode
     """
-
     def get_blur_radius(self) -> float: ...
-    def get_color(self) -> Gdk.RGBA: ...
+    def get_color(self) -> _Gdk4.RGBA: ...
     def get_dx(self) -> float: ...
     def get_dy(self) -> float: ...
     def get_outline(self) -> RoundedRect: ...
@@ -439,7 +475,7 @@ class InsetShadowNode(RenderNode):
     def new(
         cls,
         outline: RoundedRect,
-        color: Gdk.RGBA,
+        color: _Gdk4.RGBA,
         dx: float,
         dy: float,
         spread: float,
@@ -455,7 +491,6 @@ class LinearGradientNode(RenderNode):
         LinearGradientNode(**properties)
         new(bounds:Graphene.Rect, start:Graphene.Point, end:Graphene.Point, color_stops:list) -> Gsk.LinearGradientNode
     """
-
     def get_color_stops(self) -> list[ColorStop]: ...
     def get_end(self) -> Graphene.Point: ...
     def get_n_color_stops(self) -> int: ...
@@ -466,7 +501,7 @@ class LinearGradientNode(RenderNode):
         bounds: Graphene.Rect,
         start: Graphene.Point,
         end: Graphene.Point,
-        color_stops: typing.Sequence[ColorStop],
+        color_stops: Sequence[ColorStop],
     ) -> LinearGradientNode: ...
 
 class MaskNode(RenderNode):
@@ -478,13 +513,12 @@ class MaskNode(RenderNode):
         MaskNode(**properties)
         new(source:Gsk.RenderNode, mask:Gsk.RenderNode, mask_mode:Gsk.MaskMode) -> Gsk.MaskNode
     """
-
     def get_mask(self) -> RenderNode: ...
     def get_mask_mode(self) -> MaskMode: ...
     def get_source(self) -> RenderNode: ...
     @classmethod
     def new(
-        cls, source: RenderNode, mask: RenderNode, mask_mode: MaskMode
+        cls, source: RenderNode, mask: RenderNode, mask_mode: _MaskModeValueType
     ) -> MaskNode: ...
 
 class NglRenderer(Renderer):
@@ -505,12 +539,6 @@ class NglRenderer(Renderer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     @classmethod
     def new(cls) -> NglRenderer: ...
 
@@ -523,7 +551,6 @@ class OpacityNode(RenderNode):
         OpacityNode(**properties)
         new(child:Gsk.RenderNode, opacity:float) -> Gsk.OpacityNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_opacity(self) -> float: ...
     @classmethod
@@ -538,9 +565,8 @@ class OutsetShadowNode(RenderNode):
         OutsetShadowNode(**properties)
         new(outline:Gsk.RoundedRect, color:Gdk.RGBA, dx:float, dy:float, spread:float, blur_radius:float) -> Gsk.OutsetShadowNode
     """
-
     def get_blur_radius(self) -> float: ...
-    def get_color(self) -> Gdk.RGBA: ...
+    def get_color(self) -> _Gdk4.RGBA: ...
     def get_dx(self) -> float: ...
     def get_dy(self) -> float: ...
     def get_outline(self) -> RoundedRect: ...
@@ -549,14 +575,14 @@ class OutsetShadowNode(RenderNode):
     def new(
         cls,
         outline: RoundedRect,
-        color: Gdk.RGBA,
+        color: _Gdk4.RGBA,
         dx: float,
         dy: float,
         spread: float,
         blur_radius: float,
     ) -> OutsetShadowNode: ...
 
-class ParseLocation(GObject.GPointer):
+class ParseLocation(_gi.Struct):
     """
     :Constructors:
 
@@ -565,33 +591,56 @@ class ParseLocation(GObject.GPointer):
         ParseLocation()
     """
 
-    bytes: int = ...
-    chars: int = ...
-    lines: int = ...
-    line_bytes: int = ...
-    line_chars: int = ...
+    bytes: int
+    chars: int
+    lines: int
+    line_bytes: int
+    line_chars: int
 
 class Path(GObject.GBoxed):
     def foreach(
         self,
-        flags: PathForeachFlags,
-        func: typing.Callable[..., bool],
-        *user_data: typing.Any,
+        flags: _PathForeachFlagsValueType,
+        func: Callable[
+            [
+                _PathOperationValueType,
+                Sequence[Graphene.Point],
+                int,
+                float,
+                Unpack[_DataTs],
+            ],
+            bool,
+        ],
+        *user_data: Unpack[_DataTs],
     ) -> bool: ...
-    def get_bounds(self) -> typing.Tuple[bool, Graphene.Rect]: ...
+    def foreach_intersection(
+        self,
+        path2: Path | None,
+        func: Callable[
+            [
+                Path,
+                PathPoint,
+                Path,
+                PathPoint,
+                _PathIntersectionValueType,
+                Unpack[_DataTs],
+            ],
+            bool,
+        ],
+        *user_data: Unpack[_DataTs],
+    ) -> bool: ...
+    def get_bounds(self) -> tuple[bool, Graphene.Rect]: ...
     def get_closest_point(
         self, point: Graphene.Point, threshold: float
-    ) -> typing.Tuple[bool, PathPoint, float]: ...
-    def get_end_point(self) -> typing.Tuple[bool, PathPoint]: ...
-    def get_start_point(self) -> typing.Tuple[bool, PathPoint]: ...
-    def get_stroke_bounds(
-        self, stroke: Stroke
-    ) -> typing.Tuple[bool, Graphene.Rect]: ...
-    def in_fill(self, point: Graphene.Point, fill_rule: FillRule) -> bool: ...
+    ) -> tuple[bool, PathPoint, float]: ...
+    def get_end_point(self) -> tuple[bool, PathPoint]: ...
+    def get_start_point(self) -> tuple[bool, PathPoint]: ...
+    def get_stroke_bounds(self, stroke: Stroke) -> tuple[bool, Graphene.Rect]: ...
+    def in_fill(self, point: Graphene.Point, fill_rule: _FillRuleValueType) -> bool: ...
     def is_closed(self) -> bool: ...
     def is_empty(self) -> bool: ...
     @staticmethod
-    def parse(string: str) -> typing.Optional[Path]: ...
+    def parse(string: str) -> Path | None: ...
     def print_(self, string: GLib.String) -> None: ...
     def ref(self) -> Path: ...
     def to_cairo(self, cr: cairo.Context[_SomeSurface]) -> None: ...
@@ -606,7 +655,7 @@ class PathBuilder(GObject.GBoxed):
 
         new() -> Gsk.PathBuilder
     """
-
+    def __init__(self) -> None: ...
     def add_cairo_path(self, path: cairo.Path) -> None: ...
     def add_circle(self, center: Graphene.Point, radius: float) -> None: ...
     def add_layout(self, layout: Pango.Layout) -> None: ...
@@ -678,10 +727,10 @@ class PathMeasure(GObject.GBoxed):
         new(path:Gsk.Path) -> Gsk.PathMeasure
         new_with_tolerance(path:Gsk.Path, tolerance:float) -> Gsk.PathMeasure
     """
-
+    def __init__(self, path: Path) -> None: ...
     def get_length(self) -> float: ...
     def get_path(self) -> Path: ...
-    def get_point(self, distance: float) -> typing.Tuple[bool, PathPoint]: ...
+    def get_point(self, distance: float) -> tuple[bool, PathPoint]: ...
     def get_tolerance(self) -> float: ...
     @classmethod
     def new(cls, path: Path) -> PathMeasure: ...
@@ -696,12 +745,14 @@ class PathPoint(GObject.GBoxed):
     def equal(self, point2: PathPoint) -> bool: ...
     def free(self) -> None: ...
     def get_curvature(
-        self, path: Path, direction: PathDirection
-    ) -> typing.Tuple[float, Graphene.Point]: ...
+        self, path: Path, direction: _PathDirectionValueType
+    ) -> tuple[float, Graphene.Point | None]: ...
     def get_distance(self, measure: PathMeasure) -> float: ...
     def get_position(self, path: Path) -> Graphene.Point: ...
-    def get_rotation(self, path: Path, direction: PathDirection) -> float: ...
-    def get_tangent(self, path: Path, direction: PathDirection) -> Graphene.Vec2: ...
+    def get_rotation(self, path: Path, direction: _PathDirectionValueType) -> float: ...
+    def get_tangent(
+        self, path: Path, direction: _PathDirectionValueType
+    ) -> Graphene.Vec2: ...
 
 class RadialGradientNode(RenderNode):
     """
@@ -712,7 +763,6 @@ class RadialGradientNode(RenderNode):
         RadialGradientNode(**properties)
         new(bounds:Graphene.Rect, center:Graphene.Point, hradius:float, vradius:float, start:float, end:float, color_stops:list) -> Gsk.RadialGradientNode
     """
-
     def get_center(self) -> Graphene.Point: ...
     def get_color_stops(self) -> list[ColorStop]: ...
     def get_end(self) -> float: ...
@@ -729,10 +779,10 @@ class RadialGradientNode(RenderNode):
         vradius: float,
         start: float,
         end: float,
-        color_stops: typing.Sequence[ColorStop],
+        color_stops: Sequence[ColorStop],
     ) -> RadialGradientNode: ...
 
-class RenderNode:
+class RenderNode(_gi.Fundamental):
     """
     :Constructors:
 
@@ -740,17 +790,19 @@ class RenderNode:
 
         RenderNode(**properties)
     """
-
     @staticmethod
     def deserialize(
         bytes: GLib.Bytes,
-        error_func: typing.Optional[typing.Callable[..., None]] = None,
-        *user_data: typing.Any,
-    ) -> typing.Optional[RenderNode]: ...
+        error_func: Callable[
+            [ParseLocation, ParseLocation, GLib.Error, Unpack[_DataTs]], None
+        ]
+        | None = None,
+        *user_data: Unpack[_DataTs],
+    ) -> RenderNode | None: ...
     def draw(self, cr: cairo.Context[_SomeSurface]) -> None: ...
     def get_bounds(self) -> Graphene.Rect: ...
     def get_node_type(self) -> RenderNodeType: ...
-    def get_opaque_rect(self) -> typing.Tuple[bool, Graphene.Rect]: ...
+    def get_opaque_rect(self) -> tuple[bool, Graphene.Rect]: ...
     def ref(self) -> RenderNode: ...
     def serialize(self) -> GLib.Bytes: ...
     def unref(self) -> None: ...
@@ -774,27 +826,28 @@ class Renderer(GObject.Object):
     Signals from GObject:
       notify (GParam)
     """
+    @type_check_only
+    class Props(GObject.Object.Props):
+        @property
+        def realized(self) -> bool: ...
+        @property
+        def surface(self) -> _Gdk4.Surface | None: ...
 
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
-    def get_surface(self) -> typing.Optional[Gdk.Surface]: ...
+    @property
+    def props(self) -> Props: ...
+    def get_surface(self) -> _Gdk4.Surface | None: ...
     def is_realized(self) -> bool: ...
     @classmethod
-    def new_for_surface(cls, surface: Gdk.Surface) -> typing.Optional[Renderer]: ...
-    def realize(self, surface: typing.Optional[Gdk.Surface] = None) -> bool: ...
-    def realize_for_display(self, display: Gdk.Display) -> bool: ...
-    def render(
-        self, root: RenderNode, region: typing.Optional[cairo.Region] = None
-    ) -> None: ...
+    def new_for_surface(cls, surface: _Gdk4.Surface) -> Renderer | None: ...
+    def realize(self, surface: _Gdk4.Surface | None = None) -> bool: ...
+    def realize_for_display(self, display: _Gdk4.Display) -> bool: ...
+    def render(self, root: RenderNode, region: cairo.Region | None = None) -> None: ...
     def render_texture(
-        self, root: RenderNode, viewport: typing.Optional[Graphene.Rect] = None
-    ) -> Gdk.Texture: ...
+        self, root: RenderNode, viewport: Graphene.Rect | None = None
+    ) -> _Gdk4.Texture: ...
     def unrealize(self) -> None: ...
 
-class RendererClass(GObject.GPointer): ...
+class RendererClass(_gi.Struct): ...
 
 class RepeatNode(RenderNode):
     """
@@ -805,7 +858,6 @@ class RepeatNode(RenderNode):
         RepeatNode(**properties)
         new(bounds:Graphene.Rect, child:Gsk.RenderNode, child_bounds:Graphene.Rect=None) -> Gsk.RepeatNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_child_bounds(self) -> Graphene.Rect: ...
     @classmethod
@@ -813,7 +865,7 @@ class RepeatNode(RenderNode):
         cls,
         bounds: Graphene.Rect,
         child: RenderNode,
-        child_bounds: typing.Optional[Graphene.Rect] = None,
+        child_bounds: Graphene.Rect | None = None,
     ) -> RepeatNode: ...
 
 class RepeatingLinearGradientNode(RenderNode):
@@ -825,14 +877,13 @@ class RepeatingLinearGradientNode(RenderNode):
         RepeatingLinearGradientNode(**properties)
         new(bounds:Graphene.Rect, start:Graphene.Point, end:Graphene.Point, color_stops:list) -> Gsk.RepeatingLinearGradientNode
     """
-
     @classmethod
     def new(
         cls,
         bounds: Graphene.Rect,
         start: Graphene.Point,
         end: Graphene.Point,
-        color_stops: typing.Sequence[ColorStop],
+        color_stops: Sequence[ColorStop],
     ) -> RepeatingLinearGradientNode: ...
 
 class RepeatingRadialGradientNode(RenderNode):
@@ -844,7 +895,6 @@ class RepeatingRadialGradientNode(RenderNode):
         RepeatingRadialGradientNode(**properties)
         new(bounds:Graphene.Rect, center:Graphene.Point, hradius:float, vradius:float, start:float, end:float, color_stops:list) -> Gsk.RepeatingRadialGradientNode
     """
-
     @classmethod
     def new(
         cls,
@@ -854,7 +904,7 @@ class RepeatingRadialGradientNode(RenderNode):
         vradius: float,
         start: float,
         end: float,
-        color_stops: typing.Sequence[ColorStop],
+        color_stops: Sequence[ColorStop],
     ) -> RepeatingRadialGradientNode: ...
 
 class RoundedClipNode(RenderNode):
@@ -866,13 +916,12 @@ class RoundedClipNode(RenderNode):
         RoundedClipNode(**properties)
         new(child:Gsk.RenderNode, clip:Gsk.RoundedRect) -> Gsk.RoundedClipNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_clip(self) -> RoundedRect: ...
     @classmethod
     def new(cls, child: RenderNode, clip: RoundedRect) -> RoundedClipNode: ...
 
-class RoundedRect(GObject.GPointer):
+class RoundedRect(_gi.Struct):
     """
     :Constructors:
 
@@ -881,8 +930,8 @@ class RoundedRect(GObject.GPointer):
         RoundedRect()
     """
 
-    bounds: Graphene.Rect = ...
-    corner: list[Graphene.Size] = ...
+    bounds: Graphene.Rect
+    corner: list[Graphene.Size]
     def contains_point(self, point: Graphene.Point) -> bool: ...
     def contains_rect(self, rect: Graphene.Rect) -> bool: ...
     def init(
@@ -911,10 +960,12 @@ class ShaderArgsBuilder(GObject.GBoxed):
 
         new(shader:Gsk.GLShader, initial_values:GLib.Bytes=None) -> Gsk.ShaderArgsBuilder
     """
-
+    def __init__(
+        self, shader: GLShader, initial_values: GLib.Bytes | None = None
+    ) -> None: ...
     @classmethod
     def new(
-        cls, shader: GLShader, initial_values: typing.Optional[GLib.Bytes] = None
+        cls, shader: GLShader, initial_values: GLib.Bytes | None = None
     ) -> ShaderArgsBuilder: ...
     def ref(self) -> ShaderArgsBuilder: ...
     def set_bool(self, idx: int, value: bool) -> None: ...
@@ -927,7 +978,7 @@ class ShaderArgsBuilder(GObject.GBoxed):
     def to_args(self) -> GLib.Bytes: ...
     def unref(self) -> None: ...
 
-class Shadow(GObject.GPointer):
+class Shadow(_gi.Struct):
     """
     :Constructors:
 
@@ -936,10 +987,10 @@ class Shadow(GObject.GPointer):
         Shadow()
     """
 
-    color: Gdk.RGBA = ...
-    dx: float = ...
-    dy: float = ...
-    radius: float = ...
+    color: _Gdk4.RGBA
+    dx: float
+    dy: float
+    radius: float
 
 class ShadowNode(RenderNode):
     """
@@ -950,12 +1001,11 @@ class ShadowNode(RenderNode):
         ShadowNode(**properties)
         new(child:Gsk.RenderNode, shadows:list) -> Gsk.ShadowNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_n_shadows(self) -> int: ...
     def get_shadow(self, i: int) -> Shadow: ...
     @classmethod
-    def new(cls, child: RenderNode, shadows: typing.Sequence[Shadow]) -> ShadowNode: ...
+    def new(cls, child: RenderNode, shadows: Sequence[Shadow]) -> ShadowNode: ...
 
 class Stroke(GObject.GBoxed):
     """
@@ -965,12 +1015,14 @@ class Stroke(GObject.GBoxed):
 
         new(line_width:float) -> Gsk.Stroke
     """
-
+    def __init__(self, line_width: float) -> None: ...
     def copy(self) -> Stroke: ...
     @staticmethod
-    def equal(stroke1: None, stroke2: None) -> bool: ...
+    def equal(
+        stroke1: int | Any | None = None, stroke2: int | Any | None = None
+    ) -> bool: ...
     def free(self) -> None: ...
-    def get_dash(self) -> typing.Optional[list[float]]: ...
+    def get_dash(self) -> list[float]: ...
     def get_dash_offset(self) -> float: ...
     def get_line_cap(self) -> LineCap: ...
     def get_line_join(self) -> LineJoin: ...
@@ -978,12 +1030,10 @@ class Stroke(GObject.GBoxed):
     def get_miter_limit(self) -> float: ...
     @classmethod
     def new(cls, line_width: float) -> Stroke: ...
-    def set_dash(
-        self, dash: typing.Optional[typing.Sequence[float]] = None
-    ) -> None: ...
+    def set_dash(self, dash: Sequence[float] | None = None) -> None: ...
     def set_dash_offset(self, offset: float) -> None: ...
-    def set_line_cap(self, line_cap: LineCap) -> None: ...
-    def set_line_join(self, line_join: LineJoin) -> None: ...
+    def set_line_cap(self, line_cap: _LineCapValueType) -> None: ...
+    def set_line_join(self, line_join: _LineJoinValueType) -> None: ...
     def set_line_width(self, line_width: float) -> None: ...
     def set_miter_limit(self, limit: float) -> None: ...
     def to_cairo(self, cr: cairo.Context[_SomeSurface]) -> None: ...
@@ -997,7 +1047,6 @@ class StrokeNode(RenderNode):
         StrokeNode(**properties)
         new(child:Gsk.RenderNode, path:Gsk.Path, stroke:Gsk.Stroke) -> Gsk.StrokeNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_path(self) -> Path: ...
     def get_stroke(self) -> Stroke: ...
@@ -1012,7 +1061,6 @@ class SubsurfaceNode(RenderNode):
 
         SubsurfaceNode(**properties)
     """
-
     def get_child(self) -> RenderNode: ...
 
 class TextNode(RenderNode):
@@ -1024,8 +1072,7 @@ class TextNode(RenderNode):
         TextNode(**properties)
         new(font:Pango.Font, glyphs:Pango.GlyphString, color:Gdk.RGBA, offset:Graphene.Point) -> Gsk.TextNode or None
     """
-
-    def get_color(self) -> Gdk.RGBA: ...
+    def get_color(self) -> _Gdk4.RGBA: ...
     def get_font(self) -> Pango.Font: ...
     def get_glyphs(self) -> list[Pango.GlyphInfo]: ...
     def get_num_glyphs(self) -> int: ...
@@ -1036,9 +1083,9 @@ class TextNode(RenderNode):
         cls,
         font: Pango.Font,
         glyphs: Pango.GlyphString,
-        color: Gdk.RGBA,
+        color: _Gdk4.RGBA,
         offset: Graphene.Point,
-    ) -> typing.Optional[TextNode]: ...
+    ) -> TextNode | None: ...
 
 class TextureNode(RenderNode):
     """
@@ -1049,10 +1096,9 @@ class TextureNode(RenderNode):
         TextureNode(**properties)
         new(texture:Gdk.Texture, bounds:Graphene.Rect) -> Gsk.TextureNode
     """
-
-    def get_texture(self) -> Gdk.Texture: ...
+    def get_texture(self) -> _Gdk4.Texture: ...
     @classmethod
-    def new(cls, texture: Gdk.Texture, bounds: Graphene.Rect) -> TextureNode: ...
+    def new(cls, texture: _Gdk4.Texture, bounds: Graphene.Rect) -> TextureNode: ...
 
 class TextureScaleNode(RenderNode):
     """
@@ -1063,12 +1109,14 @@ class TextureScaleNode(RenderNode):
         TextureScaleNode(**properties)
         new(texture:Gdk.Texture, bounds:Graphene.Rect, filter:Gsk.ScalingFilter) -> Gsk.TextureScaleNode
     """
-
     def get_filter(self) -> ScalingFilter: ...
-    def get_texture(self) -> Gdk.Texture: ...
+    def get_texture(self) -> _Gdk4.Texture: ...
     @classmethod
     def new(
-        cls, texture: Gdk.Texture, bounds: Graphene.Rect, filter: ScalingFilter
+        cls,
+        texture: _Gdk4.Texture,
+        bounds: Graphene.Rect,
+        filter: _ScalingFilterValueType,
     ) -> TextureScaleNode: ...
 
 class Transform(GObject.GBoxed):
@@ -1079,42 +1127,41 @@ class Transform(GObject.GBoxed):
 
         new() -> Gsk.Transform
     """
-
-    def equal(self, second: typing.Optional[Transform] = None) -> bool: ...
+    def __init__(self) -> None: ...
+    def equal(self, second: Transform | None = None) -> bool: ...
     def get_category(self) -> TransformCategory: ...
-    def invert(self) -> typing.Optional[Transform]: ...
+    def invert(self) -> Transform | None: ...
     def matrix(self, matrix: Graphene.Matrix) -> Transform: ...
+    def matrix_2d(
+        self, xx: float, yx: float, xy: float, yy: float, dx: float, dy: float
+    ) -> Transform | None: ...
     @classmethod
     def new(cls) -> Transform: ...
     @staticmethod
-    def parse(string: str) -> typing.Tuple[bool, Transform]: ...
+    def parse(string: str) -> tuple[bool, Transform]: ...
     def perspective(self, depth: float) -> Transform: ...
     def print_(self, string: GLib.String) -> None: ...
-    def ref(self) -> typing.Optional[Transform]: ...
-    def rotate(self, angle: float) -> typing.Optional[Transform]: ...
-    def rotate_3d(
-        self, angle: float, axis: Graphene.Vec3
-    ) -> typing.Optional[Transform]: ...
-    def scale(self, factor_x: float, factor_y: float) -> typing.Optional[Transform]: ...
+    def ref(self) -> Transform | None: ...
+    def rotate(self, angle: float) -> Transform | None: ...
+    def rotate_3d(self, angle: float, axis: Graphene.Vec3) -> Transform | None: ...
+    def scale(self, factor_x: float, factor_y: float) -> Transform | None: ...
     def scale_3d(
         self, factor_x: float, factor_y: float, factor_z: float
-    ) -> typing.Optional[Transform]: ...
-    def skew(self, skew_x: float, skew_y: float) -> typing.Optional[Transform]: ...
-    def to_2d(self) -> typing.Tuple[float, float, float, float, float, float]: ...
+    ) -> Transform | None: ...
+    def skew(self, skew_x: float, skew_y: float) -> Transform | None: ...
+    def to_2d(self) -> tuple[float, float, float, float, float, float]: ...
     def to_2d_components(
         self,
-    ) -> typing.Tuple[float, float, float, float, float, float, float]: ...
-    def to_affine(self) -> typing.Tuple[float, float, float, float]: ...
+    ) -> tuple[float, float, float, float, float, float, float]: ...
+    def to_affine(self) -> tuple[float, float, float, float]: ...
     def to_matrix(self) -> Graphene.Matrix: ...
     def to_string(self) -> str: ...
-    def to_translate(self) -> typing.Tuple[float, float]: ...
-    def transform(
-        self, other: typing.Optional[Transform] = None
-    ) -> typing.Optional[Transform]: ...
+    def to_translate(self) -> tuple[float, float]: ...
+    def transform(self, other: Transform | None = None) -> Transform | None: ...
     def transform_bounds(self, rect: Graphene.Rect) -> Graphene.Rect: ...
     def transform_point(self, point: Graphene.Point) -> Graphene.Point: ...
-    def translate(self, point: Graphene.Point) -> typing.Optional[Transform]: ...
-    def translate_3d(self, point: Graphene.Point3D) -> typing.Optional[Transform]: ...
+    def translate(self, point: Graphene.Point) -> Transform | None: ...
+    def translate_3d(self, point: Graphene.Point3D) -> Transform | None: ...
     def unref(self) -> None: ...
 
 class TransformNode(RenderNode):
@@ -1126,7 +1173,6 @@ class TransformNode(RenderNode):
         TransformNode(**properties)
         new(child:Gsk.RenderNode, transform:Gsk.Transform) -> Gsk.TransformNode
     """
-
     def get_child(self) -> RenderNode: ...
     def get_transform(self) -> Transform: ...
     @classmethod
@@ -1150,22 +1196,32 @@ class VulkanRenderer(Renderer):
     Signals from GObject:
       notify (GParam)
     """
-
-    class Props:
-        realized: bool
-        surface: typing.Optional[Gdk.Surface]
-
-    props: Props = ...
     @classmethod
     def new(cls) -> VulkanRenderer: ...
 
-class VulkanRendererClass(GObject.GPointer): ...
+class VulkanRendererClass(_gi.Struct): ...
 
 class PathForeachFlags(GObject.GFlags):
     CONIC = 4
     CUBIC = 2
     ONLY_LINES = 0
     QUAD = 1
+
+_PathForeachFlagsLiteralType: TypeAlias = Literal[
+    "GSK_PATH_FOREACH_ALLOW_CONIC",
+    "GSK_PATH_FOREACH_ALLOW_CUBIC",
+    "GSK_PATH_FOREACH_ALLOW_ONLY_LINES",
+    "GSK_PATH_FOREACH_ALLOW_QUAD",
+    "conic",
+    "cubic",
+    "only-lines",
+    "quad",
+]
+_PathForeachFlagsValueType: TypeAlias = (
+    PathForeachFlags
+    | _PathForeachFlagsLiteralType
+    | tuple[_PathForeachFlagsLiteralType, ...]
+)
 
 class BlendMode(GObject.GEnum):
     COLOR = 12
@@ -1185,15 +1241,68 @@ class BlendMode(GObject.GEnum):
     SCREEN = 2
     SOFT_LIGHT = 9
 
+_BlendModeLiteralType: TypeAlias = Literal[
+    "GSK_BLEND_MODE_COLOR",
+    "GSK_BLEND_MODE_COLOR_BURN",
+    "GSK_BLEND_MODE_COLOR_DODGE",
+    "GSK_BLEND_MODE_DARKEN",
+    "GSK_BLEND_MODE_DEFAULT",
+    "GSK_BLEND_MODE_DIFFERENCE",
+    "GSK_BLEND_MODE_EXCLUSION",
+    "GSK_BLEND_MODE_HARD_LIGHT",
+    "GSK_BLEND_MODE_HUE",
+    "GSK_BLEND_MODE_LIGHTEN",
+    "GSK_BLEND_MODE_LUMINOSITY",
+    "GSK_BLEND_MODE_MULTIPLY",
+    "GSK_BLEND_MODE_OVERLAY",
+    "GSK_BLEND_MODE_SATURATION",
+    "GSK_BLEND_MODE_SCREEN",
+    "GSK_BLEND_MODE_SOFT_LIGHT",
+    "color",
+    "color-burn",
+    "color-dodge",
+    "darken",
+    "default",
+    "difference",
+    "exclusion",
+    "hard-light",
+    "hue",
+    "lighten",
+    "luminosity",
+    "multiply",
+    "overlay",
+    "saturation",
+    "screen",
+    "soft-light",
+]
+_BlendModeValueType: TypeAlias = BlendMode | _BlendModeLiteralType
+
 class Corner(GObject.GEnum):
     BOTTOM_LEFT = 3
     BOTTOM_RIGHT = 2
     TOP_LEFT = 0
     TOP_RIGHT = 1
 
+_CornerLiteralType: TypeAlias = Literal[
+    "GSK_CORNER_BOTTOM_LEFT",
+    "GSK_CORNER_BOTTOM_RIGHT",
+    "GSK_CORNER_TOP_LEFT",
+    "GSK_CORNER_TOP_RIGHT",
+    "bottom-left",
+    "bottom-right",
+    "top-left",
+    "top-right",
+]
+_CornerValueType: TypeAlias = Corner | _CornerLiteralType
+
 class FillRule(GObject.GEnum):
     EVEN_ODD = 1
     WINDING = 0
+
+_FillRuleLiteralType: TypeAlias = Literal[
+    "GSK_FILL_RULE_EVEN_ODD", "GSK_FILL_RULE_WINDING", "even-odd", "winding"
+]
+_FillRuleValueType: TypeAlias = FillRule | _FillRuleLiteralType
 
 class GLUniformType(GObject.GEnum):
     BOOL = 4
@@ -1205,15 +1314,55 @@ class GLUniformType(GObject.GEnum):
     VEC3 = 6
     VEC4 = 7
 
+_GLUniformTypeLiteralType: TypeAlias = Literal[
+    "GSK_GL_UNIFORM_TYPE_BOOL",
+    "GSK_GL_UNIFORM_TYPE_FLOAT",
+    "GSK_GL_UNIFORM_TYPE_INT",
+    "GSK_GL_UNIFORM_TYPE_NONE",
+    "GSK_GL_UNIFORM_TYPE_UINT",
+    "GSK_GL_UNIFORM_TYPE_VEC2",
+    "GSK_GL_UNIFORM_TYPE_VEC3",
+    "GSK_GL_UNIFORM_TYPE_VEC4",
+    "bool",
+    "float",
+    "int",
+    "none",
+    "uint",
+    "vec2",
+    "vec3",
+    "vec4",
+]
+_GLUniformTypeValueType: TypeAlias = GLUniformType | _GLUniformTypeLiteralType
+
 class LineCap(GObject.GEnum):
     BUTT = 0
     ROUND = 1
     SQUARE = 2
 
+_LineCapLiteralType: TypeAlias = Literal[
+    "GSK_LINE_CAP_BUTT",
+    "GSK_LINE_CAP_ROUND",
+    "GSK_LINE_CAP_SQUARE",
+    "butt",
+    "round",
+    "square",
+]
+_LineCapValueType: TypeAlias = LineCap | _LineCapLiteralType
+
 class LineJoin(GObject.GEnum):
     BEVEL = 2
     MITER = 0
     ROUND = 1
+
+_LineJoinLiteralType: TypeAlias = Literal[
+    "GSK_LINE_JOIN_BEVEL",
+    "GSK_LINE_JOIN_MITER",
+    "GSK_LINE_JOIN_ROUND",
+    "bevel",
+    "miter",
+    "round",
+]
+_LineJoinValueType: TypeAlias = LineJoin | _LineJoinLiteralType
 
 class MaskMode(GObject.GEnum):
     ALPHA = 0
@@ -1221,11 +1370,53 @@ class MaskMode(GObject.GEnum):
     INVERTED_LUMINANCE = 3
     LUMINANCE = 2
 
+_MaskModeLiteralType: TypeAlias = Literal[
+    "GSK_MASK_MODE_ALPHA",
+    "GSK_MASK_MODE_INVERTED_ALPHA",
+    "GSK_MASK_MODE_INVERTED_LUMINANCE",
+    "GSK_MASK_MODE_LUMINANCE",
+    "alpha",
+    "inverted-alpha",
+    "inverted-luminance",
+    "luminance",
+]
+_MaskModeValueType: TypeAlias = MaskMode | _MaskModeLiteralType
+
 class PathDirection(GObject.GEnum):
     FROM_END = 3
     FROM_START = 0
     TO_END = 2
     TO_START = 1
+
+_PathDirectionLiteralType: TypeAlias = Literal[
+    "GSK_PATH_FROM_END",
+    "GSK_PATH_FROM_START",
+    "GSK_PATH_TO_END",
+    "GSK_PATH_TO_START",
+    "from-end",
+    "from-start",
+    "to-end",
+    "to-start",
+]
+_PathDirectionValueType: TypeAlias = PathDirection | _PathDirectionLiteralType
+
+class PathIntersection(GObject.GEnum):
+    END = 3
+    NONE = 0
+    NORMAL = 1
+    START = 2
+
+_PathIntersectionLiteralType: TypeAlias = Literal[
+    "GSK_PATH_INTERSECTION_END",
+    "GSK_PATH_INTERSECTION_NONE",
+    "GSK_PATH_INTERSECTION_NORMAL",
+    "GSK_PATH_INTERSECTION_START",
+    "end",
+    "none",
+    "normal",
+    "start",
+]
+_PathIntersectionValueType: TypeAlias = PathIntersection | _PathIntersectionLiteralType
 
 class PathOperation(GObject.GEnum):
     CLOSE = 1
@@ -1235,6 +1426,22 @@ class PathOperation(GObject.GEnum):
     MOVE = 0
     QUAD = 3
 
+_PathOperationLiteralType: TypeAlias = Literal[
+    "GSK_PATH_CLOSE",
+    "GSK_PATH_CONIC",
+    "GSK_PATH_CUBIC",
+    "GSK_PATH_LINE",
+    "GSK_PATH_MOVE",
+    "GSK_PATH_QUAD",
+    "close",
+    "conic",
+    "cubic",
+    "line",
+    "move",
+    "quad",
+]
+_PathOperationValueType: TypeAlias = PathOperation | _PathOperationLiteralType
+
 class RenderNodeType(GObject.GEnum):
     BLEND_NODE = 20
     BLUR_NODE = 23
@@ -1243,6 +1450,7 @@ class RenderNodeType(GObject.GEnum):
     CLIP_NODE = 17
     COLOR_MATRIX_NODE = 15
     COLOR_NODE = 3
+    COMPONENT_TRANSFER_NODE = 31
     CONIC_GRADIENT_NODE = 8
     CONTAINER_NODE = 1
     CROSS_FADE_NODE = 21
@@ -1268,10 +1476,88 @@ class RenderNodeType(GObject.GEnum):
     TEXT_NODE = 22
     TRANSFORM_NODE = 13
 
+_RenderNodeTypeLiteralType: TypeAlias = Literal[
+    "GSK_BLEND_NODE",
+    "GSK_BLUR_NODE",
+    "GSK_BORDER_NODE",
+    "GSK_CAIRO_NODE",
+    "GSK_CLIP_NODE",
+    "GSK_COLOR_MATRIX_NODE",
+    "GSK_COLOR_NODE",
+    "GSK_COMPONENT_TRANSFER_NODE",
+    "GSK_CONIC_GRADIENT_NODE",
+    "GSK_CONTAINER_NODE",
+    "GSK_CROSS_FADE_NODE",
+    "GSK_DEBUG_NODE",
+    "GSK_FILL_NODE",
+    "GSK_GL_SHADER_NODE",
+    "GSK_INSET_SHADOW_NODE",
+    "GSK_LINEAR_GRADIENT_NODE",
+    "GSK_MASK_NODE",
+    "GSK_NOT_A_RENDER_NODE",
+    "GSK_OPACITY_NODE",
+    "GSK_OUTSET_SHADOW_NODE",
+    "GSK_RADIAL_GRADIENT_NODE",
+    "GSK_REPEATING_LINEAR_GRADIENT_NODE",
+    "GSK_REPEATING_RADIAL_GRADIENT_NODE",
+    "GSK_REPEAT_NODE",
+    "GSK_ROUNDED_CLIP_NODE",
+    "GSK_SHADOW_NODE",
+    "GSK_STROKE_NODE",
+    "GSK_SUBSURFACE_NODE",
+    "GSK_TEXTURE_NODE",
+    "GSK_TEXTURE_SCALE_NODE",
+    "GSK_TEXT_NODE",
+    "GSK_TRANSFORM_NODE",
+    "blend-node",
+    "blur-node",
+    "border-node",
+    "cairo-node",
+    "clip-node",
+    "color-matrix-node",
+    "color-node",
+    "component-transfer-node",
+    "conic-gradient-node",
+    "container-node",
+    "cross-fade-node",
+    "debug-node",
+    "fill-node",
+    "gl-shader-node",
+    "inset-shadow-node",
+    "linear-gradient-node",
+    "mask-node",
+    "not-a-render-node",
+    "opacity-node",
+    "outset-shadow-node",
+    "radial-gradient-node",
+    "repeat-node",
+    "repeating-linear-gradient-node",
+    "repeating-radial-gradient-node",
+    "rounded-clip-node",
+    "shadow-node",
+    "stroke-node",
+    "subsurface-node",
+    "text-node",
+    "texture-node",
+    "texture-scale-node",
+    "transform-node",
+]
+_RenderNodeTypeValueType: TypeAlias = RenderNodeType | _RenderNodeTypeLiteralType
+
 class ScalingFilter(GObject.GEnum):
     LINEAR = 0
     NEAREST = 1
     TRILINEAR = 2
+
+_ScalingFilterLiteralType: TypeAlias = Literal[
+    "GSK_SCALING_FILTER_LINEAR",
+    "GSK_SCALING_FILTER_NEAREST",
+    "GSK_SCALING_FILTER_TRILINEAR",
+    "linear",
+    "nearest",
+    "trilinear",
+]
+_ScalingFilterValueType: TypeAlias = ScalingFilter | _ScalingFilterLiteralType
 
 class SerializationError(GObject.GEnum):
     INVALID_DATA = 2
@@ -1280,7 +1566,31 @@ class SerializationError(GObject.GEnum):
     @staticmethod
     def quark() -> int: ...
 
+_SerializationErrorLiteralType: TypeAlias = Literal[
+    "GSK_SERIALIZATION_INVALID_DATA",
+    "GSK_SERIALIZATION_UNSUPPORTED_FORMAT",
+    "GSK_SERIALIZATION_UNSUPPORTED_VERSION",
+    "invalid-data",
+    "unsupported-format",
+    "unsupported-version",
+]
+_SerializationErrorValueType: TypeAlias = (
+    SerializationError | _SerializationErrorLiteralType
+)
+
 class TransformCategory(GObject.GEnum):
     ANY = 1
     IDENTITY = 6
     UNKNOWN = 0
+
+_TransformCategoryLiteralType: TypeAlias = Literal[
+    "GSK_TRANSFORM_CATEGORY_ANY",
+    "GSK_TRANSFORM_CATEGORY_IDENTITY",
+    "GSK_TRANSFORM_CATEGORY_UNKNOWN",
+    "any",
+    "identity",
+    "unknown",
+]
+_TransformCategoryValueType: TypeAlias = (
+    TransformCategory | _TransformCategoryLiteralType
+)
